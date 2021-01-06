@@ -5076,28 +5076,116 @@ var $author$project$Map$Hex$Hex = F3(
 	function (terrain, position, loot) {
 		return {loot: loot, position: position, terrain: terrain};
 	});
-var $author$project$World$Map$emptyLoot = _List_Nil;
-var $author$project$World$Map$createHex = F2(
-	function (terrain, pos) {
-		return A3($author$project$Map$Hex$Hex, terrain, pos, $author$project$World$Map$emptyLoot);
+var $author$project$World$Map$createHex = F3(
+	function (loot, terrain, pos) {
+		return A3($author$project$Map$Hex$Hex, terrain, pos, loot);
 	});
-var $author$project$World$Map$tMm = $author$project$World$Map$createHex($author$project$Map$Hex$Mountains);
+var $author$project$World$Map$emptyLoot = _List_Nil;
+var $author$project$World$Map$createHexNoLoot = $author$project$World$Map$createHex($author$project$World$Map$emptyLoot);
+var $author$project$World$Map$tMm = $author$project$World$Map$createHexNoLoot($author$project$Map$Hex$Mountains);
 var $author$project$Map$Hex$Forest = {$: 'Forest'};
-var $author$project$World$Map$tYf = $author$project$World$Map$createHex($author$project$Map$Hex$Forest);
+var $author$project$Inventory$Item$ConsumedEffects = function (a) {
+	return {$: 'ConsumedEffects', a: a};
+};
+var $author$project$Rule$Definition$Food = {$: 'Food'};
+var $author$project$Inventory$Item$Item = F6(
+	function (name, picture, encumbrance, itemType, effect, value) {
+		return {effect: effect, encumbrance: encumbrance, itemType: itemType, name: name, picture: picture, value: value};
+	});
+var $author$project$Inventory$Item$Misc = {$: 'Misc'};
+var $author$project$Rule$Definition$ModifyShape = F2(
+	function (a, b) {
+		return {$: 'ModifyShape', a: a, b: b};
+	});
+var $author$project$Rule$Definition$SetCondition = function (a) {
+	return {$: 'SetCondition', a: a};
+};
+var $author$project$Rule$Definition$ModifyDefense = function (a) {
+	return {$: 'ModifyDefense', a: a};
+};
+var $author$project$Rule$Definition$ModifyToAttack = function (a) {
+	return {$: 'ModifyToAttack', a: a};
+};
+var $author$project$Rule$Definition$RoundsLeft = function (a) {
+	return {$: 'RoundsLeft', a: a};
+};
+var $author$project$Rule$Definition$AlwaysTrue = function (a) {
+	return {$: 'AlwaysTrue', a: a};
+};
+var $elm$core$List$map = F2(
+	function (f, xs) {
+		return A3(
+			$elm$core$List$foldr,
+			F2(
+				function (x, acc) {
+					return A2(
+						$elm$core$List$cons,
+						f(x),
+						acc);
+				}),
+			_List_Nil,
+			xs);
+	});
+var $author$project$Rule$Definition$alwaysTrue = $elm$core$List$map($author$project$Rule$Definition$AlwaysTrue);
+var $author$project$Rule$Definition$Condition = F2(
+	function (a, b) {
+		return {$: 'Condition', a: a, b: b};
+	});
+var $author$project$Rule$Definition$createCondition = function (attributeBase) {
+	return A2(
+		$author$project$Rule$Definition$Condition,
+		{description: attributeBase.description, effects: attributeBase.effects, name: attributeBase.name, picture: attributeBase.picture},
+		attributeBase.duration);
+};
+var $elm$core$Basics$negate = function (n) {
+	return -n;
+};
+var $author$project$World$Mob$druggedCondition = $author$project$Rule$Definition$createCondition(
+	{
+		description: 'Irritability with sudden anger mood swings and warped perception of the surroundings.',
+		duration: $author$project$Rule$Definition$RoundsLeft(8),
+		effects: $author$project$Rule$Definition$alwaysTrue(
+			_List_fromArray(
+				[
+					$author$project$Rule$Definition$ModifyDefense(-1),
+					$author$project$Rule$Definition$ModifyToAttack(1)
+				])),
+		name: 'Drugged',
+		picture: _Utils_chr('🥴')
+	});
+var $author$project$World$Mob$magicMushroom = A6(
+	$author$project$Inventory$Item$Item,
+	'Glowing mushroom',
+	_Utils_chr('🍄'),
+	4,
+	$author$project$Inventory$Item$Misc,
+	$author$project$Inventory$Item$ConsumedEffects(
+		_List_fromArray(
+			[
+				$author$project$Rule$Definition$SetCondition($author$project$World$Mob$druggedCondition),
+				A2($author$project$Rule$Definition$ModifyShape, $author$project$Rule$Definition$Food, 15)
+			])),
+	50);
+var $author$project$World$Map$tTf = A2(
+	$author$project$World$Map$createHex,
+	_List_fromArray(
+		[$author$project$World$Mob$magicMushroom]),
+	$author$project$Map$Hex$Forest);
+var $author$project$World$Map$tYf = $author$project$World$Map$createHexNoLoot($author$project$Map$Hex$Forest);
 var $author$project$Map$Hex$Plains = {$: 'Plains'};
-var $author$project$World$Map$t_p = $author$project$World$Map$createHex($author$project$Map$Hex$Plains);
+var $author$project$World$Map$t_p = $author$project$World$Map$createHexNoLoot($author$project$Map$Hex$Plains);
 var $author$project$Map$Hex$Sea = {$: 'Sea'};
-var $author$project$World$Map$tws = $author$project$World$Map$createHex($author$project$Map$Hex$Sea);
+var $author$project$World$Map$tws = $author$project$World$Map$createHexNoLoot($author$project$Map$Hex$Sea);
 var $author$project$World$Map$mapSetup = _List_fromArray(
 	[
 		_List_fromArray(
-		[$author$project$World$Map$tMm, $author$project$World$Map$tMm, $author$project$World$Map$tYf, $author$project$World$Map$tMm, $author$project$World$Map$tMm, $author$project$World$Map$tMm, $author$project$World$Map$tMm, $author$project$World$Map$tMm, $author$project$World$Map$tMm, $author$project$World$Map$tMm, $author$project$World$Map$tMm, $author$project$World$Map$tws, $author$project$World$Map$tYf, $author$project$World$Map$tws, $author$project$World$Map$tYf, $author$project$World$Map$tws, $author$project$World$Map$tYf]),
+		[$author$project$World$Map$tMm, $author$project$World$Map$tMm, $author$project$World$Map$tTf, $author$project$World$Map$tMm, $author$project$World$Map$tMm, $author$project$World$Map$tMm, $author$project$World$Map$tMm, $author$project$World$Map$tMm, $author$project$World$Map$tMm, $author$project$World$Map$tMm, $author$project$World$Map$tMm, $author$project$World$Map$tws, $author$project$World$Map$tYf, $author$project$World$Map$tws, $author$project$World$Map$tYf, $author$project$World$Map$tws, $author$project$World$Map$tYf]),
 		_List_fromArray(
-		[$author$project$World$Map$tYf, $author$project$World$Map$t_p, $author$project$World$Map$tYf, $author$project$World$Map$t_p, $author$project$World$Map$t_p, $author$project$World$Map$t_p, $author$project$World$Map$tMm, $author$project$World$Map$tYf, $author$project$World$Map$tYf, $author$project$World$Map$tMm, $author$project$World$Map$tMm, $author$project$World$Map$tws, $author$project$World$Map$tYf, $author$project$World$Map$tws, $author$project$World$Map$tYf, $author$project$World$Map$tws, $author$project$World$Map$tYf]),
+		[$author$project$World$Map$tYf, $author$project$World$Map$t_p, $author$project$World$Map$tYf, $author$project$World$Map$t_p, $author$project$World$Map$t_p, $author$project$World$Map$t_p, $author$project$World$Map$tMm, $author$project$World$Map$tTf, $author$project$World$Map$tTf, $author$project$World$Map$tMm, $author$project$World$Map$tMm, $author$project$World$Map$tws, $author$project$World$Map$tYf, $author$project$World$Map$tws, $author$project$World$Map$tYf, $author$project$World$Map$tws, $author$project$World$Map$tYf]),
 		_List_fromArray(
-		[$author$project$World$Map$tYf, $author$project$World$Map$tws, $author$project$World$Map$t_p, $author$project$World$Map$t_p, $author$project$World$Map$t_p, $author$project$World$Map$t_p, $author$project$World$Map$tYf, $author$project$World$Map$tYf, $author$project$World$Map$tYf, $author$project$World$Map$tYf, $author$project$World$Map$tMm, $author$project$World$Map$tYf, $author$project$World$Map$tYf, $author$project$World$Map$tYf, $author$project$World$Map$tYf, $author$project$World$Map$tYf, $author$project$World$Map$tYf]),
+		[$author$project$World$Map$tYf, $author$project$World$Map$tws, $author$project$World$Map$t_p, $author$project$World$Map$t_p, $author$project$World$Map$t_p, $author$project$World$Map$t_p, $author$project$World$Map$tTf, $author$project$World$Map$tYf, $author$project$World$Map$tYf, $author$project$World$Map$tYf, $author$project$World$Map$tMm, $author$project$World$Map$tYf, $author$project$World$Map$tYf, $author$project$World$Map$tYf, $author$project$World$Map$tYf, $author$project$World$Map$tYf, $author$project$World$Map$tYf]),
 		_List_fromArray(
-		[$author$project$World$Map$tMm, $author$project$World$Map$tMm, $author$project$World$Map$t_p, $author$project$World$Map$t_p, $author$project$World$Map$t_p, $author$project$World$Map$t_p, $author$project$World$Map$tws, $author$project$World$Map$tws, $author$project$World$Map$tws, $author$project$World$Map$tYf, $author$project$World$Map$tYf, $author$project$World$Map$tYf, $author$project$World$Map$tYf, $author$project$World$Map$tYf, $author$project$World$Map$tYf, $author$project$World$Map$tYf, $author$project$World$Map$tYf]),
+		[$author$project$World$Map$tTf, $author$project$World$Map$tMm, $author$project$World$Map$t_p, $author$project$World$Map$t_p, $author$project$World$Map$t_p, $author$project$World$Map$t_p, $author$project$World$Map$tws, $author$project$World$Map$tws, $author$project$World$Map$tws, $author$project$World$Map$tYf, $author$project$World$Map$tYf, $author$project$World$Map$tYf, $author$project$World$Map$tYf, $author$project$World$Map$tYf, $author$project$World$Map$tYf, $author$project$World$Map$tYf, $author$project$World$Map$tYf]),
 		_List_fromArray(
 		[$author$project$World$Map$tMm, $author$project$World$Map$t_p, $author$project$World$Map$t_p, $author$project$World$Map$t_p, $author$project$World$Map$t_p, $author$project$World$Map$tws, $author$project$World$Map$tws, $author$project$World$Map$tws, $author$project$World$Map$tws, $author$project$World$Map$tMm, $author$project$World$Map$tMm, $author$project$World$Map$tYf, $author$project$World$Map$tYf, $author$project$World$Map$tYf, $author$project$World$Map$tYf, $author$project$World$Map$tYf, $author$project$World$Map$tYf]),
 		_List_fromArray(
@@ -5109,9 +5197,6 @@ var $author$project$World$Map$mapSetup = _List_fromArray(
 	]);
 var $author$project$World$Map$initialMap = $author$project$Map$Hex$createMapFromList($author$project$World$Map$mapSetup);
 var $author$project$Text$rn = '\r\n';
-var $elm$core$Basics$negate = function (n) {
-	return -n;
-};
 var $author$project$World$Map$toPosition = function (portalEndPoint) {
 	switch (portalEndPoint.$) {
 		case 'Elsewhere':
@@ -5219,46 +5304,6 @@ var $author$project$World$Map$getBlackGateDescription = function (holder) {
 };
 var $author$project$Rule$Definition$LogEvent = function (a) {
 	return {$: 'LogEvent', a: a};
-};
-var $author$project$Rule$Definition$SetCondition = function (a) {
-	return {$: 'SetCondition', a: a};
-};
-var $author$project$Rule$Definition$ModifyDefense = function (a) {
-	return {$: 'ModifyDefense', a: a};
-};
-var $author$project$Rule$Definition$ModifyToAttack = function (a) {
-	return {$: 'ModifyToAttack', a: a};
-};
-var $author$project$Rule$Definition$RoundsLeft = function (a) {
-	return {$: 'RoundsLeft', a: a};
-};
-var $author$project$Rule$Definition$AlwaysTrue = function (a) {
-	return {$: 'AlwaysTrue', a: a};
-};
-var $elm$core$List$map = F2(
-	function (f, xs) {
-		return A3(
-			$elm$core$List$foldr,
-			F2(
-				function (x, acc) {
-					return A2(
-						$elm$core$List$cons,
-						f(x),
-						acc);
-				}),
-			_List_Nil,
-			xs);
-	});
-var $author$project$Rule$Definition$alwaysTrue = $elm$core$List$map($author$project$Rule$Definition$AlwaysTrue);
-var $author$project$Rule$Definition$Condition = F2(
-	function (a, b) {
-		return {$: 'Condition', a: a, b: b};
-	});
-var $author$project$Rule$Definition$createCondition = function (attributeBase) {
-	return A2(
-		$author$project$Rule$Definition$Condition,
-		{description: attributeBase.description, effects: attributeBase.effects, name: attributeBase.name, picture: attributeBase.picture},
-		attributeBase.duration);
 };
 var $author$project$World$Map$wellRestedCondition = $author$project$Rule$Definition$createCondition(
 	{
@@ -5736,11 +5781,6 @@ var $author$project$Rule$Effect$changeTerrainTo = F2(
 				});
 		}
 	});
-var $author$project$Inventory$Item$Item = F6(
-	function (name, picture, encumbrance, itemType, effect, value) {
-		return {effect: effect, encumbrance: encumbrance, itemType: itemType, name: name, picture: picture, value: value};
-	});
-var $author$project$Inventory$Item$Misc = {$: 'Misc'};
 var $author$project$Inventory$Item$None = {$: 'None'};
 var $author$project$Rule$ReferenceLoot$createMoneyBag = function (amount) {
 	return A6(
@@ -5839,6 +5879,7 @@ var $elm$core$List$any = F2(
 	});
 var $author$project$Rule$Definition$ConditionAttributes = {$: 'ConditionAttributes'};
 var $author$project$Rule$Definition$EquippedItemAttributes = {$: 'EquippedItemAttributes'};
+var $author$project$Rule$Definition$MiscAttributes = {$: 'MiscAttributes'};
 var $author$project$Rule$Definition$SkillAttributes = {$: 'SkillAttributes'};
 var $author$project$Rule$Definition$TraitAttributes = {$: 'TraitAttributes'};
 var $elm$core$List$concatMap = F2(
@@ -6042,6 +6083,65 @@ var $author$project$Inventory$Slot$getEquippedContents = function (slot) {
 var $author$project$Map$Mob$getEquippedItems = function (mob) {
 	return A2($elm$core$List$filterMap, $author$project$Inventory$Slot$getEquippedContents, mob.inventory);
 };
+var $author$project$Map$Mob$getShapeValEffects = F2(
+	function (possibleStates, val) {
+		return (val > 50) ? _List_Nil : ((val > 0) ? _List_fromArray(
+			[possibleStates.basic]) : _List_fromArray(
+			[possibleStates.critical]));
+	});
+var $author$project$Rule$Definition$Fatigued = {$: 'Fatigued'};
+var $author$project$Map$Mob$hunger = {
+	basic: {
+		description: 'Growling stomach and little strength.',
+		effects: $author$project$Rule$Definition$alwaysTrue(
+			_List_fromArray(
+				[
+					$author$project$Rule$Definition$ModifyToAttack(-1)
+				])),
+		name: 'Hungry',
+		picture: _Utils_chr('😐')
+	},
+	critical: {
+		description: '',
+		effects: $author$project$Rule$Definition$alwaysTrue(
+			_List_fromArray(
+				[
+					$author$project$Rule$Definition$RepeatingEffect($author$project$Rule$Definition$Fatigued),
+					$author$project$Rule$Definition$ModifyToAttack(-2),
+					$author$project$Rule$Definition$ModifyDefense(-1)
+				])),
+		name: 'Famished',
+		picture: _Utils_chr('😑')
+	}
+};
+var $author$project$Map$Mob$thirst = {
+	basic: {
+		description: 'Mild headache and parched throat.',
+		effects: $author$project$Rule$Definition$alwaysTrue(
+			_List_fromArray(
+				[
+					$author$project$Rule$Definition$ModifyDefense(-1)
+				])),
+		name: 'Thirsty',
+		picture: _Utils_chr('🥵')
+	},
+	critical: {
+		description: 'Dry skin and close to fainting.',
+		effects: $author$project$Rule$Definition$alwaysTrue(
+			_List_fromArray(
+				[
+					$author$project$Rule$Definition$RepeatingEffect($author$project$Rule$Definition$Hurt),
+					$author$project$Rule$Definition$ModifyDefense(-2)
+				])),
+		name: 'Dehydrated',
+		picture: _Utils_chr('😵')
+	}
+};
+var $author$project$Map$Mob$getMiscAttributes = function (mob) {
+	return _Utils_ap(
+		A2($author$project$Map$Mob$getShapeValEffects, $author$project$Map$Mob$thirst, mob.currentShape.drink),
+		A2($author$project$Map$Mob$getShapeValEffects, $author$project$Map$Mob$hunger, mob.currentShape.food));
+};
 var $author$project$Rule$Definition$getTraitData = function (_v0) {
 	var data = _v0.a;
 	return data;
@@ -6074,7 +6174,10 @@ var $author$project$Rule$Effect$collectAttributes = function (mob) {
 				A2($elm$core$List$map, $author$project$Rule$Definition$getTraitData, mob.traits)),
 				_Utils_Tuple2(
 				$author$project$Rule$Definition$ConditionAttributes,
-				A2($elm$core$List$map, $author$project$Rule$Definition$extractAttribute, mob.conditions)),
+				A2($elm$core$List$map, $author$project$Rule$Definition$extractAttribute, mob.currentShape.conditions)),
+				_Utils_Tuple2(
+				$author$project$Rule$Definition$MiscAttributes,
+				$author$project$Map$Mob$getMiscAttributes(mob)),
 				_Utils_Tuple2(
 				$author$project$Rule$Definition$EquippedItemAttributes,
 				A2(
@@ -6131,6 +6234,50 @@ var $author$project$Rule$DefinitionMapping$mapExperience = function (experienceT
 			return $author$project$Rule$Experience$Fate;
 	}
 };
+var $elm$core$Basics$clamp = F3(
+	function (low, high, number) {
+		return (_Utils_cmp(number, low) < 0) ? low : ((_Utils_cmp(number, high) > 0) ? high : number);
+	});
+var $author$project$Map$Mob$getMax = function (_v0) {
+	return 100;
+};
+var $author$project$Map$Mob$modifyShapeValueHelper = F3(
+	function (shapeType, byAmount, mob) {
+		var shape = mob.currentShape;
+		var max = $author$project$Map$Mob$getMax(shapeType);
+		var newValue = function (value) {
+			return A3($elm$core$Basics$clamp, 0, max, value + byAmount);
+		};
+		return _Utils_update(
+			mob,
+			{
+				currentShape: function () {
+					if (shapeType.$ === 'Food') {
+						return _Utils_update(
+							shape,
+							{
+								food: newValue(shape.food)
+							});
+					} else {
+						return _Utils_update(
+							shape,
+							{
+								drink: newValue(shape.drink)
+							});
+					}
+				}()
+			});
+	});
+var $author$project$Extend$Type$performanceUpdate = F2(
+	function (updateFunc, original) {
+		var update = updateFunc(original);
+		return _Utils_eq(original, update) ? original : update;
+	});
+var $author$project$Map$Mob$modifyShapeValue = F2(
+	function (shapeType, byAmount) {
+		return $author$project$Extend$Type$performanceUpdate(
+			A2($author$project$Map$Mob$modifyShapeValueHelper, shapeType, byAmount));
+	});
 var $author$project$Rule$Definition$Permanent = {$: 'Permanent'};
 var $author$project$Rule$Definition$getDurationOf = function (_v0) {
 	var duration = _v0.b;
@@ -6151,7 +6298,8 @@ var $author$project$Rule$Effect$setCondition = F2(
 				$author$project$Rule$Definition$extractAttribute,
 				$elm$core$Basics$eq(
 					$author$project$Rule$Definition$extractAttribute(conditionToSet))),
-			mob.conditions);
+			mob.currentShape.conditions);
+		var shape = mob.currentShape;
 		var getMax = F2(
 			function (dur1, dur2) {
 				var _v0 = _Utils_Tuple2(dur1, dur2);
@@ -6178,19 +6326,32 @@ var $author$project$Rule$Effect$setCondition = F2(
 		return _Utils_update(
 			mob,
 			{
-				conditions: A2(
-					$elm$core$List$cons,
-					A2($author$project$Rule$Definition$setDurationOf, conditionToSet, maxDurationOfSimilarCondition),
-					A2(
-						$elm$core$List$filter,
-						A2(
-							$elm$core$Basics$composeR,
-							$author$project$Rule$Definition$extractAttribute,
-							$elm$core$Basics$neq(
-								$author$project$Rule$Definition$extractAttribute(conditionToSet))),
-						mob.conditions))
+				currentShape: _Utils_update(
+					shape,
+					{
+						conditions: A2(
+							$elm$core$List$cons,
+							A2($author$project$Rule$Definition$setDurationOf, conditionToSet, maxDurationOfSimilarCondition),
+							A2(
+								$elm$core$List$filter,
+								A2(
+									$elm$core$Basics$composeR,
+									$author$project$Rule$Definition$extractAttribute,
+									$elm$core$Basics$neq(
+										$author$project$Rule$Definition$extractAttribute(conditionToSet))),
+								shape.conditions))
+					})
 			});
 	});
+var $author$project$Map$Mob$Drink = {$: 'Drink'};
+var $author$project$Map$Mob$Food = {$: 'Food'};
+var $author$project$Rule$Effect$toMobShapeType = function (ruleShapeType) {
+	if (ruleShapeType.$ === 'Food') {
+		return $author$project$Map$Mob$Food;
+	} else {
+		return $author$project$Map$Mob$Drink;
+	}
+};
 var $author$project$Rule$Career$Career = function (a) {
 	return {$: 'Career', a: a};
 };
@@ -6212,6 +6373,21 @@ var $author$project$Rule$Effect$wraps = F2(
 				mapHolder: getResultToWrap(applyEffectsHolder.mapHolder)
 			});
 	});
+var $author$project$Rule$Effect$decreaseFatigueOfPlayer = function (applyEffectsHolder) {
+	var shape = applyEffectsHolder.mapHolder.player.currentShape;
+	return (!shape.fatigue) ? A2($author$project$Rule$Effect$wrapAndApplyEffect, $author$project$Rule$Definition$Hurt, applyEffectsHolder) : A2(
+		$author$project$Rule$Effect$applyEffectToPlayer,
+		function (p) {
+			return _Utils_update(
+				p,
+				{
+					currentShape: _Utils_update(
+						shape,
+						{fatigue: shape.fatigue - 1})
+				});
+		},
+		applyEffectsHolder);
+};
 var $author$project$Rule$Effect$wrapAndApplyEffect = F2(
 	function (effect, applyEffectsHolder) {
 		switch (effect.$) {
@@ -6223,6 +6399,18 @@ var $author$project$Rule$Effect$wrapAndApplyEffect = F2(
 				return _Utils_update(
 					applyEffectsHolder,
 					{playerHealthMod: applyEffectsHolder.playerHealthMod - 1});
+			case 'Fatigued':
+				return $author$project$Rule$Effect$decreaseFatigueOfPlayer(applyEffectsHolder);
+			case 'ModifyShape':
+				var shapeType = effect.a;
+				var byAmount = effect.b;
+				return A2(
+					$author$project$Rule$Effect$applyEffectToPlayer,
+					A2(
+						$author$project$Map$Mob$modifyShapeValue,
+						$author$project$Rule$Effect$toMobShapeType(shapeType),
+						byAmount),
+					applyEffectsHolder);
 			case 'Teleport':
 				var newPos = effect.a;
 				return A2(
@@ -7176,10 +7364,10 @@ var $author$project$Map$Mob$Mob = function (name) {
 				return function (inventory) {
 					return function (position) {
 						return function (career) {
-							return function (conditions) {
+							return function (currentShape) {
 								return function (traits) {
 									return function (id) {
-										return {career: career, conditions: conditions, health: health, id: id, inventory: inventory, name: name, order: order, picture: picture, position: position, traits: traits};
+										return {career: career, currentShape: currentShape, health: health, id: id, inventory: inventory, name: name, order: order, picture: picture, position: position, traits: traits};
 									};
 								};
 							};
@@ -7190,9 +7378,16 @@ var $author$project$Map$Mob$Mob = function (name) {
 		};
 	};
 };
+var $author$project$Map$Mob$getMaxFatigue = 5;
+var $author$project$Map$Mob$initialCurrentShape = {
+	conditions: _List_Nil,
+	drink: $author$project$Map$Mob$getMax($author$project$Map$Mob$Drink),
+	fatigue: $author$project$Map$Mob$getMaxFatigue,
+	food: $author$project$Map$Mob$getMax($author$project$Map$Mob$Food)
+};
 var $author$project$Map$Mob$create = F7(
 	function (name, picture, inventory, pos, traits, career, mobId) {
-		return $author$project$Map$Mob$Mob(name)(picture)($author$project$Map$Mob$Healthy)($author$project$Map$Mob$Guard)(inventory)(pos)(career)(_List_Nil)(traits)(mobId);
+		return $author$project$Map$Mob$Mob(name)(picture)($author$project$Map$Mob$Healthy)($author$project$Map$Mob$Guard)(inventory)(pos)(career)($author$project$Map$Mob$initialCurrentShape)(traits)(mobId);
 	});
 var $author$project$Map$Mob$Set = function (a) {
 	return {$: 'Set', a: a};
@@ -7363,14 +7558,13 @@ var $author$project$World$Mob$diamond = A6(
 	$author$project$Inventory$Item$Misc,
 	$author$project$Inventory$Item$None,
 	1000);
-var $author$project$Inventory$Item$ConsumedEffects = function (a) {
-	return {$: 'ConsumedEffects', a: a};
-};
+var $author$project$Rule$Definition$Drink = {$: 'Drink'};
 var $author$project$World$Mob$dragonBloodEffect = $author$project$Inventory$Item$ConsumedEffects(
 	_List_fromArray(
 		[
 			A2($author$project$Rule$Definition$Gain, 1, $author$project$Rule$Definition$Mythos),
 			$author$project$Rule$Definition$Hurt,
+			A2($author$project$Rule$Definition$ModifyShape, $author$project$Rule$Definition$Drink, 10),
 			$author$project$Rule$Definition$LogEvent('As you drink the dragon\'s blood, an intense heat spreads across your body ' + ('burning you from the inside with an excruciating pain. For a short moment, ' + 'you see glimpses into the past life of the age-old creature.'))
 		]));
 var $author$project$World$Mob$dragonBlood = A6(
@@ -7500,7 +7694,10 @@ var $author$project$World$Mob$healingPotion = A6(
 	$author$project$Inventory$Item$Misc,
 	$author$project$Inventory$Item$ConsumedEffects(
 		_List_fromArray(
-			[$author$project$Rule$Definition$Heal])),
+			[
+				$author$project$Rule$Definition$Heal,
+				A2($author$project$Rule$Definition$ModifyShape, $author$project$Rule$Definition$Drink, 3)
+			])),
 	200);
 var $author$project$World$Mob$trash = A6(
 	$author$project$Inventory$Item$Item,
@@ -7811,6 +8008,18 @@ var $author$project$World$Mob$swordOfTheSun = A6(
 		_List_fromArray(
 			[$author$project$World$Mob$sunFavouredAttribute])),
 	1400);
+var $author$project$World$Mob$waterBottle = A6(
+	$author$project$Inventory$Item$Item,
+	'Water bottle',
+	_Utils_chr('🍼'),
+	10,
+	$author$project$Inventory$Item$Misc,
+	$author$project$Inventory$Item$ConsumedEffects(
+		_List_fromArray(
+			[
+				A2($author$project$Rule$Definition$ModifyShape, $author$project$Rule$Definition$Drink, 25)
+			])),
+	25);
 var $author$project$World$Mob$getInitialPlayerInventory = function (map) {
 	var startItems = _List_fromArray(
 		[
@@ -7831,7 +8040,8 @@ var $author$project$World$Mob$getInitialPlayerInventory = function (map) {
 			$author$project$World$Mob$holyWater,
 			$author$project$World$Mob$bookOfMagic,
 			$author$project$World$Mob$bookOfTraining,
-			$author$project$World$Mob$bookOfHoliness
+			$author$project$World$Mob$bookOfHoliness,
+			$author$project$World$Mob$waterBottle
 		]);
 	var numBackpackSlots = 12;
 	return $author$project$Extend$List$indexed(
@@ -9380,78 +9590,6 @@ var $author$project$Map$Mob$setPlayerAsInventoring = function (model) {
 var $author$project$Update$setPlayerAsInventoringIfDragging = function (model) {
 	return (!_Utils_eq(model.dragging, $elm$core$Maybe$Nothing)) ? $author$project$Map$Mob$setPlayerAsInventoring(model) : model;
 };
-var $author$project$Update$getNewRoundNumber = function () {
-	var getNewRoundNumberOfEvent = function (event) {
-		if (event.$ === 'NewRound') {
-			var roundNumber = event.a;
-			return $elm$core$Maybe$Just(roundNumber);
-		} else {
-			return $elm$core$Maybe$Nothing;
-		}
-	};
-	return $author$project$Extend$List$findFirstMap(getNewRoundNumberOfEvent);
-}();
-var $elm$core$Dict$map = F2(
-	function (func, dict) {
-		if (dict.$ === 'RBEmpty_elm_builtin') {
-			return $elm$core$Dict$RBEmpty_elm_builtin;
-		} else {
-			var color = dict.a;
-			var key = dict.b;
-			var value = dict.c;
-			var left = dict.d;
-			var right = dict.e;
-			return A5(
-				$elm$core$Dict$RBNode_elm_builtin,
-				color,
-				key,
-				A2(func, key, value),
-				A2($elm$core$Dict$map, func, left),
-				A2($elm$core$Dict$map, func, right));
-		}
-	});
-var $author$project$Map$Mob$map = F2(
-	function (mapFunc, _v0) {
-		var dict = _v0.a;
-		return $author$project$Map$Mob$Set(
-			A2(
-				$elm$core$Dict$map,
-				F2(
-					function (_v1, mob) {
-						return mapFunc(mob);
-					}),
-				dict));
-	});
-var $author$project$Update$updateDurationOfCondition = function (condition) {
-	var duration = $author$project$Rule$Definition$getDurationOf(condition);
-	if (duration.$ === 'Permanent') {
-		return $elm$core$Maybe$Just(condition);
-	} else {
-		var remainingRounds = duration.a;
-		return (remainingRounds === 1) ? $elm$core$Maybe$Nothing : $elm$core$Maybe$Just(
-			A2(
-				$author$project$Rule$Definition$setDurationOf,
-				condition,
-				$author$project$Rule$Definition$RoundsLeft(remainingRounds - 1)));
-	}
-};
-var $author$project$Update$updateTemporaryEffectsForMob = function (mob) {
-	var updatedConditions = A2($elm$core$List$filterMap, $author$project$Update$updateDurationOfCondition, mob.conditions);
-	return _Utils_eq(updatedConditions, mob.conditions) ? mob : _Utils_update(
-		mob,
-		{conditions: updatedConditions});
-};
-var $author$project$Update$updateTemporaryEffects = F2(
-	function (events, latestModel) {
-		return _Utils_eq(
-			$elm$core$Maybe$Nothing,
-			$author$project$Update$getNewRoundNumber(events)) ? latestModel : _Utils_update(
-			latestModel,
-			{
-				monsters: A2($author$project$Map$Mob$map, $author$project$Update$updateTemporaryEffectsForMob, latestModel.monsters),
-				player: $author$project$Update$updateTemporaryEffectsForMob(latestModel.player)
-			});
-	});
 var $author$project$Update$postUpdate = F3(
 	function (worldEventSubscriber, oldModel, latestModel) {
 		var events = $author$project$State$Event$extract(
@@ -9462,10 +9600,7 @@ var $author$project$Update$postUpdate = F3(
 			A2(
 				$elm$core$Basics$composeR,
 				A2($author$project$Update$handleWorldEventEffects, worldEventSubscriber, events),
-				A2(
-					$elm$core$Basics$composeR,
-					$author$project$Update$updateTemporaryEffects(events),
-					$author$project$Update$logDeath(events))));
+				$author$project$Update$logDeath(events)));
 		var postUpdateModel = allUpdates(latestModel);
 		return _Utils_Tuple2(
 			postUpdateModel,
@@ -9628,6 +9763,37 @@ var $author$project$Rule$Order$applyPrioritizedOrderEffects = F2(
 				A2($author$project$Rule$Order$applyPrioritizedOrderEffect, firstEffect, state));
 		}
 	});
+var $elm$core$Dict$map = F2(
+	function (func, dict) {
+		if (dict.$ === 'RBEmpty_elm_builtin') {
+			return $elm$core$Dict$RBEmpty_elm_builtin;
+		} else {
+			var color = dict.a;
+			var key = dict.b;
+			var value = dict.c;
+			var left = dict.d;
+			var right = dict.e;
+			return A5(
+				$elm$core$Dict$RBNode_elm_builtin,
+				color,
+				key,
+				A2(func, key, value),
+				A2($elm$core$Dict$map, func, left),
+				A2($elm$core$Dict$map, func, right));
+		}
+	});
+var $author$project$Map$Mob$map = F2(
+	function (mapFunc, _v0) {
+		var dict = _v0.a;
+		return $author$project$Map$Mob$Set(
+			A2(
+				$elm$core$Dict$map,
+				F2(
+					function (_v1, mob) {
+						return mapFunc(mob);
+					}),
+				dict));
+	});
 var $author$project$Rule$Order$applyUpdateToAll = F2(
 	function (mapFunc, mobHolder) {
 		return _Utils_update(
@@ -9745,6 +9911,7 @@ var $author$project$Update$createRespawnedPlayer = F2(
 		return _Utils_update(
 			deadPlayer,
 			{
+				currentShape: $author$project$Map$Mob$initialCurrentShape,
 				health: $author$project$Map$Mob$Healthy,
 				inventory: A2(
 					$elm$core$List$map,
@@ -9912,10 +10079,6 @@ var $elm$random$Random$generate = F2(
 		return $elm$random$Random$command(
 			$elm$random$Random$Generate(
 				A2($elm$random$Random$map, tagger, generator)));
-	});
-var $elm$core$Basics$clamp = F3(
-	function (low, high, number) {
-		return (_Utils_cmp(number, low) < 0) ? low : ((_Utils_cmp(number, high) > 0) ? high : number);
 	});
 var $author$project$Inventory$Item$baseAttackOfItem = function (item) {
 	var _v0 = item.itemType;
@@ -10536,6 +10699,48 @@ var $author$project$Rule$Career$update = F2(
 						careerData.acquiredSkills)
 				}));
 	});
+var $author$project$Map$Mob$timePassesHelper = A2(
+	$elm$core$Basics$composeR,
+	A2($author$project$Map$Mob$modifyShapeValueHelper, $author$project$Map$Mob$Drink, -30),
+	A2($author$project$Map$Mob$modifyShapeValueHelper, $author$project$Map$Mob$Food, -30));
+var $author$project$Map$Mob$timePasses = $author$project$Extend$Type$performanceUpdate($author$project$Map$Mob$timePassesHelper);
+var $author$project$Update$updateDurationOfCondition = function (condition) {
+	var duration = $author$project$Rule$Definition$getDurationOf(condition);
+	if (duration.$ === 'Permanent') {
+		return $elm$core$Maybe$Just(condition);
+	} else {
+		var remainingRounds = duration.a;
+		return (remainingRounds === 1) ? $elm$core$Maybe$Nothing : $elm$core$Maybe$Just(
+			A2(
+				$author$project$Rule$Definition$setDurationOf,
+				condition,
+				$author$project$Rule$Definition$RoundsLeft(remainingRounds - 1)));
+	}
+};
+var $author$project$Update$updateTemporaryEffectsForMob = function () {
+	var updateConditions = function (mob) {
+		var shape = mob.currentShape;
+		return _Utils_update(
+			mob,
+			{
+				currentShape: _Utils_update(
+					shape,
+					{
+						conditions: A2($elm$core$List$filterMap, $author$project$Update$updateDurationOfCondition, shape.conditions)
+					})
+			});
+	};
+	return $author$project$Extend$Type$performanceUpdate(
+		A2($elm$core$Basics$composeR, $author$project$Map$Mob$timePasses, updateConditions));
+}();
+var $author$project$Update$updateTemporaryEffectsAtEndOfPhase = function (latestModel) {
+	return _Utils_update(
+		latestModel,
+		{
+			monsters: A2($author$project$Map$Mob$map, $author$project$Update$updateTemporaryEffectsForMob, latestModel.monsters),
+			player: $author$project$Update$updateTemporaryEffectsForMob(latestModel.player)
+		});
+};
 var $author$project$Update$updateWithMsg = F3(
 	function (msg, injected, model) {
 		switch (msg.$) {
@@ -10644,18 +10849,19 @@ var $author$project$Update$updateWithMsg = F3(
 				var _v4 = $author$project$State$Phase$getType(nextPhaseStep);
 				if (_v4.$ === 'OrdersHidden') {
 					return _Utils_Tuple2(
-						_Utils_update(
-							model,
-							{orderEffects: _List_Nil, phase: nextPhaseStep}),
+						$author$project$Update$updateTemporaryEffectsAtEndOfPhase(
+							$author$project$Update$applyContinuousEffectsOfConditions(
+								$author$project$Update$cleanUpAllDead(
+									_Utils_update(
+										model,
+										{orderEffects: _List_Nil, phase: nextPhaseStep})))),
 						$elm$core$Platform$Cmd$none);
 				} else {
 					return _Utils_Tuple2(
 						$author$project$Update$handleIntendedConsumption(
-							$author$project$Update$cleanUpAllDead(
-								$author$project$Update$applyContinuousEffectsOfConditions(
-									_Utils_update(
-										model,
-										{phase: nextPhaseStep})))),
+							_Utils_update(
+								model,
+								{phase: nextPhaseStep})),
 						A2(
 							$elm$random$Random$generate,
 							$author$project$Msg$DetermineOrderEffects,
@@ -10755,8 +10961,10 @@ var $author$project$Rule$Definition$getAttributeTypeName = function (attributeTy
 			return 'Skills';
 		case 'EquippedItemAttributes':
 			return 'From equipped items';
-		default:
+		case 'ConditionAttributes':
 			return 'From conditions';
+		default:
+			return 'Misc';
 	}
 };
 var $elm$core$String$toUpper = _String_toUpper;
@@ -10836,6 +11044,13 @@ var $author$project$Rule$Description$getRequirementDescriptionHelper = function 
 var $author$project$Rule$Description$getRequirementDescription = function (requirement) {
 	return 'If ' + $author$project$Rule$Description$getRequirementDescriptionHelper(requirement);
 };
+var $author$project$Rule$Description$getShapeDescription = function (shape) {
+	if (shape.$ === 'Food') {
+		return 'hunger';
+	} else {
+		return 'thirst';
+	}
+};
 var $author$project$Rule$Experience$nameOfType = function (experienceType) {
 	switch (experienceType.$) {
 		case 'Mythos':
@@ -10858,6 +11073,18 @@ var $author$project$Rule$Description$getEffectDescription = function (effect) {
 		case 'Hurt':
 			return $elm$core$Maybe$Just(
 				{description: 'Hurts the player one step.', name: 'Hurt'});
+		case 'Fatigued':
+			return $elm$core$Maybe$Just(
+				{description: 'Drains fatigue one step.', name: 'Fatigued'});
+		case 'ModifyShape':
+			var shape = effect.a;
+			var byAmount = effect.b;
+			var shapeDescription = $author$project$Rule$Description$getShapeDescription(shape);
+			return $elm$core$Maybe$Just(
+				{
+					description: 'Modify ' + (shapeDescription + (' by ' + ($elm$core$String$fromInt(byAmount) + '%.'))),
+					name: 'Modify ' + shapeDescription
+				});
 		case 'Teleport':
 			var newPos = effect.a;
 			return $elm$core$Maybe$Just(
@@ -13280,6 +13507,9 @@ var $author$project$Map$Mob$describeOrder = function (order) {
 			return 'Advance to ' + $author$project$Map$Position$toString(pos);
 	}
 };
+var $author$project$Map$Mob$shapeValueToString = function (shapeValue) {
+	return $elm$core$String$fromInt(shapeValue) + '%';
+};
 var $author$project$Areas$StatsArea$renderCalculated = F2(
 	function (mapHolder, mob) {
 		return $author$project$Render$Table$renderKeyValue(
@@ -13296,9 +13526,18 @@ var $author$project$Areas$StatsArea$renderCalculated = F2(
 					$elm$core$String$fromInt(
 						A2($author$project$Rule$Combat$getAttack, mapHolder, mob))),
 					_Utils_Tuple2(
-					'Defence',
+					'Defense',
 					$elm$core$String$fromInt(
-						A2($author$project$Rule$Combat$getDefense, mapHolder, mob)))
+						A2($author$project$Rule$Combat$getDefense, mapHolder, mob))),
+					_Utils_Tuple2(
+					'Fatigue',
+					$elm$core$String$fromInt(mob.currentShape.fatigue)),
+					_Utils_Tuple2(
+					'Drink',
+					$author$project$Map$Mob$shapeValueToString(mob.currentShape.drink)),
+					_Utils_Tuple2(
+					'Food',
+					$author$project$Map$Mob$shapeValueToString(mob.currentShape.food))
 				]));
 	});
 var $author$project$Areas$StatsArea$renderConditions = function (conditions) {
@@ -13327,7 +13566,7 @@ var $author$project$Areas$StatsArea$areaDefinition = F2(
 					[
 						A2($author$project$Areas$StatsArea$renderCalculated, mapHolder, mob),
 						A2($elm$html$Html$hr, _List_Nil, _List_Nil),
-						$author$project$Areas$StatsArea$renderConditions(mob.conditions)
+						$author$project$Areas$StatsArea$renderConditions(mob.currentShape.conditions)
 					])),
 			title: 'Stats'
 		};
