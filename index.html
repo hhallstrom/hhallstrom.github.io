@@ -5084,9 +5084,6 @@ var $author$project$World$Map$emptyLoot = _List_Nil;
 var $author$project$World$Map$createHexNoLoot = $author$project$World$Map$createHex($author$project$World$Map$emptyLoot);
 var $author$project$World$Map$tMm = $author$project$World$Map$createHexNoLoot($author$project$Map$Hex$Mountains);
 var $author$project$Map$Hex$Forest = {$: 'Forest'};
-var $author$project$Inventory$Item$ConsumedEffects = function (a) {
-	return {$: 'ConsumedEffects', a: a};
-};
 var $author$project$Rule$Definition$Food = {$: 'Food'};
 var $author$project$Inventory$Item$Item = F6(
 	function (name, picture, encumbrance, itemType, effect, value) {
@@ -5100,17 +5097,8 @@ var $author$project$Rule$Definition$ModifyShape = F2(
 var $author$project$Rule$Definition$SetCondition = function (a) {
 	return {$: 'SetCondition', a: a};
 };
-var $author$project$Rule$Definition$ModifyDefense = function (a) {
-	return {$: 'ModifyDefense', a: a};
-};
-var $author$project$Rule$Definition$ModifyToAttack = function (a) {
-	return {$: 'ModifyToAttack', a: a};
-};
-var $author$project$Rule$Definition$RoundsLeft = function (a) {
-	return {$: 'RoundsLeft', a: a};
-};
-var $author$project$Rule$Definition$AlwaysTrue = function (a) {
-	return {$: 'AlwaysTrue', a: a};
+var $author$project$Inventory$Item$ConsumedEffects = function (a) {
+	return {$: 'ConsumedEffects', a: a};
 };
 var $elm$core$List$map = F2(
 	function (f, xs) {
@@ -5126,7 +5114,29 @@ var $elm$core$List$map = F2(
 			_List_Nil,
 			xs);
 	});
-var $author$project$Rule$Definition$alwaysTrue = $elm$core$List$map($author$project$Rule$Definition$AlwaysTrue);
+var $author$project$Rule$Definition$Always = {$: 'Always'};
+var $author$project$Inventory$Item$toConsumedEffect = function (effect) {
+	return {effect: effect, requirement: $author$project$Rule$Definition$Always};
+};
+var $author$project$Inventory$Item$consumedEffects = function (effects) {
+	return $author$project$Inventory$Item$ConsumedEffects(
+		A2($elm$core$List$map, $author$project$Inventory$Item$toConsumedEffect, effects));
+};
+var $author$project$Rule$Definition$ModifyDefense = function (a) {
+	return {$: 'ModifyDefense', a: a};
+};
+var $author$project$Rule$Definition$ModifyToAttack = function (a) {
+	return {$: 'ModifyToAttack', a: a};
+};
+var $author$project$Rule$Definition$RoundsLeft = function (a) {
+	return {$: 'RoundsLeft', a: a};
+};
+var $author$project$Rule$Definition$toAttributeEffect = F2(
+	function (requirement, continuousEffect) {
+		return {continuousEffect: continuousEffect, requirement: requirement};
+	});
+var $author$project$Rule$Definition$alwaysTrue = $elm$core$List$map(
+	$author$project$Rule$Definition$toAttributeEffect($author$project$Rule$Definition$Always));
 var $author$project$Rule$Definition$Condition = F2(
 	function (a, b) {
 		return {$: 'Condition', a: a, b: b};
@@ -5159,7 +5169,7 @@ var $author$project$World$Mob$magicMushroom = A6(
 	_Utils_chr('🍄'),
 	4,
 	$author$project$Inventory$Item$Misc,
-	$author$project$Inventory$Item$ConsumedEffects(
+	$author$project$Inventory$Item$consumedEffects(
 		_List_fromArray(
 			[
 				$author$project$Rule$Definition$SetCondition($author$project$World$Mob$druggedCondition),
@@ -5856,370 +5866,6 @@ var $author$project$Meta$Log$logRow = F3(
 			});
 	});
 var $author$project$Meta$Log$event = $author$project$Meta$Log$logRow($author$project$Meta$Log$Event);
-var $elm$core$List$any = F2(
-	function (isOkay, list) {
-		any:
-		while (true) {
-			if (!list.b) {
-				return false;
-			} else {
-				var x = list.a;
-				var xs = list.b;
-				if (isOkay(x)) {
-					return true;
-				} else {
-					var $temp$isOkay = isOkay,
-						$temp$list = xs;
-					isOkay = $temp$isOkay;
-					list = $temp$list;
-					continue any;
-				}
-			}
-		}
-	});
-var $author$project$Rule$Definition$ConditionAttributes = {$: 'ConditionAttributes'};
-var $author$project$Rule$Definition$EquippedItemAttributes = {$: 'EquippedItemAttributes'};
-var $author$project$Rule$Definition$MiscAttributes = {$: 'MiscAttributes'};
-var $author$project$Rule$Definition$SkillAttributes = {$: 'SkillAttributes'};
-var $author$project$Rule$Definition$TraitAttributes = {$: 'TraitAttributes'};
-var $elm$core$List$concatMap = F2(
-	function (f, list) {
-		return $elm$core$List$concat(
-			A2($elm$core$List$map, f, list));
-	});
-var $author$project$Rule$Definition$extractAttribute = function (_v0) {
-	var attribute = _v0.a;
-	return attribute;
-};
-var $elm$core$List$filter = F2(
-	function (isGood, list) {
-		return A3(
-			$elm$core$List$foldr,
-			F2(
-				function (x, xs) {
-					return isGood(x) ? A2($elm$core$List$cons, x, xs) : xs;
-				}),
-			_List_Nil,
-			list);
-	});
-var $author$project$Rule$Career$getAllSkillSteps = function (_v0) {
-	var acquiredSkill = _v0.a;
-	var _v1 = acquiredSkill.skill;
-	var skill = _v1.a;
-	return _List_fromArray(
-		[skill.beginner, skill.expert, skill.master]);
-};
-var $elm$core$Basics$le = _Utils_le;
-var $elm$core$List$takeReverse = F3(
-	function (n, list, kept) {
-		takeReverse:
-		while (true) {
-			if (n <= 0) {
-				return kept;
-			} else {
-				if (!list.b) {
-					return kept;
-				} else {
-					var x = list.a;
-					var xs = list.b;
-					var $temp$n = n - 1,
-						$temp$list = xs,
-						$temp$kept = A2($elm$core$List$cons, x, kept);
-					n = $temp$n;
-					list = $temp$list;
-					kept = $temp$kept;
-					continue takeReverse;
-				}
-			}
-		}
-	});
-var $elm$core$List$takeTailRec = F2(
-	function (n, list) {
-		return $elm$core$List$reverse(
-			A3($elm$core$List$takeReverse, n, list, _List_Nil));
-	});
-var $elm$core$List$takeFast = F3(
-	function (ctr, n, list) {
-		if (n <= 0) {
-			return _List_Nil;
-		} else {
-			var _v0 = _Utils_Tuple2(n, list);
-			_v0$1:
-			while (true) {
-				_v0$5:
-				while (true) {
-					if (!_v0.b.b) {
-						return list;
-					} else {
-						if (_v0.b.b.b) {
-							switch (_v0.a) {
-								case 1:
-									break _v0$1;
-								case 2:
-									var _v2 = _v0.b;
-									var x = _v2.a;
-									var _v3 = _v2.b;
-									var y = _v3.a;
-									return _List_fromArray(
-										[x, y]);
-								case 3:
-									if (_v0.b.b.b.b) {
-										var _v4 = _v0.b;
-										var x = _v4.a;
-										var _v5 = _v4.b;
-										var y = _v5.a;
-										var _v6 = _v5.b;
-										var z = _v6.a;
-										return _List_fromArray(
-											[x, y, z]);
-									} else {
-										break _v0$5;
-									}
-								default:
-									if (_v0.b.b.b.b && _v0.b.b.b.b.b) {
-										var _v7 = _v0.b;
-										var x = _v7.a;
-										var _v8 = _v7.b;
-										var y = _v8.a;
-										var _v9 = _v8.b;
-										var z = _v9.a;
-										var _v10 = _v9.b;
-										var w = _v10.a;
-										var tl = _v10.b;
-										return (ctr > 1000) ? A2(
-											$elm$core$List$cons,
-											x,
-											A2(
-												$elm$core$List$cons,
-												y,
-												A2(
-													$elm$core$List$cons,
-													z,
-													A2(
-														$elm$core$List$cons,
-														w,
-														A2($elm$core$List$takeTailRec, n - 4, tl))))) : A2(
-											$elm$core$List$cons,
-											x,
-											A2(
-												$elm$core$List$cons,
-												y,
-												A2(
-													$elm$core$List$cons,
-													z,
-													A2(
-														$elm$core$List$cons,
-														w,
-														A3($elm$core$List$takeFast, ctr + 1, n - 4, tl)))));
-									} else {
-										break _v0$5;
-									}
-							}
-						} else {
-							if (_v0.a === 1) {
-								break _v0$1;
-							} else {
-								break _v0$5;
-							}
-						}
-					}
-				}
-				return list;
-			}
-			var _v1 = _v0.b;
-			var x = _v1.a;
-			return _List_fromArray(
-				[x]);
-		}
-	});
-var $elm$core$List$take = F2(
-	function (n, list) {
-		return A3($elm$core$List$takeFast, 0, n, list);
-	});
-var $author$project$Extend$PositiveInt$toInt = function (_v0) {
-	var value = _v0.a;
-	return value;
-};
-var $author$project$Rule$Career$getAcquiredSkillSteps = function (acquiredSkill) {
-	var _v0 = acquiredSkill;
-	var acquiredSkillData = _v0.a;
-	return A2(
-		$elm$core$List$take,
-		$author$project$Extend$PositiveInt$toInt(acquiredSkillData.degree),
-		$author$project$Rule$Career$getAllSkillSteps(acquiredSkill));
-};
-var $author$project$Rule$Career$getAcquiredSkills = function (_v0) {
-	var career = _v0.a;
-	return career.acquiredSkills;
-};
-var $author$project$Rule$Career$getAcquiredSkillStepsOfCareer = function (career) {
-	return A2(
-		$elm$core$List$concatMap,
-		$author$project$Rule$Career$getAcquiredSkillSteps,
-		$author$project$Rule$Career$getAcquiredSkills(career));
-};
-var $elm$core$List$maybeCons = F3(
-	function (f, mx, xs) {
-		var _v0 = f(mx);
-		if (_v0.$ === 'Just') {
-			var x = _v0.a;
-			return A2($elm$core$List$cons, x, xs);
-		} else {
-			return xs;
-		}
-	});
-var $elm$core$List$filterMap = F2(
-	function (f, xs) {
-		return A3(
-			$elm$core$List$foldr,
-			$elm$core$List$maybeCons(f),
-			_List_Nil,
-			xs);
-	});
-var $author$project$Inventory$Slot$Backpack = {$: 'Backpack'};
-var $author$project$Inventory$Slot$getEquippedContents = function (slot) {
-	return _Utils_eq(slot.slotType, $author$project$Inventory$Slot$Backpack) ? $elm$core$Maybe$Nothing : slot.contents;
-};
-var $author$project$Map$Mob$getEquippedItems = function (mob) {
-	return A2($elm$core$List$filterMap, $author$project$Inventory$Slot$getEquippedContents, mob.inventory);
-};
-var $author$project$Map$Mob$getShapeValEffects = F2(
-	function (possibleStates, val) {
-		return (val > 50) ? _List_Nil : ((val > 0) ? _List_fromArray(
-			[possibleStates.basic]) : _List_fromArray(
-			[possibleStates.critical]));
-	});
-var $author$project$Rule$Definition$Fatigued = {$: 'Fatigued'};
-var $author$project$Map$Mob$hunger = {
-	basic: {
-		description: 'Growling stomach and little strength.',
-		effects: $author$project$Rule$Definition$alwaysTrue(
-			_List_fromArray(
-				[
-					$author$project$Rule$Definition$ModifyToAttack(-1)
-				])),
-		name: 'Hungry',
-		picture: _Utils_chr('😐')
-	},
-	critical: {
-		description: '',
-		effects: $author$project$Rule$Definition$alwaysTrue(
-			_List_fromArray(
-				[
-					$author$project$Rule$Definition$RepeatingEffect($author$project$Rule$Definition$Fatigued),
-					$author$project$Rule$Definition$ModifyToAttack(-2),
-					$author$project$Rule$Definition$ModifyDefense(-1)
-				])),
-		name: 'Famished',
-		picture: _Utils_chr('😑')
-	}
-};
-var $author$project$Map$Mob$thirst = {
-	basic: {
-		description: 'Mild headache and parched throat.',
-		effects: $author$project$Rule$Definition$alwaysTrue(
-			_List_fromArray(
-				[
-					$author$project$Rule$Definition$ModifyDefense(-1)
-				])),
-		name: 'Thirsty',
-		picture: _Utils_chr('🥵')
-	},
-	critical: {
-		description: 'Dry skin and close to fainting.',
-		effects: $author$project$Rule$Definition$alwaysTrue(
-			_List_fromArray(
-				[
-					$author$project$Rule$Definition$RepeatingEffect($author$project$Rule$Definition$Hurt),
-					$author$project$Rule$Definition$ModifyDefense(-2)
-				])),
-		name: 'Dehydrated',
-		picture: _Utils_chr('😵')
-	}
-};
-var $author$project$Map$Mob$getMiscAttributes = function (mob) {
-	return _Utils_ap(
-		A2($author$project$Map$Mob$getShapeValEffects, $author$project$Map$Mob$thirst, mob.currentShape.drink),
-		A2($author$project$Map$Mob$getShapeValEffects, $author$project$Map$Mob$hunger, mob.currentShape.food));
-};
-var $author$project$Rule$Definition$getTraitData = function (_v0) {
-	var data = _v0.a;
-	return data;
-};
-var $elm$core$Basics$not = _Basics_not;
-var $elm$core$Tuple$second = function (_v0) {
-	var y = _v0.b;
-	return y;
-};
-var $author$project$Rule$Effect$collectAttributes = function (mob) {
-	var getItemAttributes = function (item) {
-		var _v0 = item.effect;
-		if (_v0.$ === 'EquippedAttributes') {
-			var attributes = _v0.a;
-			return attributes;
-		} else {
-			return _List_Nil;
-		}
-	};
-	return A2(
-		$elm$core$List$filter,
-		A2(
-			$elm$core$Basics$composeR,
-			$elm$core$Tuple$second,
-			A2($elm$core$Basics$composeR, $elm$core$List$isEmpty, $elm$core$Basics$not)),
-		_List_fromArray(
-			[
-				_Utils_Tuple2(
-				$author$project$Rule$Definition$TraitAttributes,
-				A2($elm$core$List$map, $author$project$Rule$Definition$getTraitData, mob.traits)),
-				_Utils_Tuple2(
-				$author$project$Rule$Definition$ConditionAttributes,
-				A2($elm$core$List$map, $author$project$Rule$Definition$extractAttribute, mob.currentShape.conditions)),
-				_Utils_Tuple2(
-				$author$project$Rule$Definition$MiscAttributes,
-				$author$project$Map$Mob$getMiscAttributes(mob)),
-				_Utils_Tuple2(
-				$author$project$Rule$Definition$EquippedItemAttributes,
-				A2(
-					$elm$core$List$concatMap,
-					getItemAttributes,
-					$author$project$Map$Mob$getEquippedItems(mob))),
-				_Utils_Tuple2(
-				$author$project$Rule$Definition$SkillAttributes,
-				A2(
-					$elm$core$List$map,
-					$author$project$Rule$Career$toAttribute,
-					$author$project$Rule$Career$getAcquiredSkillStepsOfCareer(mob.career)))
-			]));
-};
-var $author$project$Rule$Effect$collectAttributeList = A2(
-	$elm$core$Basics$composeR,
-	$author$project$Rule$Effect$collectAttributes,
-	$elm$core$List$concatMap($elm$core$Tuple$second));
-var $author$project$Rule$Effect$isFulfilled = F2(
-	function (requirementsHolder, requirement) {
-		switch (requirement.$) {
-			case 'IsTerrainAtPlayerHex':
-				var ruleTerrain = requirement.a;
-				var terrain = $author$project$Rule$DefinitionMapping$mapTerrain(ruleTerrain);
-				var _v1 = A2($author$project$Map$Hex$get, requirementsHolder.player.position, requirementsHolder.map);
-				if (_v1.$ === 'Nothing') {
-					return false;
-				} else {
-					var hex = _v1.a;
-					return _Utils_eq(hex.terrain, terrain);
-				}
-			case 'Not':
-				var negatedRequirement = requirement.a;
-				return !A2($author$project$Rule$Effect$isFulfilled, requirementsHolder, negatedRequirement);
-			default:
-				var attribute = requirement.a;
-				return A2(
-					$elm$core$List$any,
-					$elm$core$Basics$eq(attribute),
-					$author$project$Rule$Effect$collectAttributeList(requirementsHolder.player));
-		}
-	});
 var $author$project$Rule$DefinitionMapping$mapExperience = function (experienceType) {
 	switch (experienceType.$) {
 		case 'Mythos':
@@ -6279,6 +5925,21 @@ var $author$project$Map$Mob$modifyShapeValue = F2(
 			A2($author$project$Map$Mob$modifyShapeValueHelper, shapeType, byAmount));
 	});
 var $author$project$Rule$Definition$Permanent = {$: 'Permanent'};
+var $author$project$Rule$Definition$extractAttribute = function (_v0) {
+	var attribute = _v0.a;
+	return attribute;
+};
+var $elm$core$List$filter = F2(
+	function (isGood, list) {
+		return A3(
+			$elm$core$List$foldr,
+			F2(
+				function (x, xs) {
+					return isGood(x) ? A2($elm$core$List$cons, x, xs) : xs;
+				}),
+			_List_Nil,
+			list);
+	});
 var $author$project$Rule$Definition$getDurationOf = function (_v0) {
 	var duration = _v0.b;
 	return duration;
@@ -6453,11 +6114,6 @@ var $author$project$Rule$Effect$wrapAndApplyEffect = F2(
 					$author$project$Rule$Effect$applyEffectToPlayer,
 					$author$project$Rule$Effect$setCondition(condition),
 					applyEffectsHolder);
-			case 'Requires':
-				var requirement = effect.a;
-				var mainEffects = effect.b;
-				var otherwiseEffects = effect.c;
-				return (A2($author$project$Rule$Effect$isFulfilled, applyEffectsHolder.mapHolder, requirement) ? $author$project$Rule$Effect$wrapAndApplyEffects(mainEffects) : $author$project$Rule$Effect$wrapAndApplyEffects(otherwiseEffects))(applyEffectsHolder);
 			default:
 				var terrain = effect.a;
 				return A2(
@@ -6614,6 +6270,7 @@ var $elm$json$Json$Decode$indent = function (str) {
 		A2($elm$core$String$split, '\n', str));
 };
 var $elm$core$List$map2 = _List_map2;
+var $elm$core$Basics$le = _Utils_le;
 var $elm$core$List$rangeHelp = F3(
 	function (lo, hi, list) {
 		rangeHelp:
@@ -7078,6 +6735,7 @@ var $elm$core$Basics$composeL = F3(
 		return g(
 			f(x));
 	});
+var $elm$core$Basics$not = _Basics_not;
 var $author$project$Map$Position$validatePosition = function (_v0) {
 	var row = _v0.row;
 	var col = _v0.col;
@@ -7137,6 +6795,27 @@ var $author$project$World$Map$getElsewhereQuestDescription = function (state) {
 };
 var $author$project$Rule$Definition$Fate = {$: 'Fate'};
 var $author$project$State$Quest$NotStarted = {$: 'NotStarted'};
+var $elm$core$List$any = F2(
+	function (isOkay, list) {
+		any:
+		while (true) {
+			if (!list.b) {
+				return false;
+			} else {
+				var x = list.a;
+				var xs = list.b;
+				if (isOkay(x)) {
+					return true;
+				} else {
+					var $temp$isOkay = isOkay,
+						$temp$list = xs;
+					isOkay = $temp$isOkay;
+					list = $temp$list;
+					continue any;
+				}
+			}
+		}
+	});
 var $author$project$Extend$List$contains = F2(
 	function (item, list) {
 		return A2(
@@ -7333,6 +7012,7 @@ var $author$project$Meta$Server$Calling = {$: 'Calling'};
 var $author$project$Map$Mob$Monster = function (a) {
 	return {$: 'Monster', a: a};
 };
+var $author$project$Inventory$Slot$Backpack = {$: 'Backpack'};
 var $author$project$Inventory$Slot$Slot = F4(
 	function (slotType, picture, contents, id) {
 		return {contents: contents, id: id, picture: picture, slotType: slotType};
@@ -7389,9 +7069,6 @@ var $author$project$Map$Mob$create = F7(
 	function (name, picture, inventory, pos, traits, career, mobId) {
 		return $author$project$Map$Mob$Mob(name)(picture)($author$project$Map$Mob$Healthy)($author$project$Map$Mob$Guard)(inventory)(pos)(career)($author$project$Map$Mob$initialCurrentShape)(traits)(mobId);
 	});
-var $author$project$Map$Mob$Set = function (a) {
-	return {$: 'Set', a: a};
-};
 var $elm$core$Dict$Black = {$: 'Black'};
 var $elm$core$Dict$RBNode_elm_builtin = F5(
 	function (a, b, c, d, e) {
@@ -7503,14 +7180,12 @@ var $elm$core$Dict$insert = F3(
 		}
 	});
 var $author$project$Map$Mob$insert = F2(
-	function (mob, _v0) {
-		var dict = _v0.a;
-		return $author$project$Map$Mob$Set(
-			A3(
-				$elm$core$Dict$insert,
-				$author$project$Map$Mob$idToInt(mob.id),
-				mob,
-				dict));
+	function (mob, dict) {
+		return A3(
+			$elm$core$Dict$insert,
+			$author$project$Map$Mob$idToInt(mob.id),
+			mob,
+			dict);
 	});
 var $elm$core$Dict$sizeHelp = F2(
 	function (n, dict) {
@@ -7532,8 +7207,7 @@ var $elm$core$Dict$sizeHelp = F2(
 var $elm$core$Dict$size = function (dict) {
 	return A2($elm$core$Dict$sizeHelp, 0, dict);
 };
-var $author$project$Map$Mob$size = function (_v0) {
-	var dict = _v0.a;
+var $author$project$Map$Mob$size = function (dict) {
 	return $elm$core$Dict$size(dict);
 };
 var $author$project$Map$Mob$createMobForSet = F7(
@@ -7559,7 +7233,7 @@ var $author$project$World$Mob$diamond = A6(
 	$author$project$Inventory$Item$None,
 	1000);
 var $author$project$Rule$Definition$Drink = {$: 'Drink'};
-var $author$project$World$Mob$dragonBloodEffect = $author$project$Inventory$Item$ConsumedEffects(
+var $author$project$World$Mob$dragonBloodEffect = $author$project$Inventory$Item$consumedEffects(
 	_List_fromArray(
 		[
 			A2($author$project$Rule$Definition$Gain, 1, $author$project$Rule$Definition$Mythos),
@@ -7580,7 +7254,7 @@ var $author$project$World$Mob$dragonLoot = _List_fromArray(
 	[$author$project$World$Mob$diamond, $author$project$World$Mob$moneyBag, $author$project$World$Mob$moneyBag, $author$project$World$Mob$moneyBag, $author$project$World$Mob$dragonBlood]);
 var $author$project$World$Mob$dragonTraits = _List_Nil;
 var $elm$core$Dict$empty = $elm$core$Dict$RBEmpty_elm_builtin;
-var $author$project$Map$Mob$emptySet = $author$project$Map$Mob$Set($elm$core$Dict$empty);
+var $author$project$Map$Mob$emptySet = $elm$core$Dict$empty;
 var $author$project$World$Career$oneRenown = A3($author$project$Rule$Experience$update, $author$project$Rule$Experience$Renown, 1, $author$project$Rule$Experience$initial);
 var $author$project$World$Career$beginnerCharm = {
 	description: 'Unlocks more dialogue options.',
@@ -7611,23 +7285,23 @@ var $author$project$World$Career$masterCharm = {
 };
 var $author$project$World$Career$charm = $author$project$Rule$Career$createSkill(
 	{beginner: $author$project$World$Career$beginnerCharm, expert: $author$project$World$Career$expertCharmHaggle, master: $author$project$World$Career$masterCharm, name: 'Charm'});
-var $author$project$Rule$Definition$HolyLands = {$: 'HolyLands'};
-var $author$project$Rule$Definition$IsTerrainAtPlayerHex = function (a) {
-	return {$: 'IsTerrainAtPlayerHex', a: a};
-};
-var $author$project$Rule$Definition$Requirement = F2(
-	function (a, b) {
-		return {$: 'Requirement', a: a, b: b};
+var $author$project$Rule$Definition$AttributeEffect = F2(
+	function (requirement, continuousEffect) {
+		return {continuousEffect: continuousEffect, requirement: requirement};
 	});
+var $author$project$Rule$Definition$HolyLands = {$: 'HolyLands'};
+var $author$project$Rule$Definition$IsPlayerHexTerrain = function (a) {
+	return {$: 'IsPlayerHexTerrain', a: a};
+};
 var $author$project$World$Career$blessingCondition = $author$project$Rule$Definition$createCondition(
 	{
 		description: 'A blessing of war from the Ancient Powers gives the target improved spirit in battle.',
 		duration: $author$project$Rule$Definition$RoundsLeft(8),
-		effects: _List_fromArray(
-			[
-				$author$project$Rule$Definition$AlwaysTrue(
-				$author$project$Rule$Definition$ModifyToAttack(1))
-			]),
+		effects: $author$project$Rule$Definition$alwaysTrue(
+			_List_fromArray(
+				[
+					$author$project$Rule$Definition$ModifyToAttack(1)
+				])),
 		name: 'Blessing',
 		picture: _Utils_chr('✨')
 	});
@@ -7640,7 +7314,7 @@ var $author$project$World$Career$destiny = $author$project$Rule$Career$createSki
 			effects: _List_fromArray(
 				[
 					A2(
-					$author$project$Rule$Definition$Requirement,
+					$author$project$Rule$Definition$AttributeEffect,
 					$author$project$Rule$Definition$HasAttribute(
 						$author$project$Rule$Definition$extractAttribute($author$project$World$Career$blessingCondition)),
 					$author$project$Rule$Definition$ModifyDefense(1))
@@ -7654,8 +7328,8 @@ var $author$project$World$Career$destiny = $author$project$Rule$Career$createSki
 			effects: _List_fromArray(
 				[
 					A2(
-					$author$project$Rule$Definition$Requirement,
-					$author$project$Rule$Definition$IsTerrainAtPlayerHex($author$project$Rule$Definition$HolyLands),
+					$author$project$Rule$Definition$AttributeEffect,
+					$author$project$Rule$Definition$IsPlayerHexTerrain($author$project$Rule$Definition$HolyLands),
 					$author$project$Rule$Definition$ModifyToAttack(1))
 				]),
 			name: 'Absorb energy',
@@ -7692,7 +7366,7 @@ var $author$project$World$Mob$healingPotion = A6(
 	_Utils_chr('🧪'),
 	5,
 	$author$project$Inventory$Item$Misc,
-	$author$project$Inventory$Item$ConsumedEffects(
+	$author$project$Inventory$Item$consumedEffects(
 		_List_fromArray(
 			[
 				$author$project$Rule$Definition$Heal,
@@ -7807,28 +7481,31 @@ var $author$project$Rule$Definition$Desert = {$: 'Desert'};
 var $author$project$Rule$Definition$Not = function (a) {
 	return {$: 'Not', a: a};
 };
-var $author$project$Rule$Definition$Requires = F3(
-	function (a, b, c) {
-		return {$: 'Requires', a: a, b: b, c: c};
+var $author$project$Inventory$Item$consumedEffectWithRequirement = F2(
+	function (requirement, effect) {
+		return {effect: effect, requirement: requirement};
 	});
+var $author$project$World$Mob$isPlayerHexDesert = $author$project$Rule$Definition$IsPlayerHexTerrain($author$project$Rule$Definition$Desert);
 var $author$project$World$Mob$aetherStoneEffect = $author$project$Inventory$Item$ConsumedEffects(
 	_List_fromArray(
 		[
-			$author$project$Rule$Definition$LogEvent('You crush the soft stone and let its mystic energies surround you and your ' + ('vicinities in a red mist. The mist drains all it engulfs of living energy ' + 'and then dives down your throat into your belly...')),
-			A3(
-			$author$project$Rule$Definition$Requires,
-			$author$project$Rule$Definition$Not(
-				$author$project$Rule$Definition$IsTerrainAtPlayerHex($author$project$Rule$Definition$Desert)),
-			_List_fromArray(
-				[
-					$author$project$Rule$Definition$Heal,
-					$author$project$Rule$Definition$ChangeTerrain($author$project$Rule$Definition$Desert)
-				]),
-			_List_fromArray(
-				[
-					$author$project$Rule$Definition$Hurt,
-					$author$project$Rule$Definition$LogEvent('Alas, no living energy was available in this life-less place and the red mist ' + 'instead drains your insides of life energy!')
-				]))
+			A2(
+			$author$project$Inventory$Item$consumedEffectWithRequirement,
+			$author$project$Rule$Definition$Always,
+			$author$project$Rule$Definition$LogEvent('You crush the soft stone and let its mystic energies surround you and your ' + ('vicinities in a red mist. The mist drains all it engulfs of living energy ' + 'and then dives down your throat into your belly...'))),
+			A2($author$project$Inventory$Item$consumedEffectWithRequirement, $author$project$World$Mob$isPlayerHexDesert, $author$project$Rule$Definition$Hurt),
+			A2(
+			$author$project$Inventory$Item$consumedEffectWithRequirement,
+			$author$project$World$Mob$isPlayerHexDesert,
+			$author$project$Rule$Definition$LogEvent('Alas, no living energy was available in this life-less place and the red mist ' + 'instead drains your insides of life energy!')),
+			A2(
+			$author$project$Inventory$Item$consumedEffectWithRequirement,
+			$author$project$Rule$Definition$Not($author$project$World$Mob$isPlayerHexDesert),
+			$author$project$Rule$Definition$Heal),
+			A2(
+			$author$project$Inventory$Item$consumedEffectWithRequirement,
+			$author$project$Rule$Definition$Not($author$project$World$Mob$isPlayerHexDesert),
+			$author$project$Rule$Definition$ChangeTerrain($author$project$Rule$Definition$Desert))
 		]));
 var $author$project$World$Mob$aetherStone = A6(
 	$author$project$Inventory$Item$Item,
@@ -7847,7 +7524,7 @@ var $author$project$World$Mob$favouredOfTheGodsAttribute = {
 	effects: _List_fromArray(
 		[
 			A2(
-			$author$project$Rule$Definition$Requirement,
+			$author$project$Rule$Definition$AttributeEffect,
 			$author$project$Rule$Definition$HasAttribute(
 				$author$project$Rule$Definition$extractAttribute($author$project$World$Career$blessingCondition)),
 			$author$project$Rule$Definition$ModifyDefense(4))
@@ -7871,7 +7548,7 @@ var $author$project$World$Mob$bookOfHoliness = A6(
 	_Utils_chr('📒'),
 	10,
 	$author$project$Inventory$Item$Misc,
-	$author$project$Inventory$Item$ConsumedEffects(
+	$author$project$Inventory$Item$consumedEffects(
 		_List_fromArray(
 			[
 				A2($author$project$Rule$Definition$Gain, 2, $author$project$Rule$Definition$Fate)
@@ -7884,7 +7561,7 @@ var $author$project$World$Mob$bookOfMagic = A6(
 	_Utils_chr('📘'),
 	10,
 	$author$project$Inventory$Item$Misc,
-	$author$project$Inventory$Item$ConsumedEffects(
+	$author$project$Inventory$Item$consumedEffects(
 		_List_fromArray(
 			[
 				A2($author$project$Rule$Definition$Gain, 2, $author$project$Rule$Definition$Magic)
@@ -7897,7 +7574,7 @@ var $author$project$World$Mob$bookOfTraining = A6(
 	_Utils_chr('📕'),
 	10,
 	$author$project$Inventory$Item$Misc,
-	$author$project$Inventory$Item$ConsumedEffects(
+	$author$project$Inventory$Item$consumedEffects(
 		_List_fromArray(
 			[
 				A2($author$project$Rule$Definition$Gain, 2, $author$project$Rule$Definition$Training)
@@ -7941,7 +7618,7 @@ var $author$project$World$Mob$getTownPortalScroll = function (map) {
 		_Utils_chr('📜'),
 		7,
 		$author$project$Inventory$Item$Misc,
-		$author$project$Inventory$Item$ConsumedEffects(
+		$author$project$Inventory$Item$consumedEffects(
 			_List_fromArray(
 				[
 					$author$project$Rule$Definition$Teleport(
@@ -7949,7 +7626,7 @@ var $author$project$World$Mob$getTownPortalScroll = function (map) {
 				])),
 		400);
 };
-var $author$project$World$Mob$blessingEffect = $author$project$Inventory$Item$ConsumedEffects(
+var $author$project$World$Mob$blessingEffect = $author$project$Inventory$Item$consumedEffects(
 	_List_fromArray(
 		[
 			$author$project$Rule$Definition$SetCondition($author$project$World$Career$blessingCondition)
@@ -7970,8 +7647,8 @@ var $author$project$World$Mob$sunFavouredAttribute = {
 	effects: _List_fromArray(
 		[
 			A2(
-			$author$project$Rule$Definition$Requirement,
-			$author$project$Rule$Definition$IsTerrainAtPlayerHex($author$project$Rule$Definition$Desert),
+			$author$project$Rule$Definition$AttributeEffect,
+			$author$project$Rule$Definition$IsPlayerHexTerrain($author$project$Rule$Definition$Desert),
 			$author$project$Rule$Definition$ModifyToAttack(3))
 		]),
 	name: 'Sun favoured',
@@ -7991,7 +7668,7 @@ var $author$project$World$Mob$sunWater = A6(
 	_Utils_chr('🥃'),
 	5,
 	$author$project$Inventory$Item$Misc,
-	$author$project$Inventory$Item$ConsumedEffects(
+	$author$project$Inventory$Item$consumedEffects(
 		_List_fromArray(
 			[
 				$author$project$Rule$Definition$SetCondition($author$project$World$Mob$sunFavoredCondition)
@@ -8014,7 +7691,7 @@ var $author$project$World$Mob$waterBottle = A6(
 	_Utils_chr('🍼'),
 	10,
 	$author$project$Inventory$Item$Misc,
-	$author$project$Inventory$Item$ConsumedEffects(
+	$author$project$Inventory$Item$consumedEffects(
 		_List_fromArray(
 			[
 				A2($author$project$Rule$Definition$ModifyShape, $author$project$Rule$Definition$Drink, 25)
@@ -8702,6 +8379,24 @@ var $elm$http$Http$onEffects = F4(
 			},
 			A3($elm$http$Http$updateReqs, router, cmds, state.reqs));
 	});
+var $elm$core$List$maybeCons = F3(
+	function (f, mx, xs) {
+		var _v0 = f(mx);
+		if (_v0.$ === 'Just') {
+			var x = _v0.a;
+			return A2($elm$core$List$cons, x, xs);
+		} else {
+			return xs;
+		}
+	});
+var $elm$core$List$filterMap = F2(
+	function (f, xs) {
+		return A3(
+			$elm$core$List$foldr,
+			$elm$core$List$maybeCons(f),
+			_List_Nil,
+			xs);
+	});
 var $elm$http$Http$maybeSend = F4(
 	function (router, desiredTracker, progress, _v0) {
 		var actualTracker = _v0.a;
@@ -8813,8 +8508,8 @@ var $author$project$Meta$Server$toStatus = F2(
 var $author$project$Meta$Server$statusDecoder = A3(
 	$elm$json$Json$Decode$map2,
 	$author$project$Meta$Server$toStatus,
-	A2($elm$json$Json$Decode$field, 'Status', $elm$json$Json$Decode$string),
-	A2($elm$json$Json$Decode$field, 'Message', $elm$json$Json$Decode$string));
+	A2($elm$json$Json$Decode$field, 'status', $elm$json$Json$Decode$string),
+	A2($elm$json$Json$Decode$field, 'message', $elm$json$Json$Decode$string));
 var $author$project$Meta$Server$statusCmd = $elm$http$Http$get(
 	{
 		expect: A2($elm$http$Http$expectJson, $author$project$Meta$Server$handleStatusResponse, $author$project$Meta$Server$statusDecoder),
@@ -9375,8 +9070,7 @@ var $elm$core$Dict$values = function (dict) {
 		_List_Nil,
 		dict);
 };
-var $author$project$Map$Mob$toList = function (_v0) {
-	var dict = _v0.a;
+var $author$project$Map$Mob$toList = function (dict) {
 	return $elm$core$Dict$values(dict);
 };
 var $author$project$State$Event$collectMobEvents = F2(
@@ -9415,8 +9109,7 @@ var $elm$core$Maybe$andThen = F2(
 		}
 	});
 var $author$project$Map$Mob$get = F2(
-	function (id, _v0) {
-		var dict = _v0.a;
+	function (id, dict) {
 		return A2(
 			$elm$core$Dict$get,
 			$author$project$Map$Mob$idToInt(id),
@@ -9613,6 +9306,289 @@ var $author$project$Msg$Drag = F2(
 	function (item, position) {
 		return {item: item, position: position};
 	});
+var $author$project$Rule$Definition$ConditionAttributes = {$: 'ConditionAttributes'};
+var $author$project$Rule$Definition$EquippedItemAttributes = {$: 'EquippedItemAttributes'};
+var $author$project$Rule$Definition$MiscAttributes = {$: 'MiscAttributes'};
+var $author$project$Rule$Definition$SkillAttributes = {$: 'SkillAttributes'};
+var $author$project$Rule$Definition$TraitAttributes = {$: 'TraitAttributes'};
+var $elm$core$List$concatMap = F2(
+	function (f, list) {
+		return $elm$core$List$concat(
+			A2($elm$core$List$map, f, list));
+	});
+var $author$project$Rule$Career$getAllSkillSteps = function (_v0) {
+	var acquiredSkill = _v0.a;
+	var _v1 = acquiredSkill.skill;
+	var skill = _v1.a;
+	return _List_fromArray(
+		[skill.beginner, skill.expert, skill.master]);
+};
+var $elm$core$List$takeReverse = F3(
+	function (n, list, kept) {
+		takeReverse:
+		while (true) {
+			if (n <= 0) {
+				return kept;
+			} else {
+				if (!list.b) {
+					return kept;
+				} else {
+					var x = list.a;
+					var xs = list.b;
+					var $temp$n = n - 1,
+						$temp$list = xs,
+						$temp$kept = A2($elm$core$List$cons, x, kept);
+					n = $temp$n;
+					list = $temp$list;
+					kept = $temp$kept;
+					continue takeReverse;
+				}
+			}
+		}
+	});
+var $elm$core$List$takeTailRec = F2(
+	function (n, list) {
+		return $elm$core$List$reverse(
+			A3($elm$core$List$takeReverse, n, list, _List_Nil));
+	});
+var $elm$core$List$takeFast = F3(
+	function (ctr, n, list) {
+		if (n <= 0) {
+			return _List_Nil;
+		} else {
+			var _v0 = _Utils_Tuple2(n, list);
+			_v0$1:
+			while (true) {
+				_v0$5:
+				while (true) {
+					if (!_v0.b.b) {
+						return list;
+					} else {
+						if (_v0.b.b.b) {
+							switch (_v0.a) {
+								case 1:
+									break _v0$1;
+								case 2:
+									var _v2 = _v0.b;
+									var x = _v2.a;
+									var _v3 = _v2.b;
+									var y = _v3.a;
+									return _List_fromArray(
+										[x, y]);
+								case 3:
+									if (_v0.b.b.b.b) {
+										var _v4 = _v0.b;
+										var x = _v4.a;
+										var _v5 = _v4.b;
+										var y = _v5.a;
+										var _v6 = _v5.b;
+										var z = _v6.a;
+										return _List_fromArray(
+											[x, y, z]);
+									} else {
+										break _v0$5;
+									}
+								default:
+									if (_v0.b.b.b.b && _v0.b.b.b.b.b) {
+										var _v7 = _v0.b;
+										var x = _v7.a;
+										var _v8 = _v7.b;
+										var y = _v8.a;
+										var _v9 = _v8.b;
+										var z = _v9.a;
+										var _v10 = _v9.b;
+										var w = _v10.a;
+										var tl = _v10.b;
+										return (ctr > 1000) ? A2(
+											$elm$core$List$cons,
+											x,
+											A2(
+												$elm$core$List$cons,
+												y,
+												A2(
+													$elm$core$List$cons,
+													z,
+													A2(
+														$elm$core$List$cons,
+														w,
+														A2($elm$core$List$takeTailRec, n - 4, tl))))) : A2(
+											$elm$core$List$cons,
+											x,
+											A2(
+												$elm$core$List$cons,
+												y,
+												A2(
+													$elm$core$List$cons,
+													z,
+													A2(
+														$elm$core$List$cons,
+														w,
+														A3($elm$core$List$takeFast, ctr + 1, n - 4, tl)))));
+									} else {
+										break _v0$5;
+									}
+							}
+						} else {
+							if (_v0.a === 1) {
+								break _v0$1;
+							} else {
+								break _v0$5;
+							}
+						}
+					}
+				}
+				return list;
+			}
+			var _v1 = _v0.b;
+			var x = _v1.a;
+			return _List_fromArray(
+				[x]);
+		}
+	});
+var $elm$core$List$take = F2(
+	function (n, list) {
+		return A3($elm$core$List$takeFast, 0, n, list);
+	});
+var $author$project$Extend$PositiveInt$toInt = function (_v0) {
+	var value = _v0.a;
+	return value;
+};
+var $author$project$Rule$Career$getAcquiredSkillSteps = function (acquiredSkill) {
+	var _v0 = acquiredSkill;
+	var acquiredSkillData = _v0.a;
+	return A2(
+		$elm$core$List$take,
+		$author$project$Extend$PositiveInt$toInt(acquiredSkillData.degree),
+		$author$project$Rule$Career$getAllSkillSteps(acquiredSkill));
+};
+var $author$project$Rule$Career$getAcquiredSkills = function (_v0) {
+	var career = _v0.a;
+	return career.acquiredSkills;
+};
+var $author$project$Rule$Career$getAcquiredSkillStepsOfCareer = function (career) {
+	return A2(
+		$elm$core$List$concatMap,
+		$author$project$Rule$Career$getAcquiredSkillSteps,
+		$author$project$Rule$Career$getAcquiredSkills(career));
+};
+var $author$project$Inventory$Slot$getEquippedContents = function (slot) {
+	return _Utils_eq(slot.slotType, $author$project$Inventory$Slot$Backpack) ? $elm$core$Maybe$Nothing : slot.contents;
+};
+var $author$project$Map$Mob$getEquippedItems = function (mob) {
+	return A2($elm$core$List$filterMap, $author$project$Inventory$Slot$getEquippedContents, mob.inventory);
+};
+var $author$project$Map$Mob$getShapeValEffects = F2(
+	function (possibleStates, val) {
+		return (val > 50) ? _List_Nil : ((val > 0) ? _List_fromArray(
+			[possibleStates.basic]) : _List_fromArray(
+			[possibleStates.critical]));
+	});
+var $author$project$Rule$Definition$Fatigued = {$: 'Fatigued'};
+var $author$project$Map$Mob$hunger = {
+	basic: {
+		description: 'Growling stomach and little strength.',
+		effects: $author$project$Rule$Definition$alwaysTrue(
+			_List_fromArray(
+				[
+					$author$project$Rule$Definition$ModifyToAttack(-1)
+				])),
+		name: 'Hungry',
+		picture: _Utils_chr('😐')
+	},
+	critical: {
+		description: '',
+		effects: $author$project$Rule$Definition$alwaysTrue(
+			_List_fromArray(
+				[
+					$author$project$Rule$Definition$RepeatingEffect($author$project$Rule$Definition$Fatigued),
+					$author$project$Rule$Definition$ModifyToAttack(-2),
+					$author$project$Rule$Definition$ModifyDefense(-1)
+				])),
+		name: 'Famished',
+		picture: _Utils_chr('😑')
+	}
+};
+var $author$project$Map$Mob$thirst = {
+	basic: {
+		description: 'Mild headache and parched throat.',
+		effects: $author$project$Rule$Definition$alwaysTrue(
+			_List_fromArray(
+				[
+					$author$project$Rule$Definition$ModifyDefense(-1)
+				])),
+		name: 'Thirsty',
+		picture: _Utils_chr('🥵')
+	},
+	critical: {
+		description: 'Dry skin and close to fainting.',
+		effects: $author$project$Rule$Definition$alwaysTrue(
+			_List_fromArray(
+				[
+					$author$project$Rule$Definition$RepeatingEffect($author$project$Rule$Definition$Hurt),
+					$author$project$Rule$Definition$ModifyDefense(-2)
+				])),
+		name: 'Dehydrated',
+		picture: _Utils_chr('😵')
+	}
+};
+var $author$project$Map$Mob$getMiscAttributes = function (mob) {
+	return _Utils_ap(
+		A2($author$project$Map$Mob$getShapeValEffects, $author$project$Map$Mob$thirst, mob.currentShape.drink),
+		A2($author$project$Map$Mob$getShapeValEffects, $author$project$Map$Mob$hunger, mob.currentShape.food));
+};
+var $author$project$Rule$Definition$getTraitData = function (_v0) {
+	var data = _v0.a;
+	return data;
+};
+var $elm$core$Tuple$second = function (_v0) {
+	var y = _v0.b;
+	return y;
+};
+var $author$project$Rule$Effect$collectAttributes = function (mob) {
+	var getItemAttributes = function (item) {
+		var _v0 = item.effect;
+		if (_v0.$ === 'EquippedAttributes') {
+			var attributes = _v0.a;
+			return attributes;
+		} else {
+			return _List_Nil;
+		}
+	};
+	return A2(
+		$elm$core$List$filter,
+		A2(
+			$elm$core$Basics$composeR,
+			$elm$core$Tuple$second,
+			A2($elm$core$Basics$composeR, $elm$core$List$isEmpty, $elm$core$Basics$not)),
+		_List_fromArray(
+			[
+				_Utils_Tuple2(
+				$author$project$Rule$Definition$TraitAttributes,
+				A2($elm$core$List$map, $author$project$Rule$Definition$getTraitData, mob.traits)),
+				_Utils_Tuple2(
+				$author$project$Rule$Definition$ConditionAttributes,
+				A2($elm$core$List$map, $author$project$Rule$Definition$extractAttribute, mob.currentShape.conditions)),
+				_Utils_Tuple2(
+				$author$project$Rule$Definition$MiscAttributes,
+				$author$project$Map$Mob$getMiscAttributes(mob)),
+				_Utils_Tuple2(
+				$author$project$Rule$Definition$EquippedItemAttributes,
+				A2(
+					$elm$core$List$concatMap,
+					getItemAttributes,
+					$author$project$Map$Mob$getEquippedItems(mob))),
+				_Utils_Tuple2(
+				$author$project$Rule$Definition$SkillAttributes,
+				A2(
+					$elm$core$List$map,
+					$author$project$Rule$Career$toAttribute,
+					$author$project$Rule$Career$getAcquiredSkillStepsOfCareer(mob.career)))
+			]));
+};
+var $author$project$Rule$Effect$collectAttributeList = A2(
+	$elm$core$Basics$composeR,
+	$author$project$Rule$Effect$collectAttributes,
+	$elm$core$List$concatMap($elm$core$Tuple$second));
 var $author$project$Rule$Effect$collectAttributeEffects = A2(
 	$elm$core$Basics$composeR,
 	$author$project$Rule$Effect$collectAttributeList,
@@ -9620,6 +9596,32 @@ var $author$project$Rule$Effect$collectAttributeEffects = A2(
 		function ($) {
 			return $.effects;
 		}));
+var $author$project$Rule$Effect$isFulfilled = F2(
+	function (requirementsHolder, requirement) {
+		switch (requirement.$) {
+			case 'Always':
+				return true;
+			case 'Not':
+				var negatedRequirement = requirement.a;
+				return !A2($author$project$Rule$Effect$isFulfilled, requirementsHolder, negatedRequirement);
+			case 'IsPlayerHexTerrain':
+				var ruleTerrain = requirement.a;
+				var terrain = $author$project$Rule$DefinitionMapping$mapTerrain(ruleTerrain);
+				var _v1 = A2($author$project$Map$Hex$get, requirementsHolder.player.position, requirementsHolder.map);
+				if (_v1.$ === 'Nothing') {
+					return false;
+				} else {
+					var hex = _v1.a;
+					return _Utils_eq(hex.terrain, terrain);
+				}
+			default:
+				var attribute = requirement.a;
+				return A2(
+					$elm$core$List$any,
+					$elm$core$Basics$eq(attribute),
+					$author$project$Rule$Effect$collectAttributeList(requirementsHolder.player));
+		}
+	});
 var $author$project$Rule$Effect$getApplicableContinuousEffects = function (mapHolder) {
 	var toEffect = function (continuousEffect) {
 		switch (continuousEffect.$) {
@@ -9633,14 +9635,7 @@ var $author$project$Rule$Effect$getApplicableContinuousEffects = function (mapHo
 		}
 	};
 	var toContinuousEffect = function (conditionEffect) {
-		if (conditionEffect.$ === 'AlwaysTrue') {
-			var continuousEffect = conditionEffect.a;
-			return $elm$core$Maybe$Just(continuousEffect);
-		} else {
-			var requirement = conditionEffect.a;
-			var continuousEffect = conditionEffect.b;
-			return A2($author$project$Rule$Effect$isFulfilled, mapHolder, requirement) ? $elm$core$Maybe$Just(continuousEffect) : $elm$core$Maybe$Nothing;
-		}
+		return A2($author$project$Rule$Effect$isFulfilled, mapHolder, conditionEffect.requirement) ? $elm$core$Maybe$Just(conditionEffect.continuousEffect) : $elm$core$Maybe$Nothing;
 	};
 	return A2(
 		$elm$core$Basics$composeR,
@@ -9783,16 +9778,14 @@ var $elm$core$Dict$map = F2(
 		}
 	});
 var $author$project$Map$Mob$map = F2(
-	function (mapFunc, _v0) {
-		var dict = _v0.a;
-		return $author$project$Map$Mob$Set(
-			A2(
-				$elm$core$Dict$map,
-				F2(
-					function (_v1, mob) {
-						return mapFunc(mob);
-					}),
-				dict));
+	function (mapFunc, dict) {
+		return A2(
+			$elm$core$Dict$map,
+			F2(
+				function (_v0, mob) {
+					return mapFunc(mob);
+				}),
+			dict);
 	});
 var $author$project$Rule$Order$applyUpdateToAll = F2(
 	function (mapFunc, mobHolder) {
@@ -9838,8 +9831,7 @@ var $author$project$Rule$Order$resetOrder = function (currentMob) {
 	}
 };
 var $author$project$Map$Mob$findAt = F2(
-	function (pos, _v0) {
-		var mobs = _v0.a;
+	function (pos, mobs) {
 		return A2(
 			$author$project$Extend$List$findFirstThat,
 			function (mob) {
@@ -9889,13 +9881,11 @@ var $author$project$Map$Mob$isDead = function (mob) {
 	return _Utils_eq(mob.health, $author$project$Map$Mob$Dead);
 };
 var $author$project$Map$Mob$remove = F2(
-	function (id, _v0) {
-		var dict = _v0.a;
-		return $author$project$Map$Mob$Set(
-			A2(
-				$elm$core$Dict$remove,
-				$author$project$Map$Mob$idToInt(id),
-				dict));
+	function (id, dict) {
+		return A2(
+			$elm$core$Dict$remove,
+			$author$project$Map$Mob$idToInt(id),
+			dict);
 	});
 var $author$project$Update$cleanUpHelper = F2(
 	function (mob, acc) {
@@ -9926,12 +9916,11 @@ var $author$project$Update$createRespawnedPlayer = F2(
 			});
 	});
 var $author$project$Map$Mob$foldl = F3(
-	function (foldlFunc, initialState, _v0) {
-		var dict = _v0.a;
+	function (foldlFunc, initialState, dict) {
 		return A3(
 			$elm$core$Dict$foldl,
 			F3(
-				function (_v1, mob, accState) {
+				function (_v0, mob, accState) {
 					return A2(foldlFunc, mob, accState);
 				}),
 			initialState,
@@ -10115,14 +10104,7 @@ var $author$project$Rule$Combat$getAttributeResultAttackMod = function (conditio
 };
 var $author$project$Rule$Combat$extractValidContinuousEffect = F2(
 	function (mapHolder, abilityEffect) {
-		if (abilityEffect.$ === 'AlwaysTrue') {
-			var continuousEffect = abilityEffect.a;
-			return $elm$core$Maybe$Just(continuousEffect);
-		} else {
-			var requirement = abilityEffect.a;
-			var continuousEffect = abilityEffect.b;
-			return A2($author$project$Rule$Effect$isFulfilled, mapHolder, requirement) ? $elm$core$Maybe$Just(continuousEffect) : $elm$core$Maybe$Nothing;
-		}
+		return A2($author$project$Rule$Effect$isFulfilled, mapHolder, abilityEffect.requirement) ? $elm$core$Maybe$Just(abilityEffect.continuousEffect) : $elm$core$Maybe$Nothing;
 	});
 var $elm$core$List$sum = function (numbers) {
 	return A3($elm$core$List$foldl, $elm$core$Basics$add, 0, numbers);
@@ -10438,7 +10420,15 @@ var $author$project$Update$applyConsumeEffectOfItemIn = F2(
 		var _v0 = $author$project$Inventory$Slot$extractItemEffect(slot);
 		if (_v0.$ === 'ConsumedEffects') {
 			var effects = _v0.a;
-			return A2($author$project$Rule$Effect$apply, effects, model);
+			return A2(
+				$author$project$Rule$Effect$apply,
+				A2(
+					$elm$core$List$map,
+					function ($) {
+						return $.effect;
+					},
+					effects),
+				model);
 		} else {
 			return model;
 		}
@@ -10699,10 +10689,13 @@ var $author$project$Rule$Career$update = F2(
 						careerData.acquiredSkills)
 				}));
 	});
-var $author$project$Map$Mob$timePassesHelper = A2(
-	$elm$core$Basics$composeR,
-	A2($author$project$Map$Mob$modifyShapeValueHelper, $author$project$Map$Mob$Drink, -1),
-	A2($author$project$Map$Mob$modifyShapeValueHelper, $author$project$Map$Mob$Food, -1));
+var $author$project$Map$Mob$timePassesHelper = function (mob) {
+	return $author$project$Map$Mob$isPlayer(mob.id) ? A3(
+		$author$project$Map$Mob$modifyShapeValueHelper,
+		$author$project$Map$Mob$Food,
+		-1,
+		A3($author$project$Map$Mob$modifyShapeValueHelper, $author$project$Map$Mob$Drink, -1, mob)) : mob;
+};
 var $author$project$Map$Mob$timePasses = $author$project$Extend$Type$performanceUpdate($author$project$Map$Mob$timePassesHelper);
 var $author$project$Update$updateDurationOfCondition = function (condition) {
 	var duration = $author$project$Rule$Definition$getDurationOf(condition);
@@ -10967,14 +10960,6 @@ var $author$project$Rule$Definition$getAttributeTypeName = function (attributeTy
 			return 'Misc';
 	}
 };
-var $elm$core$String$toUpper = _String_toUpper;
-var $author$project$Extend$String$capitalize = function (string) {
-	var rest = A2($elm$core$String$dropLeft, 1, string);
-	var first = A2($elm$core$String$left, 1, string);
-	return _Utils_ap(
-		$elm$core$String$toUpper(first),
-		$elm$core$String$toLower(rest));
-};
 var $elm$core$String$dropRight = F2(
 	function (n, string) {
 		return (n < 1) ? string : A3($elm$core$String$slice, 0, -n, string);
@@ -11007,43 +10992,6 @@ var $author$project$Rule$Definition$getConditionData = function (_v0) {
 		picture: attribute.picture
 	};
 };
-var $author$project$Map$Hex$nameOfTerrain = function (terrain) {
-	switch (terrain.$) {
-		case 'Plains':
-			return 'Plains';
-		case 'Mountains':
-			return 'Mountains';
-		case 'Forest':
-			return 'Forest';
-		case 'Sea':
-			return 'Sea';
-		case 'Desert':
-			return 'Desert';
-		default:
-			return 'Holy lands';
-	}
-};
-var $author$project$Rule$DefinitionMapping$toProperTerrainName = function (ruleTerrain) {
-	return $elm$core$String$toLower(
-		$author$project$Map$Hex$nameOfTerrain(
-			$author$project$Rule$DefinitionMapping$mapTerrain(ruleTerrain)));
-};
-var $author$project$Rule$Description$getRequirementDescriptionHelper = function (requirement) {
-	switch (requirement.$) {
-		case 'Not':
-			var negatedRequirement = requirement.a;
-			return 'not ' + $author$project$Rule$Description$getRequirementDescriptionHelper(negatedRequirement);
-		case 'IsTerrainAtPlayerHex':
-			var ruleTerrain = requirement.a;
-			return 'terrain of player hex is ' + $author$project$Rule$DefinitionMapping$toProperTerrainName(ruleTerrain);
-		default:
-			var attribute = requirement.a;
-			return 'player has attribute \'' + (attribute.name + '\'');
-	}
-};
-var $author$project$Rule$Description$getRequirementDescription = function (requirement) {
-	return 'If ' + $author$project$Rule$Description$getRequirementDescriptionHelper(requirement);
-};
 var $author$project$Rule$Description$getShapeDescription = function (shape) {
 	if (shape.$ === 'Food') {
 		return 'hunger';
@@ -11064,6 +11012,27 @@ var $author$project$Rule$Experience$nameOfType = function (experienceType) {
 		default:
 			return 'fate and destiny';
 	}
+};
+var $author$project$Map$Hex$nameOfTerrain = function (terrain) {
+	switch (terrain.$) {
+		case 'Plains':
+			return 'Plains';
+		case 'Mountains':
+			return 'Mountains';
+		case 'Forest':
+			return 'Forest';
+		case 'Sea':
+			return 'Sea';
+		case 'Desert':
+			return 'Desert';
+		default:
+			return 'Holy lands';
+	}
+};
+var $author$project$Rule$DefinitionMapping$toProperTerrainName = function (ruleTerrain) {
+	return $elm$core$String$toLower(
+		$author$project$Map$Hex$nameOfTerrain(
+			$author$project$Rule$DefinitionMapping$mapTerrain(ruleTerrain)));
 };
 var $author$project$Rule$Description$getEffectDescription = function (effect) {
 	switch (effect.$) {
@@ -11120,20 +11089,6 @@ var $author$project$Rule$Description$getEffectDescription = function (effect) {
 					description: 'Increases ' + (typeName + (' of the player by ' + ($elm$core$String$fromInt(amount) + '.'))),
 					name: 'Gain ' + typeName
 				});
-		case 'Requires':
-			var requirement = effect.a;
-			var mainEffects = effect.b;
-			var otherwiseEffects = effect.c;
-			var toEffectsDescription = A2(
-				$elm$core$Basics$composeR,
-				$author$project$Rule$Description$cyclic$joinEffectsWithAnd(),
-				$elm$core$String$toLower);
-			var mainEffectsDescription = toEffectsDescription(mainEffects);
-			return $elm$core$Maybe$Just(
-				{
-					description: $author$project$Rule$Description$getRequirementDescription(requirement) + (' then ' + (mainEffectsDescription + ('; otherwise ' + (toEffectsDescription(otherwiseEffects) + '.')))),
-					name: $author$project$Extend$String$capitalize(mainEffectsDescription)
-				});
 		default:
 			var ruleTerrain = effect.a;
 			return $elm$core$Maybe$Just(
@@ -11143,29 +11098,6 @@ var $author$project$Rule$Description$getEffectDescription = function (effect) {
 				});
 	}
 };
-function $author$project$Rule$Description$cyclic$joinEffectsWithAnd() {
-	var prepareNameForDescription = A2(
-		$elm$core$Basics$composeR,
-		function ($) {
-			return $.name;
-		},
-		$elm$core$String$toLower);
-	var prepareEffectForDescription = A2(
-		$elm$core$Basics$composeR,
-		$author$project$Rule$Description$getEffectDescription,
-		$elm$core$Maybe$map(prepareNameForDescription));
-	return A2(
-		$elm$core$Basics$composeR,
-		$elm$core$List$filterMap(prepareEffectForDescription),
-		$elm$core$String$join(' and '));
-}
-try {
-	var $author$project$Rule$Description$joinEffectsWithAnd = $author$project$Rule$Description$cyclic$joinEffectsWithAnd();
-	$author$project$Rule$Description$cyclic$joinEffectsWithAnd = function () {
-		return $author$project$Rule$Description$joinEffectsWithAnd;
-	};
-} catch ($) {
-	throw 'Some top-level definitions from `Rule.Description` are causing infinite recursion:\n\n  ┌─────┐\n  │    joinEffectsWithAnd\n  │     ↓\n  │    getEffectDescription\n  └─────┘\n\nThese errors are very tricky, so read https://elm-lang.org/0.19.1/bad-recursion to learn how to fix it!';}
 var $author$project$Rule$Description$getContinuousEffectDescription = function (continuousEffect) {
 	var modToDescription = function (mod) {
 		var modAsString = $elm$core$String$fromInt(mod);
@@ -11191,28 +11123,71 @@ var $author$project$Rule$Description$getContinuousEffectDescription = function (
 				'modify defense stat with ' + modToDescription(defMod));
 	}
 };
-var $author$project$Rule$Description$getAttributeEffectDescription = function (attributeEffect) {
-	if (attributeEffect.$ === 'AlwaysTrue') {
-		var continuousEffect = attributeEffect.a;
-		return $author$project$Rule$Description$getContinuousEffectDescription(continuousEffect);
+var $elm$core$String$toUpper = _String_toUpper;
+var $author$project$Extend$String$capitalize = function (string) {
+	var rest = A2($elm$core$String$dropLeft, 1, string);
+	var first = A2($elm$core$String$left, 1, string);
+	return _Utils_ap(
+		$elm$core$String$toUpper(first),
+		rest);
+};
+var $author$project$Rule$Description$maybeApplyNotFirst = function (optionalText) {
+	if (optionalText.$ === 'Nothing') {
+		return $elm$core$Maybe$Nothing;
 	} else {
-		var requirement = attributeEffect.a;
-		var continuousEffect = attributeEffect.b;
-		var _v1 = $author$project$Rule$Description$getContinuousEffectDescription(continuousEffect);
-		if (_v1.$ === 'Nothing') {
+		var text = optionalText.a;
+		return $elm$core$Maybe$Just('not ' + text);
+	}
+};
+var $author$project$Rule$Description$getRequirementDescriptionHelper = function (requirement) {
+	switch (requirement.$) {
+		case 'Always':
 			return $elm$core$Maybe$Nothing;
-		} else {
-			var continuousEffectDescription = _v1.a;
+		case 'Not':
+			var negatedRequirement = requirement.a;
+			return $author$project$Rule$Description$maybeApplyNotFirst(
+				$author$project$Rule$Description$getRequirementDescriptionHelper(negatedRequirement));
+		case 'IsPlayerHexTerrain':
+			var ruleTerrain = requirement.a;
 			return $elm$core$Maybe$Just(
-				$author$project$Rule$Description$getRequirementDescription(requirement) + (' then ' + continuousEffectDescription));
-		}
+				'terrain of player hex is ' + $author$project$Rule$DefinitionMapping$toProperTerrainName(ruleTerrain));
+		default:
+			var attribute = requirement.a;
+			return $elm$core$Maybe$Just('player has attribute \'' + (attribute.name + '\''));
+	}
+};
+var $author$project$Rule$Description$getRequirementDescription = function (requirement) {
+	var _v0 = $author$project$Rule$Description$getRequirementDescriptionHelper(requirement);
+	if (_v0.$ === 'Nothing') {
+		return '';
+	} else {
+		var description = _v0.a;
+		return 'If ' + (description + ' then ');
+	}
+};
+var $author$project$Rule$Description$getDescriptionWithRequirement = F2(
+	function (requirement, description) {
+		var reqDescr = $author$project$Rule$Description$getRequirementDescription(requirement);
+		return $author$project$Extend$String$capitalize(
+			_Utils_ap(
+				reqDescr,
+				$elm$core$String$toLower(description)));
+	});
+var $author$project$Rule$Description$getAttributeEffectDescription = function (attributeEffect) {
+	var _v0 = $author$project$Rule$Description$getContinuousEffectDescription(attributeEffect.continuousEffect);
+	if (_v0.$ === 'Nothing') {
+		return $elm$core$Maybe$Nothing;
+	} else {
+		var continuousEffectDescription = _v0.a;
+		return $elm$core$Maybe$Just(
+			A2($author$project$Rule$Description$getDescriptionWithRequirement, attributeEffect.requirement, continuousEffectDescription));
 	}
 };
 var $author$project$Rule$Description$getAttributeEffectsDescription = function (attributeEffects) {
 	var descriptions = A2($elm$core$List$filterMap, $author$project$Rule$Description$getAttributeEffectDescription, attributeEffects);
 	return _Utils_eq(descriptions, _List_Nil) ? '' : (' (' + (A2($elm$core$String$join, ', ', descriptions) + ')'));
 };
-var $author$project$Rule$Description$getAttributeDescription = function (attribute) {
+var $author$project$Rule$Description$getFullAttributeDescription = function (attribute) {
 	return _Utils_ap(
 		attribute.description,
 		$author$project$Rule$Description$getAttributeEffectsDescription(attribute.effects));
@@ -11221,7 +11196,7 @@ var $author$project$Areas$AttributeArea$getFullAttributeDescription = function (
 	return _Utils_update(
 		attribute,
 		{
-			description: $author$project$Rule$Description$getAttributeDescription(attribute)
+			description: $author$project$Rule$Description$getFullAttributeDescription(attribute)
 		});
 };
 var $elm$core$String$cons = _String_cons;
@@ -11764,7 +11739,7 @@ var $author$project$Areas$CareerArea$renderSkillStep = F4(
 					$author$project$Rule$Career$getSkill(acquiredSkill)))
 			]) : _List_fromArray(
 			[$author$project$Style$Definitions$styles.pointer, $author$project$Style$Definitions$styles.disabledItem]));
-		var tooltipDescription = $elm$core$String$fromChar(attribute.picture) + (attribute.name + ($author$project$Text$rn + ($author$project$Text$t + ($author$project$Rule$Description$getAttributeDescription(attribute) + ($author$project$Text$rn + ($author$project$Text$t + ('Requirements: ' + ($author$project$Rule$Experience$describe(skillStep.requirement) + ($author$project$Text$rn + (isSelectable ? ($author$project$Text$t + ('(click to select new skill)' + $author$project$Text$rn)) : ''))))))))));
+		var tooltipDescription = $elm$core$String$fromChar(attribute.picture) + (attribute.name + ($author$project$Text$rn + ($author$project$Text$t + ($author$project$Rule$Description$getFullAttributeDescription(attribute) + ($author$project$Text$rn + ($author$project$Text$t + ('Requirements: ' + ($author$project$Rule$Experience$describe(skillStep.requirement) + ($author$project$Text$rn + (isSelectable ? ($author$project$Text$t + ('(click to select new skill)' + $author$project$Text$rn)) : ''))))))))));
 		return A2(
 			$elm$html$Html$span,
 			_Utils_ap(
@@ -11843,15 +11818,19 @@ var $author$project$Msg$ChooseOption = function (a) {
 };
 var $author$project$Rule$Description$getRequirementName = function (requirement) {
 	switch (requirement.$) {
+		case 'Always':
+			return $elm$core$Maybe$Nothing;
 		case 'Not':
 			var negatedRequirement = requirement.a;
-			return 'not ' + $author$project$Rule$Description$getRequirementDescription(negatedRequirement);
-		case 'IsTerrainAtPlayerHex':
+			return $author$project$Rule$Description$maybeApplyNotFirst(
+				$author$project$Rule$Description$getRequirementName(negatedRequirement));
+		case 'IsPlayerHexTerrain':
 			var ruleTerrain = requirement.a;
-			return 'at ' + $author$project$Rule$DefinitionMapping$toProperTerrainName(ruleTerrain);
+			return $elm$core$Maybe$Just(
+				'at ' + $author$project$Rule$DefinitionMapping$toProperTerrainName(ruleTerrain));
 		default:
 			var attribute = requirement.a;
-			return attribute.name;
+			return $elm$core$Maybe$Just(attribute.name);
 	}
 };
 var $author$project$Areas$InteractArea$renderDialogueOptionTr = F2(
@@ -11860,7 +11839,7 @@ var $author$project$Areas$InteractArea$renderDialogueOptionTr = F2(
 			$elm$core$List$isEmpty(option.visibleRequirements) ? '' : ('[' + (A2(
 				$elm$core$String$join,
 				',',
-				A2($elm$core$List$map, $author$project$Rule$Description$getRequirementName, option.visibleRequirements)) + '] ')),
+				A2($elm$core$List$filterMap, $author$project$Rule$Description$getRequirementName, option.visibleRequirements)) + '] ')),
 			option.description);
 		var isEnabled = A2(
 			$elm$core$List$all,
@@ -12148,6 +12127,10 @@ var $author$project$Msg$EraseConsumeEffect = {$: 'EraseConsumeEffect'};
 var $author$project$Msg$IntendToConsume = function (a) {
 	return {$: 'IntendToConsume', a: a};
 };
+var $author$project$Areas$InventoryArea$getSuffix = F3(
+	function (list, singleSuffix, pluralSuffix) {
+		return ($elm$core$List$length(list) < 2) ? singleSuffix : pluralSuffix;
+	});
 var $elm$html$Html$Events$onMouseDown = function (msg) {
 	return A2(
 		$elm$html$Html$Events$on,
@@ -12166,21 +12149,31 @@ var $elm$html$Html$Events$onMouseUp = function (msg) {
 		'mouseup',
 		$elm$json$Json$Decode$succeed(msg));
 };
-var $author$project$Areas$InventoryArea$getEffectsDescriptions = function (slot) {
-	var toString = function (description) {
-		return $author$project$Text$t + (description.name + ($author$project$Text$rn + ($author$project$Text$t + ('| ' + description.description))));
-	};
-	var toFullDescription = function (attribute) {
-		return _Utils_update(
-			attribute,
-			{
-				description: $author$project$Rule$Description$getAttributeDescription(attribute)
-			});
-	};
-	var getSuffix = F3(
-		function (list, singleSuffix, pluralSuffix) {
-			return ($elm$core$List$length(list) < 2) ? singleSuffix : pluralSuffix;
+var $author$project$Areas$InventoryArea$toConsumeDescription = function (consumeEffect) {
+	var _v0 = $author$project$Rule$Description$getEffectDescription(consumeEffect.effect);
+	if (_v0.$ === 'Just') {
+		var descr = _v0.a;
+		return $elm$core$Maybe$Just(
+			_Utils_update(
+				descr,
+				{
+					description: A2($author$project$Rule$Description$getDescriptionWithRequirement, consumeEffect.requirement, descr.description)
+				}));
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
+};
+var $author$project$Areas$InventoryArea$toFullAttributeDescription = function (attribute) {
+	return _Utils_update(
+		attribute,
+		{
+			description: $author$project$Rule$Description$getFullAttributeDescription(attribute)
 		});
+};
+var $author$project$Areas$InventoryArea$toTooltipString = function (description) {
+	return $author$project$Text$t + (description.name + ($author$project$Text$rn + ($author$project$Text$t + ('| ' + description.description))));
+};
+var $author$project$Areas$InventoryArea$getEffectsDescriptions = function (slot) {
 	var _v0 = $author$project$Inventory$Slot$extractItemEffect(slot);
 	switch (_v0.$) {
 		case 'None':
@@ -12188,25 +12181,27 @@ var $author$project$Areas$InventoryArea$getEffectsDescriptions = function (slot)
 		case 'EquippedAttributes':
 			var attributes = _v0.a;
 			return _Utils_Tuple2(
-				$author$project$Text$rn + ($author$project$Text$rn + ('equip to gain the following abilit' + (A3(getSuffix, attributes, 'y', 'ies') + (':' + ($author$project$Text$rn + A2(
+				$author$project$Text$rn + ($author$project$Text$rn + ('equip to gain the following abilit' + (A3($author$project$Areas$InventoryArea$getSuffix, attributes, 'y', 'ies') + (':' + ($author$project$Text$rn + A2(
 					$elm$core$String$join,
 					$author$project$Text$rn,
 					A2(
 						$elm$core$List$map,
-						A2($elm$core$Basics$composeR, toFullDescription, toString),
+						A2($elm$core$Basics$composeR, $author$project$Areas$InventoryArea$toFullAttributeDescription, $author$project$Areas$InventoryArea$toTooltipString),
 						attributes))))))),
 				_List_Nil);
 		default:
 			var effects = _v0.a;
-			var getEffectDescription = A2(
-				$elm$core$Basics$composeR,
-				$author$project$Rule$Description$getEffectDescription,
-				$elm$core$Maybe$map(toString));
 			return _Utils_Tuple2(
-				$author$project$Text$rn + ($author$project$Text$rn + ('click & hold until resolving orders to consume for effect' + (A3(getSuffix, effects, '', 's') + (':' + ($author$project$Text$rn + A2(
+				$author$project$Text$rn + ($author$project$Text$rn + ('click & hold until resolving orders to consume for effect' + (A3($author$project$Areas$InventoryArea$getSuffix, effects, '', 's') + (':' + ($author$project$Text$rn + A2(
 					$elm$core$String$join,
 					$author$project$Text$rn,
-					A2($elm$core$List$filterMap, getEffectDescription, effects))))))),
+					A2(
+						$elm$core$List$filterMap,
+						A2(
+							$elm$core$Basics$composeR,
+							$author$project$Areas$InventoryArea$toConsumeDescription,
+							$elm$core$Maybe$map($author$project$Areas$InventoryArea$toTooltipString)),
+						effects))))))),
 				_List_fromArray(
 					[
 						$elm$html$Html$Events$onMouseDown(
@@ -12545,15 +12540,6 @@ var $author$project$Areas$MapArea$getSizeOfMap = function (map) {
 	};
 };
 var $elm$svg$Svg$Attributes$height = _VirtualDom_attribute('height');
-var $author$project$Map$Hex$mapToList = F2(
-	function (mapFun, _v0) {
-		var map = _v0.b;
-		return A3(
-			$elm$core$Array$foldr,
-			A2($elm$core$Basics$composeR, mapFun, $elm$core$List$cons),
-			_List_Nil,
-			map);
-	});
 var $author$project$Areas$MapArea$FailureResult = {$: 'FailureResult'};
 var $author$project$Areas$MapArea$NeutralResult = {$: 'NeutralResult'};
 var $author$project$Areas$MapArea$SuccessResult = {$: 'SuccessResult'};
@@ -12730,6 +12716,33 @@ var $author$project$Areas$MapArea$maybeRenderOrderEffect = F2(
 			A2($author$project$Areas$MapArea$renderOrderEffect, allMobs, orderEffect.effectType),
 			A2($author$project$Map$Mob$get, orderEffect.subjectMobId, allMobs));
 	});
+var $elm$virtual_dom$VirtualDom$keyedNodeNS = F2(
+	function (namespace, tag) {
+		return A2(
+			_VirtualDom_keyedNodeNS,
+			namespace,
+			_VirtualDom_noScript(tag));
+	});
+var $elm$svg$Svg$Keyed$node = $elm$virtual_dom$VirtualDom$keyedNodeNS('http://www.w3.org/2000/svg');
+var $author$project$Map$Hex$mapToList = F2(
+	function (mapFun, _v0) {
+		var map = _v0.b;
+		return A3(
+			$elm$core$Array$foldr,
+			A2($elm$core$Basics$composeR, mapFun, $elm$core$List$cons),
+			_List_Nil,
+			map);
+	});
+var $author$project$Areas$MapArea$findAt = F2(
+	function (hex, _v0) {
+		var posIxDict = _v0.a;
+		return A2(
+			$elm$core$Dict$get,
+			$author$project$Map$Position$toIndex(hex.position),
+			posIxDict);
+	});
+var $elm$virtual_dom$VirtualDom$lazy4 = _VirtualDom_lazy4;
+var $elm$svg$Svg$Lazy$lazy4 = $elm$virtual_dom$VirtualDom$lazy4;
 var $author$project$Msg$ClickLoot = F2(
 	function (a, b) {
 		return {$: 'ClickLoot', a: a, b: b};
@@ -12820,7 +12833,7 @@ var $author$project$Map$Mob$fromHealthToString = function (health) {
 	}
 };
 var $author$project$Areas$MapArea$getAttributeTooltip = function (attribute) {
-	return $author$project$Text$t + ($author$project$Text$t + ($elm$core$String$fromChar(attribute.picture) + (' ' + (attribute.name + (': ' + $author$project$Rule$Description$getAttributeDescription(attribute))))));
+	return $author$project$Text$t + ($author$project$Text$t + ($elm$core$String$fromChar(attribute.picture) + (' ' + (attribute.name + (': ' + $author$project$Rule$Description$getFullAttributeDescription(attribute))))));
 };
 var $author$project$Areas$MapArea$getAttributeTypeTooltip = function (_v0) {
 	var attributeType = _v0.a;
@@ -12842,61 +12855,124 @@ var $author$project$Areas$MapArea$getMobTooltip = function (mob) {
 };
 var $elm$svg$Svg$Attributes$opacity = _VirtualDom_attribute('opacity');
 var $elm$svg$Svg$polygon = $elm$svg$Svg$trustedNode('polygon');
+var $author$project$Map$Mob$getEffectsIcon = function (health) {
+	switch (health.$) {
+		case 'Dead':
+			return $elm$core$Maybe$Just('☠️');
+		case 'Incapacitated':
+			return $elm$core$Maybe$Just('⚫️️');
+		case 'Hurt':
+			return $elm$core$Maybe$Just('🔴');
+		default:
+			return $elm$core$Maybe$Nothing;
+	}
+};
+var $elm$svg$Svg$text = $elm$virtual_dom$VirtualDom$text;
+var $elm$svg$Svg$text_ = $elm$svg$Svg$trustedNode('text');
+var $elm$svg$Svg$Attributes$x = _VirtualDom_attribute('x');
+var $elm$svg$Svg$Attributes$y = _VirtualDom_attribute('y');
+var $author$project$Areas$MapArea$renderMob = function (mob) {
+	var mobAttributes = _List_fromArray(
+		[
+			$elm$svg$Svg$Attributes$x(
+			$elm$core$String$fromFloat($author$project$Areas$MapArea$hexRadius * 0.75)),
+			$elm$svg$Svg$Attributes$y(
+			$elm$core$String$fromFloat($author$project$Areas$MapArea$hexRadius * 1.25)),
+			$elm$svg$Svg$Attributes$pointerEvents('none'),
+			$elm$svg$Svg$Attributes$fontSize(
+			$elm$core$String$fromFloat($author$project$Areas$MapArea$hexRadius * 0.5))
+		]);
+	var effects = function () {
+		var _v0 = $author$project$Map$Mob$getEffectsIcon(mob.health);
+		if (_v0.$ === 'Nothing') {
+			return _List_Nil;
+		} else {
+			var icon = _v0.a;
+			return _List_fromArray(
+				[
+					A2(
+					$elm$svg$Svg$text_,
+					_Utils_ap(
+						mobAttributes,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$opacity('0.5')
+							])),
+					_List_fromArray(
+						[
+							$elm$svg$Svg$text(icon)
+						]))
+				]);
+		}
+	}();
+	var characterText = $elm$svg$Svg$text(
+		$elm$core$String$fromChar(mob.picture));
+	var character = A2(
+		$elm$svg$Svg$text_,
+		mobAttributes,
+		_List_fromArray(
+			[characterText]));
+	return _Utils_ap(
+		effects,
+		_List_fromArray(
+			[character]));
+};
 var $elm$svg$Svg$svg = $elm$svg$Svg$trustedNode('svg');
 var $elm$svg$Svg$Attributes$cursor = _VirtualDom_attribute('cursor');
 var $author$project$Areas$MapArea$svgClickable = $elm$svg$Svg$Attributes$cursor('pointer');
-var $elm$svg$Svg$text = $elm$virtual_dom$VirtualDom$text;
-var $elm$svg$Svg$text_ = $elm$svg$Svg$trustedNode('text');
 var $elm$svg$Svg$title = $elm$svg$Svg$trustedNode('title');
-var $elm$svg$Svg$Attributes$x = _VirtualDom_attribute('x');
-var $elm$svg$Svg$Attributes$y = _VirtualDom_attribute('y');
-var $author$project$Areas$MapArea$renderHex = F2(
-	function (mapHolder, hex) {
-		var mobInHex = A2($author$project$Map$Mob$findAt, hex.position, mapHolder.monsters);
-		var isPlayerHex = _Utils_eq(hex.position, mapHolder.player.position);
-		var lootPileClickableAttrs = isPlayerHex ? _List_fromArray(
-			[
-				$author$project$Areas$MapArea$svgClickable,
-				$author$project$Extend$Mouse$onClickExt(
-				$author$project$Msg$ClickLoot(hex))
-			]) : $author$project$Areas$MapArea$svgNonInteractive;
-		var lootPile = ((!isPlayerHex) && $elm$core$List$isEmpty(hex.loot)) ? _List_Nil : _List_fromArray(
+var $author$project$Areas$MapArea$renderHexHelper = F4(
+	function (hexTargetMode, mobInHex, interactiveInHex, hex) {
+		var renderedTooltip = _List_fromArray(
 			[
 				A2(
-				$elm$svg$Svg$text_,
-				_Utils_ap(
-					_List_fromArray(
-						[
-							$elm$svg$Svg$Attributes$fontSize(
-							$elm$core$String$fromFloat($author$project$Areas$MapArea$hexRadius * 0.5)),
-							$elm$svg$Svg$Attributes$opacity(
-							$elm$core$List$isEmpty(hex.loot) ? '0.5' : '1'),
-							$elm$svg$Svg$Attributes$x(
-							$elm$core$String$fromFloat($author$project$Areas$MapArea$hexRadius * 0.25)),
-							$elm$svg$Svg$Attributes$y(
-							$elm$core$String$fromFloat($author$project$Areas$MapArea$hexRadius))
-						]),
-					lootPileClickableAttrs),
+				$elm$svg$Svg$title,
+				_List_Nil,
 				_List_fromArray(
 					[
 						$elm$svg$Svg$text(
-						function () {
-							var _v3 = hex.loot;
-							if (_v3.b && (!_v3.b.b)) {
-								var singleLoot = _v3.a;
-								return $elm$core$String$fromChar(singleLoot.picture);
-							} else {
-								return '🚮';
-							}
-						}())
+						A3(
+							$author$project$Map$Hex$getDescription,
+							hex,
+							interactiveInHex,
+							A2($elm$core$Maybe$map, $author$project$Areas$MapArea$getMobTooltip, mobInHex)))
 					]))
 			]);
-		var findInteractiveDescriptionAt = function (interactive) {
-			var descr = A2($author$project$State$Interactive$getDescription, mapHolder.worldState, interactive);
-			return _Utils_eq(descr.position, hex.position) ? $elm$core$Maybe$Just(descr) : $elm$core$Maybe$Nothing;
-		};
-		var interactiveInHex = A2($author$project$Extend$List$findFirstMap, findInteractiveDescriptionAt, $author$project$World$Map$allInteractives);
-		var hexTargetMode = A4($author$project$Map$Hex$getPossibleOrderForHex, mapHolder.player, hex, mobInHex, interactiveInHex);
+		var renderedMob = function () {
+			if (mobInHex.$ === 'Just') {
+				var mob = mobInHex.a;
+				return $author$project$Areas$MapArea$renderMob(mob);
+			} else {
+				return _List_Nil;
+			}
+		}();
+		var renderedInteractiveItem = function () {
+			if (interactiveInHex.$ === 'Just') {
+				var interactive = interactiveInHex.a;
+				return _List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$text_,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$fontSize(
+								$elm$core$String$fromFloat($author$project$Areas$MapArea$hexRadius)),
+								$elm$svg$Svg$Attributes$x(
+								$elm$core$String$fromFloat($author$project$Areas$MapArea$hexRadius * 0.5)),
+								$elm$svg$Svg$Attributes$y(
+								$elm$core$String$fromFloat($author$project$Areas$MapArea$hexRadius)),
+								$elm$svg$Svg$Attributes$pointerEvents('none')
+							]),
+						_List_fromArray(
+							[
+								$elm$svg$Svg$text(
+								$elm$core$String$fromChar(interactive.mapPicture))
+							]))
+					]);
+			} else {
+				return _List_Nil;
+			}
+		}();
 		var orderAttrs = function () {
 			var renderHexTargetMode = F2(
 				function (strokeColor, playerOrder) {
@@ -12928,52 +13004,54 @@ var $author$project$Areas$MapArea$renderHex = F2(
 						]);
 			}
 		}();
-		var interactiveItem = function () {
-			if (interactiveInHex.$ === 'Just') {
-				var interactive = interactiveInHex.a;
-				return _List_fromArray(
-					[
-						A2(
-						$elm$svg$Svg$text_,
-						_List_fromArray(
-							[
-								$elm$svg$Svg$Attributes$fontSize(
-								$elm$core$String$fromFloat($author$project$Areas$MapArea$hexRadius)),
-								$elm$svg$Svg$Attributes$x(
-								$elm$core$String$fromFloat($author$project$Areas$MapArea$hexRadius * 0.5)),
-								$elm$svg$Svg$Attributes$y(
-								$elm$core$String$fromFloat($author$project$Areas$MapArea$hexRadius)),
-								$elm$svg$Svg$Attributes$pointerEvents('none')
-							]),
-						_List_fromArray(
-							[
-								$elm$svg$Svg$text(
-								$elm$core$String$fromChar(interactive.mapPicture))
-							]))
-					]);
+		var isPlayerHex = function () {
+			if (mobInHex.$ === 'Just') {
+				var mob = mobInHex.a;
+				var _v3 = mob.id;
+				if (_v3.$ === 'Player') {
+					return true;
+				} else {
+					return false;
+				}
 			} else {
-				return _List_Nil;
+				return false;
 			}
 		}();
-		var tooltip = _List_fromArray(
+		var lootPileClickableAttrs = isPlayerHex ? _List_fromArray(
+			[
+				$author$project$Areas$MapArea$svgClickable,
+				$author$project$Extend$Mouse$onClickExt(
+				$author$project$Msg$ClickLoot(hex))
+			]) : $author$project$Areas$MapArea$svgNonInteractive;
+		var renderedLootPile = ((!isPlayerHex) && $elm$core$List$isEmpty(hex.loot)) ? _List_Nil : _List_fromArray(
 			[
 				A2(
-				$elm$svg$Svg$title,
-				_List_Nil,
+				$elm$svg$Svg$text_,
+				_Utils_ap(
+					_List_fromArray(
+						[
+							$elm$svg$Svg$Attributes$fontSize(
+							$elm$core$String$fromFloat($author$project$Areas$MapArea$hexRadius * 0.5)),
+							$elm$svg$Svg$Attributes$opacity(
+							$elm$core$List$isEmpty(hex.loot) ? '0.5' : '1'),
+							$elm$svg$Svg$Attributes$x(
+							$elm$core$String$fromFloat($author$project$Areas$MapArea$hexRadius * 0.25)),
+							$elm$svg$Svg$Attributes$y(
+							$elm$core$String$fromFloat($author$project$Areas$MapArea$hexRadius))
+						]),
+					lootPileClickableAttrs),
 				_List_fromArray(
 					[
 						$elm$svg$Svg$text(
-						A3(
-							$author$project$Map$Hex$getDescription,
-							hex,
-							interactiveInHex,
-							A2(
-								$elm$core$Maybe$map,
-								$author$project$Areas$MapArea$getMobTooltip,
-								A2(
-									$author$project$Map$Mob$findAt,
-									hex.position,
-									$author$project$Map$Mob$collectAllMobs(mapHolder)))))
+						function () {
+							var _v1 = hex.loot;
+							if (_v1.b && (!_v1.b.b)) {
+								var singleLoot = _v1.a;
+								return $elm$core$String$fromChar(singleLoot.picture);
+							} else {
+								return '🚮';
+							}
+						}())
 					]))
 			]);
 		var commonTerrainAttrs = _List_fromArray(
@@ -12982,7 +13060,7 @@ var $author$project$Areas$MapArea$renderHex = F2(
 				$elm$svg$Svg$Attributes$fill(
 				$author$project$Map$Hex$colorOf(hex.terrain))
 			]);
-		var terrain = _List_fromArray(
+		var renderedTerrain = _List_fromArray(
 			[
 				A2(
 				$elm$svg$Svg$polygon,
@@ -13008,10 +13086,12 @@ var $author$project$Areas$MapArea$renderHex = F2(
 					]))
 			]);
 		var contents = _Utils_ap(
-			terrain,
+			renderedTerrain,
 			_Utils_ap(
-				lootPile,
-				_Utils_ap(interactiveItem, tooltip)));
+				renderedLootPile,
+				_Utils_ap(
+					renderedInteractiveItem,
+					_Utils_ap(renderedTooltip, renderedMob))));
 		var _v0 = $author$project$Areas$MapArea$hexPositionToPixels(hex.position);
 		var svgx = _v0.a;
 		var svgy = _v0.b;
@@ -13026,66 +13106,67 @@ var $author$project$Areas$MapArea$renderHex = F2(
 				]),
 			contents);
 	});
-var $author$project$Map$Mob$getEffectsIcon = function (health) {
-	switch (health.$) {
-		case 'Dead':
-			return $elm$core$Maybe$Just('☠️');
-		case 'Incapacitated':
-			return $elm$core$Maybe$Just('⚫️️');
-		case 'Hurt':
-			return $elm$core$Maybe$Just('🔴');
-		default:
-			return $elm$core$Maybe$Nothing;
-	}
+var $author$project$Areas$MapArea$getKey = F2(
+	function (prefix, posHolder) {
+		return _Utils_ap(
+			prefix,
+			$elm$core$String$fromInt(
+				$author$project$Map$Position$toIndex(posHolder.position)));
+	});
+var $author$project$Areas$MapArea$toKeyed = F3(
+	function (renderFunc, prefix, posHolder) {
+		return _Utils_Tuple2(
+			A2($author$project$Areas$MapArea$getKey, prefix, posHolder),
+			renderFunc(posHolder));
+	});
+var $author$project$Areas$MapArea$renderHex = F4(
+	function (player, posIxToMob, posIxToInteractive, hex) {
+		var mobInHex = A2($author$project$Areas$MapArea$findAt, hex, posIxToMob);
+		var interactiveInHex = A2($author$project$Areas$MapArea$findAt, hex, posIxToInteractive);
+		var possiblePlayerOrder = A4($author$project$Map$Hex$getPossibleOrderForHex, player, hex, mobInHex, interactiveInHex);
+		var renderFunc = A4($elm$svg$Svg$Lazy$lazy4, $author$project$Areas$MapArea$renderHexHelper, possiblePlayerOrder, mobInHex, interactiveInHex);
+		return A3($author$project$Areas$MapArea$toKeyed, renderFunc, 'hex', hex);
+	});
+var $author$project$Areas$MapArea$PosIxDict = function (a) {
+	return {$: 'PosIxDict', a: a};
 };
-var $author$project$Areas$MapArea$renderMob = function (mob) {
-	var characterText = $elm$svg$Svg$text(
-		$elm$core$String$fromChar(mob.picture));
-	var _v0 = $author$project$Areas$MapArea$hexPositionToPixels(mob.position);
-	var posX = _v0.a;
-	var posY = _v0.b;
-	var mobAttributes = _List_fromArray(
-		[
-			$elm$svg$Svg$Attributes$x(
-			$elm$core$String$fromFloat(($author$project$Areas$MapArea$hexRadius * 0.75) + posX)),
-			$elm$svg$Svg$Attributes$y(
-			$elm$core$String$fromFloat(($author$project$Areas$MapArea$hexRadius * 1.25) + posY)),
-			$elm$svg$Svg$Attributes$pointerEvents('none'),
-			$elm$svg$Svg$Attributes$fontSize(
-			$elm$core$String$fromFloat($author$project$Areas$MapArea$hexRadius * 0.5))
-		]);
-	var character = A2(
-		$elm$svg$Svg$text_,
-		mobAttributes,
-		_List_fromArray(
-			[characterText]));
-	var effects = function () {
-		var _v1 = $author$project$Map$Mob$getEffectsIcon(mob.health);
-		if (_v1.$ === 'Nothing') {
-			return _List_Nil;
-		} else {
-			var icon = _v1.a;
-			return _List_fromArray(
-				[
-					A2(
-					$elm$svg$Svg$text_,
-					_Utils_ap(
-						mobAttributes,
-						_List_fromArray(
-							[
-								$elm$svg$Svg$Attributes$opacity('0.5')
-							])),
-					_List_fromArray(
-						[
-							$elm$svg$Svg$text(icon)
-						]))
-				]);
-		}
-	}();
-	return _Utils_ap(
-		effects,
-		_List_fromArray(
-			[character]));
+var $author$project$Extend$Dict$fromListMapKey = F2(
+	function (toKey, list) {
+		var aggregate = F2(
+			function (value, dict) {
+				return A3(
+					$elm$core$Dict$insert,
+					toKey(value),
+					value,
+					dict);
+			});
+		return A3($elm$core$List$foldl, aggregate, $elm$core$Dict$empty, list);
+	});
+var $author$project$Areas$MapArea$toPosIxDict = function (posHolders) {
+	return $author$project$Areas$MapArea$PosIxDict(
+		A2(
+			$author$project$Extend$Dict$fromListMapKey,
+			A2(
+				$elm$core$Basics$composeR,
+				function ($) {
+					return $.position;
+				},
+				$author$project$Map$Position$toIndex),
+			posHolders));
+};
+var $author$project$Areas$MapArea$renderHexes = function (mapHolder) {
+	var posIxToInteractive = $author$project$Areas$MapArea$toPosIxDict(
+		A2(
+			$elm$core$List$map,
+			$author$project$State$Interactive$getDescription(mapHolder.worldState),
+			$author$project$World$Map$allInteractives));
+	var allMobs = $author$project$Map$Mob$collectAllMobs(mapHolder);
+	var posIxToMob = $author$project$Areas$MapArea$toPosIxDict(
+		$author$project$Map$Mob$toList(allMobs));
+	return A2(
+		$author$project$Map$Hex$mapToList,
+		A3($author$project$Areas$MapArea$renderHex, mapHolder.player, posIxToMob, posIxToInteractive),
+		mapHolder.map);
 };
 var $author$project$Areas$MapArea$ConflictAction = {$: 'ConflictAction'};
 var $author$project$Areas$MapArea$NeutralAction = {$: 'NeutralAction'};
@@ -13164,15 +13245,8 @@ var $author$project$Areas$MapArea$render = function (mapHolder) {
 		$elm$core$List$filterMap,
 		$author$project$Areas$MapArea$maybeRenderOrderEffect(mapHolder),
 		mapHolder.orderEffects);
-	var renderedMap = A2(
-		$author$project$Map$Hex$mapToList,
-		$author$project$Areas$MapArea$renderHex(mapHolder),
-		mapHolder.map);
+	var renderedMap = $author$project$Areas$MapArea$renderHexes(mapHolder);
 	var mapSize = $author$project$Areas$MapArea$getSizeOfMap(mapHolder.map);
-	var allMobs = $author$project$Map$Mob$toList(
-		$author$project$Map$Mob$collectAllMobs(mapHolder));
-	var renderedMobs = $elm$core$List$concat(
-		A2($elm$core$List$map, $author$project$Areas$MapArea$renderMob, allMobs));
 	return A2(
 		$elm$svg$Svg$svg,
 		_List_fromArray(
@@ -13181,10 +13255,11 @@ var $author$project$Areas$MapArea$render = function (mapHolder) {
 				$elm$svg$Svg$Attributes$height(mapSize.height)
 			]),
 		_Utils_ap(
-			renderedMap,
-			_Utils_ap(
-				renderedMobs,
-				_Utils_ap(renderedOrders, renderedOrderEffects))));
+			_List_fromArray(
+				[
+					A3($elm$svg$Svg$Keyed$node, 'svg', _List_Nil, renderedMap)
+				]),
+			_Utils_ap(renderedOrders, renderedOrderEffects)));
 };
 var $author$project$Areas$MapArea$areaDefinition = function (mapHolder) {
 	return {
