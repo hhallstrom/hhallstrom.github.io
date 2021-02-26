@@ -4679,6 +4679,7 @@ var $elm$core$List$isEmpty = function (xs) {
 		return false;
 	}
 };
+var $elm$core$Debug$log = _Debug_log;
 var $elm$core$Basics$add = _Basics_add;
 var $author$project$Rule$Effect$applyEffectToPlayer = F2(
 	function (modifyPlayer, applyEffectsHolder) {
@@ -5039,20 +5040,23 @@ var $author$project$State$Phase$getRoundNumber = function (_v0) {
 	return roundNumber;
 };
 var $author$project$Meta$Log$addRow = F4(
-	function (logType, phase, text, _v0) {
-		var length = _v0.a;
-		var rows = _v0.b;
-		return _Utils_Tuple2(
-			length + 1,
-			A2(
-				$elm$core$List$cons,
-				{
-					id: length,
-					logType: logType,
-					roundNumber: $author$project$State$Phase$getRoundNumber(phase),
-					text: text
-				},
-				rows));
+	function (logType, phase, text, log) {
+		var newRowId = log.latestId + 1;
+		return _Utils_update(
+			log,
+			{
+				hasScrolledToBottom: false,
+				latestId: newRowId,
+				rows: A2(
+					$elm$core$List$cons,
+					{
+						id: newRowId,
+						logType: logType,
+						roundNumber: $author$project$State$Phase$getRoundNumber(phase),
+						text: text
+					},
+					log.rows)
+			});
 	});
 var $author$project$Meta$Log$logRow = F3(
 	function (logType, text, logHolder) {
@@ -5483,11 +5487,16 @@ var $author$project$Rule$Effect$wrapAndApplyEffects = F2(
 	});
 var $author$project$Rule$Effect$apply = F2(
 	function (effects, initialModel) {
-		return $elm$core$List$isEmpty(effects) ? initialModel : $author$project$Rule$Effect$lowerPlayerHealthModSteps(
-			A2(
-				$author$project$Rule$Effect$wrapAndApplyEffects,
-				effects,
-				{mapHolder: initialModel, playerHealthMod: 0})).mapHolder;
+		if ($elm$core$List$isEmpty(effects)) {
+			return initialModel;
+		} else {
+			var tst = A2($elm$core$Debug$log, 'applying effects', effects);
+			return $author$project$Rule$Effect$lowerPlayerHealthModSteps(
+				A2(
+					$author$project$Rule$Effect$wrapAndApplyEffects,
+					effects,
+					{mapHolder: initialModel, playerHealthMod: 0})).mapHolder;
+		}
 	});
 var $author$project$World$Stationary$BlackGateChanged = function (a) {
 	return {$: 'BlackGateChanged', a: a};
@@ -6388,6 +6397,7 @@ var $author$project$Map$Position$toString = function (_v0) {
 };
 var $author$project$Main$applyInteractiveChoice = F2(
 	function (option, model) {
+		var tst = A2($elm$core$Debug$log, 'apply interact choice', option);
 		var playerPos = model.player.position;
 		var _v0 = A2($author$project$Main$findStationaryAt, playerPos, model.map);
 		if (_v0.$ === 'Nothing') {
@@ -7849,7 +7859,7 @@ var $author$project$World$Mob$getInitialPlayer = function (map) {
 		$author$project$World$Career$initialCareer);
 };
 var $author$project$Meta$Log$minimumId = 0;
-var $author$project$Meta$Log$initial = _Utils_Tuple2($author$project$Meta$Log$minimumId, _List_Nil);
+var $author$project$Meta$Log$initial = {hasScrolledToBottom: true, latestId: $author$project$Meta$Log$minimumId, rows: _List_Nil};
 var $author$project$State$Phase$OrdersHidden = {$: 'OrdersHidden'};
 var $author$project$State$Phase$Phase = F2(
 	function (a, b) {
@@ -9129,6 +9139,7 @@ var $author$project$Main$subscriptions = function (model) {
 			]));
 };
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
+var $author$project$Msg$NoOp = {$: 'NoOp'};
 var $author$project$State$Event$Died = function (a) {
 	return {$: 'Died', a: a};
 };
@@ -9249,6 +9260,57 @@ var $author$project$State$Event$extract = function (changeData) {
 		oldMobs);
 	return _Utils_ap(mobEvents, phaseEvents);
 };
+var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
+var $author$project$Meta$Log$NoOp = {$: 'NoOp'};
+var $elm$core$Task$onError = _Scheduler_onError;
+var $elm$core$Task$attempt = F2(
+	function (resultToMessage, task) {
+		return $elm$core$Task$command(
+			$elm$core$Task$Perform(
+				A2(
+					$elm$core$Task$onError,
+					A2(
+						$elm$core$Basics$composeL,
+						A2($elm$core$Basics$composeL, $elm$core$Task$succeed, resultToMessage),
+						$elm$core$Result$Err),
+					A2(
+						$elm$core$Task$andThen,
+						A2(
+							$elm$core$Basics$composeL,
+							A2($elm$core$Basics$composeL, $elm$core$Task$succeed, resultToMessage),
+							$elm$core$Result$Ok),
+						task))));
+	});
+var $elm$browser$Browser$Dom$getViewportOf = _Browser_getViewportOf;
+var $author$project$Meta$Log$logScrollAreaId = '_logScrollAreaId';
+var $elm$browser$Browser$Dom$setViewportOf = _Browser_setViewportOf;
+var $author$project$Meta$Log$scrollLogToBottomOffsetCmd = function () {
+	var setViewport = function (info) {
+		return A3($elm$browser$Browser$Dom$setViewportOf, $author$project$Meta$Log$logScrollAreaId, 0, info.scene.height);
+	};
+	var handleError = function (_v0) {
+		return $author$project$Meta$Log$NoOp;
+	};
+	return A2(
+		$elm$core$Task$attempt,
+		handleError,
+		A2(
+			$elm$core$Task$andThen,
+			setViewport,
+			$elm$browser$Browser$Dom$getViewportOf($author$project$Meta$Log$logScrollAreaId)));
+}();
+var $author$project$Meta$Log$handleScrollToLatestLogs = function (logHolder) {
+	var currentLogs = logHolder.logs;
+	return _Utils_Tuple2(
+		logHolder.logs.hasScrolledToBottom ? logHolder : _Utils_update(
+			logHolder,
+			{
+				logs: _Utils_update(
+					currentLogs,
+					{hasScrolledToBottom: true})
+			}),
+		logHolder.logs.hasScrolledToBottom ? $elm$core$Platform$Cmd$none : $author$project$Meta$Log$scrollLogToBottomOffsetCmd);
+};
 var $author$project$Update$handleWorldEventEffects = F3(
 	function (eventSubscriber, events, latestModel) {
 		var _v0 = A2(eventSubscriber, events, latestModel);
@@ -9258,7 +9320,7 @@ var $author$project$Update$handleWorldEventEffects = F3(
 	});
 var $author$project$Meta$Log$logRows = F3(
 	function (logType, msgs, logHolder) {
-		return _Utils_update(
+		return $elm$core$List$isEmpty(msgs) ? logHolder : _Utils_update(
 			logHolder,
 			{
 				logs: A3(
@@ -9299,55 +9361,29 @@ var $author$project$Update$logDeath = F2(
 			A3($elm$core$List$foldl, fromDeathToMsgs, _List_Nil, events),
 			latestModel);
 	});
-var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
-var $author$project$Msg$NoOp = {$: 'NoOp'};
-var $elm$core$Task$onError = _Scheduler_onError;
-var $elm$core$Task$attempt = F2(
-	function (resultToMessage, task) {
-		return $elm$core$Task$command(
-			$elm$core$Task$Perform(
-				A2(
-					$elm$core$Task$onError,
-					A2(
-						$elm$core$Basics$composeL,
-						A2($elm$core$Basics$composeL, $elm$core$Task$succeed, resultToMessage),
-						$elm$core$Result$Err),
-					A2(
-						$elm$core$Task$andThen,
-						A2(
-							$elm$core$Basics$composeL,
-							A2($elm$core$Basics$composeL, $elm$core$Task$succeed, resultToMessage),
-							$elm$core$Result$Ok),
-						task))));
+var $elm$core$Tuple$mapSecond = F2(
+	function (func, _v0) {
+		var x = _v0.a;
+		var y = _v0.b;
+		return _Utils_Tuple2(
+			x,
+			func(y));
 	});
-var $elm$browser$Browser$Dom$getViewportOf = _Browser_getViewportOf;
-var $author$project$Areas$Area$logScrollAreaId = '_logScrollAreaId';
-var $elm$browser$Browser$Dom$setViewportOf = _Browser_setViewportOf;
-var $author$project$Update$scrollLogToBottomOffsetCmd = function () {
-	var setViewport = function (info) {
-		return A3($elm$browser$Browser$Dom$setViewportOf, $author$project$Areas$Area$logScrollAreaId, 0, info.scene.height);
-	};
-	var handleError = function (_v0) {
-		return $author$project$Msg$NoOp;
-	};
-	return A2(
-		$elm$core$Task$attempt,
-		handleError,
-		A2(
-			$elm$core$Task$andThen,
-			setViewport,
-			$elm$browser$Browser$Dom$getViewportOf($author$project$Areas$Area$logScrollAreaId)));
-}();
 var $author$project$Map$Mob$UsingItem = {$: 'UsingItem'};
 var $author$project$Map$Mob$setPlayerAsInventoring = function (model) {
 	var currentPlayer = model.player;
-	return _Utils_eq(model.player.order, $author$project$Map$Mob$UsingItem) ? model : _Utils_update(
-		model,
-		{
-			player: _Utils_update(
-				currentPlayer,
-				{order: $author$project$Map$Mob$UsingItem})
-		});
+	if (_Utils_eq(model.player.order, $author$project$Map$Mob$UsingItem)) {
+		return model;
+	} else {
+		var tst = A2($elm$core$Debug$log, '--- set player using item', currentPlayer.order);
+		return _Utils_update(
+			model,
+			{
+				player: _Utils_update(
+					currentPlayer,
+					{order: $author$project$Map$Mob$UsingItem})
+			});
+	}
 };
 var $author$project$Update$setPlayerAsInventoringIfDragging = function (model) {
 	return (!_Utils_eq(model.dragging, $elm$core$Maybe$Nothing)) ? $author$project$Map$Mob$setPlayerAsInventoring(model) : model;
@@ -9364,9 +9400,13 @@ var $author$project$Update$postUpdate = F3(
 				A2($author$project$Update$handleWorldEventEffects, worldEventSubscriber, events),
 				$author$project$Update$logDeath(events)));
 		var postUpdateModel = allUpdates(latestModel);
-		return _Utils_Tuple2(
-			postUpdateModel,
-			_Utils_eq(postUpdateModel.logs, oldModel.logs) ? $elm$core$Platform$Cmd$none : $author$project$Update$scrollLogToBottomOffsetCmd);
+		return A2(
+			$elm$core$Tuple$mapSecond,
+			$elm$core$Platform$Cmd$map(
+				function (_v0) {
+					return $author$project$Msg$NoOp;
+				}),
+			$author$project$Meta$Log$handleScrollToLatestLogs(postUpdateModel));
 	});
 var $author$project$Msg$DetermineOrderEffects = function (a) {
 	return {$: 'DetermineOrderEffects', a: a};
@@ -9821,6 +9861,7 @@ var $author$project$Rule$Order$applyPrioritizedOrderEffects = F2(
 		} else {
 			var firstEffect = orderEffects.a;
 			var restOfEffects = orderEffects.b;
+			var tst = A2($elm$core$Debug$log, 'handle order effect', firstEffect);
 			return A2(
 				$author$project$Rule$Order$applyPrioritizedOrderEffects,
 				restOfEffects,
@@ -9880,6 +9921,7 @@ var $author$project$Rule$Order$getOrderEffectPriority = function (orderEffect) {
 };
 var $author$project$Rule$Order$setOrder = F2(
 	function (order, mob) {
+		var tst = A2($elm$core$Debug$log, 'setOrder', order);
 		return _Utils_update(
 			mob,
 			{order: order});
@@ -9944,9 +9986,14 @@ var $author$project$Rule$Order$setAttackerAsGuardingIfTargetDead = F2(
 		var _v0 = attackingMob.order;
 		if (_v0.$ === 'AdvanceTo') {
 			var position = _v0.a;
-			return A2($author$project$Rule$Order$mobIsDeadAt, position, mobs) ? _Utils_update(
-				attackingMob,
-				{order: $author$project$Map$Mob$Guard}) : attackingMob;
+			if (A2($author$project$Rule$Order$mobIsDeadAt, position, mobs)) {
+				var tst = A2($elm$core$Debug$log, 'advance on dead mob', attackingMob.name);
+				return _Utils_update(
+					attackingMob,
+					{order: $author$project$Map$Mob$Guard});
+			} else {
+				return attackingMob;
+			}
 		} else {
 			return attackingMob;
 		}
@@ -9979,12 +10026,17 @@ var $author$project$Map$Mob$remove = F2(
 	});
 var $author$project$Update$cleanUpHelper = F2(
 	function (mob, acc) {
-		return $author$project$Map$Mob$isDead(mob) ? _Utils_update(
-			acc,
-			{
-				allDeadMobs: A2($elm$core$List$cons, mob, acc.allDeadMobs),
-				monsters: A2($author$project$Map$Mob$remove, mob.id, acc.monsters)
-			}) : acc;
+		if ($author$project$Map$Mob$isDead(mob)) {
+			var tst = A2($elm$core$Debug$log, 'cleaned up mob', mob.name);
+			return _Utils_update(
+				acc,
+				{
+					allDeadMobs: A2($elm$core$List$cons, mob, acc.allDeadMobs),
+					monsters: A2($author$project$Map$Mob$remove, mob.id, acc.monsters)
+				});
+		} else {
+			return acc;
+		}
 	});
 var $author$project$Update$createRespawnedPlayer = F2(
 	function (deadPlayer, respawnPosition) {
@@ -10754,22 +10806,26 @@ var $author$project$Map$Hex$getPossibleOrderForHex = F3(
 	});
 var $author$project$Update$setDecidedOrderForMonster = F2(
 	function (model, monster) {
-		return _Utils_update(
-			monster,
-			{
-				order: function () {
-					var _v0 = A2($author$project$Map$Hex$get, model.player.position, model.map);
-					if (_v0.$ === 'Nothing') {
-						return $author$project$Map$Mob$Guard;
-					} else {
-						var targetHex = _v0.a;
-						var targetPosition = targetHex.position;
-						var playerAtTargetHex = _Utils_eq(targetHex.position, model.player.position) ? $elm$core$Maybe$Just(model.player) : $elm$core$Maybe$Nothing;
-						var possibleOrderForHex = A3($author$project$Map$Hex$getPossibleOrderForHex, monster, targetHex, playerAtTargetHex);
-						return _Utils_eq($author$project$Map$Hex$Target, possibleOrderForHex) ? $author$project$Map$Mob$AdvanceTo(targetPosition) : $author$project$Map$Mob$Guard;
-					}
-				}()
-			});
+		var newOrder = function () {
+			var _v0 = A2($author$project$Map$Hex$get, model.player.position, model.map);
+			if (_v0.$ === 'Nothing') {
+				return $author$project$Map$Mob$Guard;
+			} else {
+				var targetHex = _v0.a;
+				var targetPosition = targetHex.position;
+				var playerAtTargetHex = _Utils_eq(targetHex.position, model.player.position) ? $elm$core$Maybe$Just(model.player) : $elm$core$Maybe$Nothing;
+				var possibleOrderForHex = A3($author$project$Map$Hex$getPossibleOrderForHex, monster, targetHex, playerAtTargetHex);
+				return _Utils_eq($author$project$Map$Hex$Target, possibleOrderForHex) ? $author$project$Map$Mob$AdvanceTo(targetPosition) : $author$project$Map$Mob$Guard;
+			}
+		}();
+		if (_Utils_eq(monster.order, newOrder)) {
+			return monster;
+		} else {
+			var tst = A2($elm$core$Debug$log, 'new order for:', monster.name);
+			return _Utils_update(
+				monster,
+				{order: newOrder});
+		}
 	});
 var $author$project$Update$setDecidedOrdersForMonsters = function (model) {
 	return _Utils_update(
@@ -10820,6 +10876,7 @@ var $author$project$Map$Mob$timePassesHelper = function (mob) {
 };
 var $author$project$Map$Mob$timePasses = $author$project$Extend$Type$performanceUpdate($author$project$Map$Mob$timePassesHelper);
 var $author$project$Update$updateDurationOfCondition = function (condition) {
+	var tst = A2($elm$core$Debug$log, 'update duration of', condition);
 	var duration = $author$project$Rule$Definition$getDurationOf(condition);
 	if (duration.$ === 'Permanent') {
 		return $elm$core$Maybe$Just(condition);
@@ -11050,6 +11107,7 @@ var $author$project$Update$updateWithMsg = F3(
 	});
 var $author$project$Update$update = F3(
 	function (injected, msg, oldModel) {
+		var tst = A2($elm$core$Debug$log, '??? update with: ', msg);
 		var _v0 = A3($author$project$Update$updateWithMsg, msg, injected, oldModel);
 		var updateModel = _v0.a;
 		var cmd = _v0.b;
@@ -11734,14 +11792,6 @@ var $author$project$Rule$Career$getSpentExperience = function (career) {
 			},
 			$author$project$Rule$Career$getAcquiredSkillStepsOfCareer(career)));
 };
-var $elm$core$Tuple$mapSecond = F2(
-	function (func, _v0) {
-		var x = _v0.a;
-		var y = _v0.b;
-		return _Utils_Tuple2(
-			x,
-			func(y));
-	});
 var $author$project$Render$Table$keyValueToTr = function (_v0) {
 	var key = _v0.a;
 	var htmlValue = _v0.b;
@@ -12636,16 +12686,15 @@ var $author$project$Areas$LogArea$renderRowAsTr = function (row) {
 					'Round ' + ($elm$core$String$fromInt(row.roundNumber) + (': ' + row.text)))
 				])));
 };
-var $author$project$Areas$LogArea$render = function (_v0) {
-	var rows = _v0.b;
+var $author$project$Areas$LogArea$render = function (log) {
+	var tst = A2($elm$core$Debug$log, '!!! log', _Utils_Tuple0);
 	return A3(
 		$elm$html$Html$Keyed$node,
 		'div',
 		_List_fromArray(
 			[
 				A2($elm$html$Html$Attributes$style, 'height', '100%'),
-				A2($elm$html$Html$Attributes$style, 'width', '100%'),
-				A2($elm$html$Html$Attributes$style, 'border', '1px solid green')
+				A2($elm$html$Html$Attributes$style, 'width', '100%')
 			]),
 		A2(
 			$elm$core$List$map,
@@ -12653,7 +12702,7 @@ var $author$project$Areas$LogArea$render = function (_v0) {
 			A2(
 				$elm$core$List$map,
 				$author$project$Areas$LogArea$renderRowAsTr,
-				$elm$core$List$reverse(rows))));
+				$elm$core$List$reverse(log.rows))));
 };
 var $author$project$Areas$LogArea$areaDefinition = function (rows) {
 	return {
@@ -12872,14 +12921,6 @@ var $elm$virtual_dom$VirtualDom$keyedNodeNS = F2(
 			_VirtualDom_noScript(tag));
 	});
 var $elm$svg$Svg$Keyed$node = $elm$virtual_dom$VirtualDom$keyedNodeNS('http://www.w3.org/2000/svg');
-var $author$project$Areas$MapArea$findAt = F2(
-	function (hex, _v0) {
-		var posIxDict = _v0.a;
-		return A2(
-			$elm$core$Dict$get,
-			$author$project$Map$Position$toIndex(hex.position),
-			posIxDict);
-	});
 var $author$project$Map$Hex$mapToList = F2(
 	function (mapFun, _v0) {
 		var map = _v0.b;
@@ -12889,6 +12930,8 @@ var $author$project$Map$Hex$mapToList = F2(
 			_List_Nil,
 			map);
 	});
+var $elm$virtual_dom$VirtualDom$lazy3 = _VirtualDom_lazy3;
+var $elm$svg$Svg$Lazy$lazy3 = $elm$virtual_dom$VirtualDom$lazy3;
 var $elm$virtual_dom$VirtualDom$lazy4 = _VirtualDom_lazy4;
 var $elm$svg$Svg$Lazy$lazy4 = $elm$virtual_dom$VirtualDom$lazy4;
 var $author$project$Msg$ClickLoot = F2(
@@ -13070,7 +13113,17 @@ var $elm$svg$Svg$Attributes$cursor = _VirtualDom_attribute('cursor');
 var $author$project$Areas$MapArea$svgClickable = $elm$svg$Svg$Attributes$cursor('pointer');
 var $elm$svg$Svg$title = $elm$svg$Svg$trustedNode('title');
 var $author$project$Areas$MapArea$renderHexHelper = F4(
-	function (hexTargetMode, mobInHex, interactiveInHex, hex) {
+	function (mobInHex, hexTargetMode, interactiveInHex, hex) {
+		var tst = A2($elm$core$Debug$log, 'hex', hex);
+		var ts2 = A2(
+			$elm$core$Debug$log,
+			'mob',
+			A2(
+				$elm$core$Maybe$map,
+				function (m) {
+					return {name: m.name, order: m.order};
+				},
+				mobInHex));
 		var renderedTooltip = _List_fromArray(
 			[
 				A2(
@@ -13253,6 +13306,11 @@ var $author$project$Areas$MapArea$renderHexHelper = F4(
 				]),
 			contents);
 	});
+var $author$project$Areas$MapArea$renderHexHelperNoMob = $author$project$Areas$MapArea$renderHexHelper($elm$core$Maybe$Nothing);
+var $author$project$Areas$MapArea$renderHexHelperWithMob = function (mob) {
+	return $author$project$Areas$MapArea$renderHexHelper(
+		$elm$core$Maybe$Just(mob));
+};
 var $author$project$Areas$MapArea$getKey = F2(
 	function (prefix, posHolder) {
 		return _Utils_ap(
@@ -13271,45 +13329,39 @@ var $author$project$Areas$MapArea$renderHex = F4(
 		var mobInHex = findMob(hex);
 		var possiblePlayerOrder = A3($author$project$Map$Hex$getPossibleOrderForHex, player, hex, mobInHex);
 		var interactiveInHex = findInteractive(hex);
-		var renderFunc = A4($elm$svg$Svg$Lazy$lazy4, $author$project$Areas$MapArea$renderHexHelper, possiblePlayerOrder, mobInHex, interactiveInHex);
+		var renderFunc = function () {
+			if (mobInHex.$ === 'Just') {
+				var mob = mobInHex.a;
+				return A4($elm$svg$Svg$Lazy$lazy4, $author$project$Areas$MapArea$renderHexHelperWithMob, mob, possiblePlayerOrder, interactiveInHex);
+			} else {
+				return A3($elm$svg$Svg$Lazy$lazy3, $author$project$Areas$MapArea$renderHexHelperNoMob, possiblePlayerOrder, interactiveInHex);
+			}
+		}();
 		return A3($author$project$Areas$MapArea$toKeyed, renderFunc, 'hex', hex);
 	});
-var $author$project$Areas$MapArea$PosIxDict = function (a) {
-	return {$: 'PosIxDict', a: a};
-};
-var $author$project$Extend$Dict$fromListMapKey = F2(
-	function (toKey, list) {
-		var aggregate = F2(
-			function (value, dict) {
-				return A3(
-					$elm$core$Dict$insert,
-					toKey(value),
-					value,
-					dict);
-			});
-		return A3($elm$core$List$foldl, aggregate, $elm$core$Dict$empty, list);
-	});
-var $author$project$Areas$MapArea$toPosIxDict = function (posHolders) {
-	return $author$project$Areas$MapArea$PosIxDict(
-		A2(
-			$author$project$Extend$Dict$fromListMapKey,
-			A2(
-				$elm$core$Basics$composeR,
-				function ($) {
-					return $.position;
-				},
-				$author$project$Map$Position$toIndex),
-			posHolders));
-};
 var $author$project$Areas$MapArea$renderHexes = function (mapHolder) {
 	var findInteractive = function ($) {
 		return $.stationary;
 	};
+	var dbg = A2($elm$core$Debug$log, 'map', _Utils_Tuple0);
 	var allMobs = $author$project$Map$Mob$collectAllMobs(mapHolder);
-	var posIxToMob = $author$project$Areas$MapArea$toPosIxDict(
-		$author$project$Map$Mob$toList(allMobs));
+	var posIxToMob = A3(
+		$author$project$Map$Mob$foldl,
+		F2(
+			function (mob, accDict) {
+				return A3(
+					$elm$core$Dict$insert,
+					$author$project$Map$Position$toIndex(mob.position),
+					mob,
+					accDict);
+			}),
+		$elm$core$Dict$empty,
+		allMobs);
 	var findMob = function (hex) {
-		return A2($author$project$Areas$MapArea$findAt, hex, posIxToMob);
+		return A2(
+			$elm$core$Dict$get,
+			$author$project$Map$Position$toIndex(hex.position),
+			posIxToMob);
 	};
 	return A2(
 		$author$project$Map$Hex$mapToList,
@@ -13979,7 +14031,7 @@ var $author$project$Areas$Area$getOuterScrollStyles = function (areaType) {
 					$elm$html$Html$Attributes$style,
 					'width',
 					$author$project$Style$Definitions$toPxString($author$project$Style$Definitions$mainWindowWidthPx)),
-					$elm$html$Html$Attributes$id($author$project$Areas$Area$logScrollAreaId)
+					$elm$html$Html$Attributes$id($author$project$Meta$Log$logScrollAreaId)
 				]);
 	}
 };
