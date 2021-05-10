@@ -4783,6 +4783,38 @@ var $elm$core$List$foldl = F3(
 	});
 var $author$project$Map$Mob$Guard = {$: 'Guard'};
 var $author$project$Rule$Definition$Hurt = {$: 'Hurt'};
+var $author$project$Map$Hex$BlessedGrounds = {$: 'BlessedGrounds'};
+var $author$project$Map$Hex$Desert = {$: 'Desert'};
+var $author$project$Map$Hex$Forest = {$: 'Forest'};
+var $author$project$Map$Hex$Mountains = {$: 'Mountains'};
+var $author$project$Map$Hex$Plains = {$: 'Plains'};
+var $author$project$Map$Hex$Sea = {$: 'Sea'};
+var $author$project$Rule$DefinitionMapping$mapTerrain = function (ruleTerrain) {
+	switch (ruleTerrain.$) {
+		case 'Desert':
+			return $author$project$Map$Hex$Desert;
+		case 'Forest':
+			return $author$project$Map$Hex$Forest;
+		case 'Sea':
+			return $author$project$Map$Hex$Sea;
+		case 'Mountain':
+			return $author$project$Map$Hex$Mountains;
+		case 'Plains':
+			return $author$project$Map$Hex$Plains;
+		default:
+			return $author$project$Map$Hex$BlessedGrounds;
+	}
+};
+var $author$project$Map$Content$ActualHex = function (a) {
+	return {$: 'ActualHex', a: a};
+};
+var $elm$core$Basics$apL = F2(
+	function (f, x) {
+		return f(x);
+	});
+var $elm$core$Maybe$Just = function (a) {
+	return {$: 'Just', a: a};
+};
 var $elm$core$Maybe$Nothing = {$: 'Nothing'};
 var $elm$core$Maybe$andThen = F2(
 	function (callback, maybeValue) {
@@ -4793,19 +4825,18 @@ var $elm$core$Maybe$andThen = F2(
 			return $elm$core$Maybe$Nothing;
 		}
 	});
+var $author$project$Map$Content$asLinkedHex = F2(
+	function (renderPosition, aggregatedHexData) {
+		return _Utils_update(
+			aggregatedHexData,
+			{isViaLink: true, renderPosition: renderPosition});
+	});
 var $elm$core$Basics$composeR = F3(
 	function (f, g, x) {
 		return g(
 			f(x));
 	});
-var $elm$core$Maybe$Just = function (a) {
-	return {$: 'Just', a: a};
-};
 var $elm$core$Bitwise$and = _Bitwise_and;
-var $elm$core$Basics$apL = F2(
-	function (f, x) {
-		return f(x);
-	});
 var $elm$core$Bitwise$shiftRightZfBy = _Bitwise_shiftRightZfBy;
 var $elm$core$Array$branchFactor = 32;
 var $elm$core$Basics$ceiling = _Basics_ceiling;
@@ -4914,35 +4945,41 @@ var $author$project$Map$Content$getSubMap = F2(
 				$elm$core$Basics$eq(coordsId)),
 			subMaps);
 	});
-var $author$project$Map$Content$get = function (pos) {
-	return A2(
-		$elm$core$Basics$composeR,
-		$author$project$Map$Content$getSubMap(pos.coords),
-		$elm$core$Maybe$andThen(
-			$author$project$Map$Content$getHexInSubMap(pos)));
-};
-var $author$project$Map$Hex$BlessedGrounds = {$: 'BlessedGrounds'};
-var $author$project$Map$Hex$Desert = {$: 'Desert'};
-var $author$project$Map$Hex$Forest = {$: 'Forest'};
-var $author$project$Map$Hex$Mountains = {$: 'Mountains'};
-var $author$project$Map$Hex$Plains = {$: 'Plains'};
-var $author$project$Map$Hex$Sea = {$: 'Sea'};
-var $author$project$Rule$DefinitionMapping$mapTerrain = function (ruleTerrain) {
-	switch (ruleTerrain.$) {
-		case 'Desert':
-			return $author$project$Map$Hex$Desert;
-		case 'Forest':
-			return $author$project$Map$Hex$Forest;
-		case 'Sea':
-			return $author$project$Map$Hex$Sea;
-		case 'Mountain':
-			return $author$project$Map$Hex$Mountains;
-		case 'Plains':
-			return $author$project$Map$Hex$Plains;
-		default:
-			return $author$project$Map$Hex$BlessedGrounds;
-	}
-};
+var $elm$core$Maybe$map = F2(
+	function (f, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return $elm$core$Maybe$Just(
+				f(value));
+		} else {
+			return $elm$core$Maybe$Nothing;
+		}
+	});
+var $author$project$Map$Content$get = F2(
+	function (pos, worldMap) {
+		return A2(
+			$elm$core$Maybe$andThen,
+			$author$project$Map$Content$getHelper(worldMap),
+			A2(
+				$elm$core$Maybe$andThen,
+				$author$project$Map$Content$getHexInSubMap(pos),
+				A2($author$project$Map$Content$getSubMap, pos.coords, worldMap)));
+	});
+var $author$project$Map$Content$getHelper = F2(
+	function (worldMap, hex) {
+		var _v0 = hex.reference;
+		if (_v0.$ === 'LinkedHex') {
+			var linkPos = _v0.a;
+			return A2(
+				$elm$core$Maybe$map,
+				$author$project$Map$Content$asLinkedHex(hex.position),
+				A2($author$project$Map$Content$get, linkPos, worldMap));
+		} else {
+			var hexData = _v0.a;
+			return $elm$core$Maybe$Just(
+				{actualPosition: hex.position, data: hexData, isViaLink: false, renderPosition: hex.position});
+		}
+	});
 var $elm$core$Basics$identity = function (x) {
 	return x;
 };
@@ -5079,28 +5116,40 @@ var $author$project$Map$Content$setOnMatchingSubMap = F2(
 	function (hex, subMap) {
 		if (_Utils_eq(subMap.coords, hex.position.coords)) {
 			var posIx = $author$project$Map$Position$toIndex(hex.position);
-			return {
-				coords: hex.position.coords,
-				hexes: A3($elm$core$Array$set, posIx, hex, subMap.hexes)
-			};
+			return _Utils_update(
+				subMap,
+				{
+					hexes: A3($elm$core$Array$set, posIx, hex, subMap.hexes)
+				});
 		} else {
 			return subMap;
 		}
 	});
-var $author$project$Map$Content$set = F2(
-	function (hex, map) {
-		if (_Utils_eq(
-			A2($author$project$Map$Content$get, hex.position, map),
-			$elm$core$Maybe$Nothing)) {
-			return map;
+var $author$project$Map$Content$setHexContent = F2(
+	function (hexContent, worldMap) {
+		var _v0 = worldMap;
+		var subMaps = _v0.a;
+		return $author$project$Map$Content$Map(
+			A2(
+				$elm$core$List$map,
+				$author$project$Map$Content$setOnMatchingSubMap(hexContent),
+				subMaps));
+	});
+var $author$project$Map$Content$update = F3(
+	function (pos, updateHex, worldMap) {
+		var hexToUpdate = A2($author$project$Map$Content$get, pos, worldMap);
+		if (hexToUpdate.$ === 'Nothing') {
+			return worldMap;
 		} else {
-			var _v0 = map;
-			var subMaps = _v0.a;
-			return $author$project$Map$Content$Map(
-				A2(
-					$elm$core$List$map,
-					$author$project$Map$Content$setOnMatchingSubMap(hex),
-					subMaps));
+			var foundHex = hexToUpdate.a;
+			return A2(
+				$author$project$Map$Content$setHexContent,
+				{
+					position: foundHex.actualPosition,
+					reference: $author$project$Map$Content$ActualHex(
+						updateHex(foundHex.data))
+				},
+				worldMap);
 		}
 	});
 var $author$project$Rule$Effect$changeTerrainTo = F3(
@@ -5114,22 +5163,19 @@ var $author$project$Rule$Effect$changeTerrainTo = F3(
 			}
 		}();
 		var newTerrain = $author$project$Rule$DefinitionMapping$mapTerrain(ruleTerrain);
-		var foundHex = A2($author$project$Map$Content$get, pos, mapHolder.map);
-		if (foundHex.$ === 'Nothing') {
-			return mapHolder;
-		} else {
-			var hex = foundHex.a;
-			return _Utils_update(
-				mapHolder,
-				{
-					map: A2(
-						$author$project$Map$Content$set,
-						_Utils_update(
+		return _Utils_update(
+			mapHolder,
+			{
+				map: A3(
+					$author$project$Map$Content$update,
+					pos,
+					function (hex) {
+						return _Utils_update(
 							hex,
-							{terrain: newTerrain}),
-						mapHolder.map)
-				});
-		}
+							{terrain: newTerrain});
+					},
+					mapHolder.map)
+			});
 	});
 var $author$project$Inventory$Item$Item = F6(
 	function (name, picture, encumbrance, itemType, effect, value) {
@@ -5147,19 +5193,6 @@ var $author$project$Rule$ReferenceLoot$createMoneyBag = function (amount) {
 		$author$project$Inventory$Item$None,
 		amount);
 };
-var $author$project$Map$Content$update = F3(
-	function (pos, updateHex, map) {
-		var hexToUpdate = A2($author$project$Map$Content$get, pos, map);
-		if (hexToUpdate.$ === 'Nothing') {
-			return map;
-		} else {
-			var hex = hexToUpdate.a;
-			return A2(
-				$author$project$Map$Content$set,
-				updateHex(hex),
-				map);
-		}
-	});
 var $author$project$Rule$Effect$dropMoney = F2(
 	function (amount, mapHolder) {
 		return _Utils_update(
@@ -5594,13 +5627,6 @@ var $author$project$Rule$Effect$apply = F2(
 				effects,
 				{mapHolder: initialModel, playerHealthMod: 0})).mapHolder;
 	});
-var $author$project$Map$Position$Position = F3(
-	function (coords, row, col) {
-		return {col: col, coords: coords, row: row};
-	});
-var $author$project$Rule$Definition$Teleport = function (a) {
-	return {$: 'Teleport', a: a};
-};
 var $author$project$World$Stationary$BlackGateChanged = function (a) {
 	return {$: 'BlackGateChanged', a: a};
 };
@@ -5612,6 +5638,9 @@ var $author$project$World$Stationary$Examined = {$: 'Examined'};
 var $author$project$World$Stationary$FarawayFields = {$: 'FarawayFields'};
 var $author$project$World$Stationary$Open = function (a) {
 	return {$: 'Open', a: a};
+};
+var $author$project$Rule$Definition$Teleport = function (a) {
+	return {$: 'Teleport', a: a};
 };
 var $author$project$World$Stationary$choice = F3(
 	function (description, changes, effects) {
@@ -5640,8 +5669,30 @@ var $author$project$World$PalackanFields$Stationary$getNextEndpoint = function (
 	}
 };
 var $author$project$Text$rn = '\r\n';
-var $author$project$World$PalackanFields$Stationary$blackGateStateDefinitionHelper = F2(
-	function (blackGateState, getTeleportEffects) {
+var $author$project$Map$Position$Position = F3(
+	function (coords, row, col) {
+		return {col: col, coords: coords, row: row};
+	});
+var $elm$core$Basics$negate = function (n) {
+	return -n;
+};
+var $author$project$World$PalackanFields$Stationary$toPosition = F2(
+	function (portalEndPoint, currentPosition) {
+		var getPos = F2(
+			function (row, col) {
+				return A3($author$project$Map$Position$Position, currentPosition.coords, row, col);
+			});
+		switch (portalEndPoint.$) {
+			case 'Elsewhere':
+				return A2(getPos, -1, -1);
+			case 'MountainTop':
+				return A2(getPos, 1, 9);
+			default:
+				return A2(getPos, 5, 2);
+		}
+	});
+var $author$project$World$PalackanFields$Stationary$blackGateStateDefinition = F2(
+	function (blackGateState, currentPosition) {
 		var smash = A2(
 			$author$project$World$Stationary$choiceNoEffects,
 			'Smash',
@@ -5704,7 +5755,11 @@ var $author$project$World$PalackanFields$Stationary$blackGateStateDefinitionHelp
 									$author$project$World$Stationary$choice,
 									'Walk through',
 									_List_Nil,
-									getTeleportEffects(endpoint)),
+									_List_fromArray(
+										[
+											$author$project$Rule$Definition$Teleport(
+											A2($author$project$World$PalackanFields$Stationary$toPosition, endpoint, currentPosition))
+										])),
 									A2(
 									$author$project$World$Stationary$choiceNoEffects,
 									'Swipe right over portal',
@@ -5730,685 +5785,22 @@ var $author$project$World$PalackanFields$Stationary$blackGateStateDefinitionHelp
 				name: 'The black gate'
 			});
 	});
-var $elm$core$Basics$negate = function (n) {
-	return -n;
-};
-var $author$project$World$PalackanFields$Stationary$toPosition = F2(
-	function (portalEndPoint, getPos) {
-		switch (portalEndPoint.$) {
-			case 'Elsewhere':
-				return A2(getPos, -1, -1);
-			case 'MountainTop':
-				return A2(getPos, 1, 9);
-			default:
-				return A2(getPos, 5, 2);
-		}
-	});
-var $author$project$World$PalackanFields$Stationary$blackGateStateDefinition = F2(
-	function (blackGateState, getPos) {
-		return A2(
-			$author$project$World$PalackanFields$Stationary$blackGateStateDefinitionHelper,
-			blackGateState,
-			function (endpoint) {
-				return _List_fromArray(
-					[
-						$author$project$Rule$Definition$Teleport(
-						A2($author$project$World$PalackanFields$Stationary$toPosition, endpoint, getPos))
-					]);
-			});
-	});
-var $author$project$Extend$List$getFirst = function (list) {
-	if (!list.b) {
-		return $elm$core$Maybe$Nothing;
-	} else {
-		var x = list.a;
-		return $elm$core$Maybe$Just(x);
-	}
-};
-var $elm$core$List$length = function (xs) {
-	return A3(
-		$elm$core$List$foldl,
-		F2(
-			function (_v0, i) {
-				return i + 1;
-			}),
-		0,
-		xs);
-};
-var $elm$core$Maybe$map = F2(
-	function (f, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return $elm$core$Maybe$Just(
-				f(value));
-		} else {
-			return $elm$core$Maybe$Nothing;
-		}
-	});
-var $elm$core$Maybe$withDefault = F2(
-	function (_default, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return value;
-		} else {
-			return _default;
-		}
-	});
-var $author$project$Map$Content$getCoordsFrom = function (posToHexLists) {
-	return {
-		totalCols: A2(
-			$elm$core$Basics$composeR,
-			$author$project$Extend$List$getFirst,
-			A2(
-				$elm$core$Basics$composeR,
-				$elm$core$Maybe$map($elm$core$List$length),
-				$elm$core$Maybe$withDefault(0)))(posToHexLists),
-		totalRows: $elm$core$List$length(posToHexLists)
-	};
-};
-var $author$project$World$State$ElsewhereNotStarted = {$: 'ElsewhereNotStarted'};
-var $author$project$Rule$Definition$GainExperience = F2(
-	function (a, b) {
-		return {$: 'GainExperience', a: a, b: b};
-	});
-var $author$project$Rule$Definition$Mythos = {$: 'Mythos'};
-var $author$project$State$Quest$NotStarted = {$: 'NotStarted'};
-var $author$project$State$Quest$Started = function (a) {
-	return {$: 'Started', a: a};
-};
-var $author$project$World$State$Visited = {$: 'Visited'};
-var $elm$core$Basics$and = _Basics_and;
-var $author$project$State$Quest$Changed = F2(
-	function (a, b) {
-		return {$: 'Changed', a: a, b: b};
-	});
-var $author$project$State$Quest$change = F2(
-	function (newWorldState, effects) {
-		return A2($author$project$State$Quest$Changed, newWorldState, effects);
-	});
-var $elm$core$Basics$composeL = F3(
-	function (g, f, x) {
-		return g(
-			f(x));
-	});
-var $elm$core$Basics$not = _Basics_not;
-var $author$project$Map$Position$validatePosition = function (_v0) {
-	var row = _v0.row;
-	var col = _v0.col;
-	var coords = _v0.coords;
-	var _v1 = coords;
-	var totalRows = _v1.totalRows;
-	var totalCols = _v1.totalCols;
-	return (row >= 0) && ((_Utils_cmp(row, totalRows) < 0) && ((col >= 0) && (_Utils_cmp(col, totalCols) < 0)));
-};
-var $author$project$Map$Position$isElsewhere = A2($elm$core$Basics$composeL, $elm$core$Basics$not, $author$project$Map$Position$validatePosition);
-var $author$project$Map$Mob$playerIdAsInt = -1;
-var $author$project$Map$Mob$idToInt = function (id) {
-	if (id.$ === 'Player') {
-		return $author$project$Map$Mob$playerIdAsInt;
-	} else {
-		var idAsInt = id.a;
-		return idAsInt;
-	}
-};
-var $author$project$Map$Mob$isPlayer = function (id) {
-	return _Utils_eq(
-		$author$project$Map$Mob$playerIdAsInt,
-		$author$project$Map$Mob$idToInt(id));
-};
-var $author$project$State$Quest$NoChange = {$: 'NoChange'};
-var $author$project$State$Quest$noChange = $author$project$State$Quest$NoChange;
-var $author$project$Extend$PositiveInt$two = $author$project$Extend$PositiveInt$PositiveInt(2);
-var $author$project$World$PalackanFields$Map$getElsewhereQuestDescription = function (state) {
-	var _v0 = state;
-	var elseWhereQuestState = _v0.elseWhereQuestState;
-	return _Utils_eq(elseWhereQuestState, $author$project$World$State$ElsewhereNotStarted) ? $author$project$State$Quest$NotStarted : $author$project$State$Quest$Started(
-		{
-			eventListener: function (event) {
-				if (event.$ === 'Moved') {
-					var mob = event.a.mob;
-					var fromPos = event.a.fromPos;
-					var toPos = event.a.toPos;
-					return ($author$project$Map$Mob$isPlayer(mob.id) && ($author$project$Map$Position$isElsewhere(toPos) && (!_Utils_eq(elseWhereQuestState, $author$project$World$State$Visited)))) ? A2(
-						$author$project$State$Quest$change,
-						_Utils_update(
-							state,
-							{elseWhereQuestState: $author$project$World$State$Visited}),
-						_List_fromArray(
-							[
-								A2($author$project$Rule$Definition$GainExperience, $author$project$Extend$PositiveInt$two, $author$project$Rule$Definition$Mythos)
-							])) : $author$project$State$Quest$noChange;
-				} else {
-					return $author$project$State$Quest$noChange;
-				}
-			},
-			name: 'Visit Elsewhere',
-			steps: _List_fromArray(
-				[
-					{
-					description: 'Find a portal to Elsewhere and step through.',
-					isCompleted: _Utils_eq(elseWhereQuestState, $author$project$World$State$Visited)
-				}
-				]),
-			summary: _Utils_eq(elseWhereQuestState, $author$project$World$State$Visited) ? 'Elsewhere was a cold and unnerving experience. Still you have learnt a little more of the secrets of the universe.' : 'The voyage to the mythic void of Elsewhere remains...'
-		});
-};
-var $author$project$Inventory$Slot$Backpack = {$: 'Backpack'};
-var $author$project$Inventory$Slot$Slot = F4(
-	function (slotType, picture, contents, id) {
-		return {contents: contents, id: id, picture: picture, slotType: slotType};
-	});
-var $author$project$Inventory$Slot$createBackpack = A2(
-	$author$project$Inventory$Slot$Slot,
-	$author$project$Inventory$Slot$Backpack,
-	_Utils_chr('⬜'));
-var $elm$core$List$map2 = _List_map2;
-var $elm$core$Basics$le = _Utils_le;
-var $elm$core$List$rangeHelp = F3(
-	function (lo, hi, list) {
-		rangeHelp:
-		while (true) {
-			if (_Utils_cmp(lo, hi) < 1) {
-				var $temp$lo = lo,
-					$temp$hi = hi - 1,
-					$temp$list = A2($elm$core$List$cons, hi, list);
-				lo = $temp$lo;
-				hi = $temp$hi;
-				list = $temp$list;
-				continue rangeHelp;
-			} else {
-				return list;
-			}
-		}
-	});
-var $elm$core$List$range = F2(
-	function (lo, hi) {
-		return A3($elm$core$List$rangeHelp, lo, hi, _List_Nil);
-	});
-var $elm$core$List$indexedMap = F2(
-	function (f, xs) {
-		return A3(
-			$elm$core$List$map2,
-			f,
-			A2(
-				$elm$core$List$range,
-				0,
-				$elm$core$List$length(xs) - 1),
-			xs);
-	});
-var $author$project$Extend$List$indexedMapInvert = F2(
-	function (invertedFunc, list) {
-		return A2(
-			$elm$core$List$indexedMap,
-			F2(
-				function (ix, x) {
-					return A2(invertedFunc, x, ix);
-				}),
-			list);
-	});
-var $author$project$Inventory$Slot$backpackFromItems = function (items) {
-	return A2(
-		$author$project$Extend$List$indexedMapInvert,
-		$author$project$Inventory$Slot$createBackpack,
-		A2($elm$core$List$map, $elm$core$Maybe$Just, items));
-};
-var $author$project$Map$Mob$Mob = function (name) {
-	return function (picture) {
-		return function (health) {
-			return function (order) {
-				return function (inventory) {
-					return function (position) {
-						return function (career) {
-							return function (currentShape) {
-								return function (traits) {
-									return function (id) {
-										return {career: career, currentShape: currentShape, health: health, id: id, inventory: inventory, name: name, order: order, picture: picture, position: position, traits: traits};
-									};
-								};
-							};
-						};
-					};
-				};
-			};
-		};
-	};
-};
-var $author$project$Map$Mob$getMaxFatigue = 5;
-var $author$project$Map$Mob$initialCurrentShape = {
-	conditions: _List_Nil,
-	drink: $author$project$Map$Mob$getMax($author$project$Map$Mob$Drink),
-	fatigue: $author$project$Map$Mob$getMaxFatigue,
-	food: $author$project$Map$Mob$getMax($author$project$Map$Mob$Food)
-};
-var $author$project$Map$Mob$create = F7(
-	function (name, picture, inventory, pos, traits, career, mobId) {
-		return $author$project$Map$Mob$Mob(name)(picture)($author$project$Map$Mob$Healthy)($author$project$Map$Mob$Guard)(inventory)(pos)(career)($author$project$Map$Mob$initialCurrentShape)(traits)(mobId);
-	});
-var $author$project$Rule$Experience$none = $author$project$Rule$Experience$Experience(
-	{fate: $author$project$Extend$PositiveInt$zero, magic: $author$project$Extend$PositiveInt$zero, mythos: $author$project$Extend$PositiveInt$zero, renown: $author$project$Extend$PositiveInt$zero, training: $author$project$Extend$PositiveInt$zero});
-var $author$project$Rule$Career$AcquiredSkill = function (a) {
-	return {$: 'AcquiredSkill', a: a};
-};
-var $author$project$Rule$Career$toInitialAcquiredSkill = function (skill) {
-	return $author$project$Rule$Career$AcquiredSkill(
-		{degree: $author$project$Extend$PositiveInt$zero, skill: skill});
-};
-var $author$project$Rule$Career$toInitialCareer = function (allAvailableSkills) {
-	return $author$project$Rule$Career$Career(
-		{
-			acquiredSkills: A2($elm$core$List$map, $author$project$Rule$Career$toInitialAcquiredSkill, allAvailableSkills),
-			experience: $author$project$Rule$Experience$none
-		});
-};
-var $author$project$Map$Mob$typicalMonsterCareer = $author$project$Rule$Career$toInitialCareer(_List_Nil);
-var $author$project$Map$Mob$createMonster = F5(
-	function (name, picture, items, traits, pos) {
-		return A6(
-			$author$project$Map$Mob$create,
-			name,
-			picture,
-			$author$project$Inventory$Slot$backpackFromItems(items),
-			pos,
-			traits,
-			$author$project$Map$Mob$typicalMonsterCareer);
-	});
-var $author$project$World$PalackanFields$Mob$diamond = A6(
-	$author$project$Inventory$Item$Item,
-	'Diamond',
-	_Utils_chr('💎'),
-	1,
-	$author$project$Inventory$Item$Misc,
-	$author$project$Inventory$Item$None,
-	1000);
-var $author$project$Rule$Definition$LogEvent = function (a) {
-	return {$: 'LogEvent', a: a};
-};
-var $author$project$Rule$Definition$ModifyWellbeing = F2(
-	function (a, b) {
-		return {$: 'ModifyWellbeing', a: a, b: b};
-	});
-var $author$project$Rule$Definition$Thirst = {$: 'Thirst'};
-var $author$project$Inventory$Item$ConsumedEffects = function (a) {
-	return {$: 'ConsumedEffects', a: a};
-};
-var $author$project$Rule$Definition$Always = {$: 'Always'};
-var $author$project$Inventory$Item$toConsumedEffect = function (effect) {
-	return {effect: effect, requirement: $author$project$Rule$Definition$Always};
-};
-var $author$project$Inventory$Item$consumedEffects = function (effects) {
-	return $author$project$Inventory$Item$ConsumedEffects(
-		A2($elm$core$List$map, $author$project$Inventory$Item$toConsumedEffect, effects));
-};
-var $author$project$Extend$PositiveInt$one = $author$project$Extend$PositiveInt$PositiveInt(1);
-var $author$project$World$PalackanFields$Mob$dragonBloodEffect = $author$project$Inventory$Item$consumedEffects(
-	_List_fromArray(
-		[
-			A2($author$project$Rule$Definition$GainExperience, $author$project$Extend$PositiveInt$one, $author$project$Rule$Definition$Mythos),
-			$author$project$Rule$Definition$Hurt,
-			A2($author$project$Rule$Definition$ModifyWellbeing, $author$project$Rule$Definition$Thirst, 10),
-			$author$project$Rule$Definition$LogEvent('As you drink the dragon\'s blood, an intense heat spreads across your body ' + ('burning you from the inside with an excruciating pain. For a short moment, ' + 'you see glimpses into the past life of the age-old creature.'))
-		]));
-var $author$project$World$PalackanFields$Mob$dragonBlood = A6(
-	$author$project$Inventory$Item$Item,
-	'Dragon blood',
-	_Utils_chr('🩸'),
-	5,
-	$author$project$Inventory$Item$Misc,
-	$author$project$World$PalackanFields$Mob$dragonBloodEffect,
-	1000);
-var $author$project$World$PalackanFields$Mob$moneyBag = $author$project$Rule$ReferenceLoot$createMoneyBag(200);
-var $author$project$World$PalackanFields$Mob$dragonLoot = _List_fromArray(
-	[$author$project$World$PalackanFields$Mob$diamond, $author$project$World$PalackanFields$Mob$moneyBag, $author$project$World$PalackanFields$Mob$moneyBag, $author$project$World$PalackanFields$Mob$moneyBag, $author$project$World$PalackanFields$Mob$dragonBlood]);
-var $author$project$World$PalackanFields$Mob$dragonTraits = _List_Nil;
-var $author$project$Rule$Definition$Heal = {$: 'Heal'};
-var $author$project$World$PalackanFields$Mob$healingPotion = A6(
-	$author$project$Inventory$Item$Item,
-	'Healing potion',
-	_Utils_chr('🧪'),
-	5,
-	$author$project$Inventory$Item$Misc,
-	$author$project$Inventory$Item$consumedEffects(
-		_List_fromArray(
-			[
-				$author$project$Rule$Definition$Heal,
-				A2($author$project$Rule$Definition$ModifyWellbeing, $author$project$Rule$Definition$Thirst, 3)
-			])),
-	200);
-var $author$project$World$PalackanFields$Mob$trash = A6(
-	$author$project$Inventory$Item$Item,
-	'Trash',
-	_Utils_chr('📚'),
-	15,
-	$author$project$Inventory$Item$Misc,
-	$author$project$Inventory$Item$None,
-	1);
-var $author$project$World$PalackanFields$Mob$standardLoot = _List_fromArray(
-	[$author$project$World$PalackanFields$Mob$trash, $author$project$World$PalackanFields$Mob$healingPotion]);
-var $author$project$Inventory$Item$Long = {$: 'Long'};
-var $author$project$Inventory$Item$Weapon = function (a) {
-	return {$: 'Weapon', a: a};
-};
-var $author$project$World$PalackanFields$Mob$magicOrb = A6(
-	$author$project$Inventory$Item$Item,
-	'Magic orb',
-	_Utils_chr('🔮'),
-	5,
-	$author$project$Inventory$Item$Weapon($author$project$Inventory$Item$Long),
-	$author$project$Inventory$Item$None,
-	450);
-var $author$project$World$PalackanFields$Mob$vampireLoot = _List_fromArray(
-	[$author$project$World$PalackanFields$Mob$magicOrb]);
-var $author$project$Rule$Definition$Innate = function (a) {
-	return {$: 'Innate', a: a};
-};
-var $author$project$Rule$Definition$createTrait = $author$project$Rule$Definition$Innate;
-var $author$project$World$PalackanFields$Mob$undeadAttribute = {
-	description: 'Undead are once-living who returned to unlife from death.',
-	effects: _List_Nil,
-	name: 'Undead',
-	picture: _Utils_chr('🧟')
-};
-var $author$project$World$PalackanFields$Mob$undeadTrait = $author$project$Rule$Definition$createTrait($author$project$World$PalackanFields$Mob$undeadAttribute);
-var $author$project$World$PalackanFields$Mob$vampireTraits = _List_fromArray(
-	[$author$project$World$PalackanFields$Mob$undeadTrait]);
-var $author$project$World$PalackanFields$Mob$zombieTraits = _List_fromArray(
-	[$author$project$World$PalackanFields$Mob$undeadTrait]);
-var $author$project$World$PalackanFields$Mob$getInitialMonsters = function (getPos) {
-	return _List_fromArray(
-		[
-			A5(
-			$author$project$Map$Mob$createMonster,
-			'Zombie 1',
-			_Utils_chr('🧟'),
-			$author$project$World$PalackanFields$Mob$standardLoot,
-			$author$project$World$PalackanFields$Mob$zombieTraits,
-			A2(getPos, 3, 2)),
-			A5(
-			$author$project$Map$Mob$createMonster,
-			'Zombie 2',
-			_Utils_chr('🧟'),
-			$author$project$World$PalackanFields$Mob$standardLoot,
-			$author$project$World$PalackanFields$Mob$zombieTraits,
-			A2(getPos, 2, 3)),
-			A5(
-			$author$project$Map$Mob$createMonster,
-			'Zombie 3',
-			_Utils_chr('🧟'),
-			$author$project$World$PalackanFields$Mob$standardLoot,
-			$author$project$World$PalackanFields$Mob$zombieTraits,
-			A2(getPos, 2, 4)),
-			A5(
-			$author$project$Map$Mob$createMonster,
-			'Zombie 4',
-			_Utils_chr('🧟'),
-			$author$project$World$PalackanFields$Mob$standardLoot,
-			$author$project$World$PalackanFields$Mob$zombieTraits,
-			A2(getPos, 3, 3)),
-			A5(
-			$author$project$Map$Mob$createMonster,
-			'Vampire',
-			_Utils_chr('🧛'),
-			$author$project$World$PalackanFields$Mob$vampireLoot,
-			$author$project$World$PalackanFields$Mob$vampireTraits,
-			A2(getPos, 3, 5)),
-			A5(
-			$author$project$Map$Mob$createMonster,
-			'Dragon',
-			_Utils_chr('🐉'),
-			$author$project$World$PalackanFields$Mob$dragonLoot,
-			$author$project$World$PalackanFields$Mob$dragonTraits,
-			A2(getPos, 4, 4))
-		]);
-};
-var $author$project$Rule$Definition$Fate = {$: 'Fate'};
-var $author$project$Rule$Definition$Renown = {$: 'Renown'};
-var $author$project$Rule$Definition$SetCondition = function (a) {
-	return {$: 'SetCondition', a: a};
-};
-var $elm$core$List$any = F2(
-	function (isOkay, list) {
-		any:
-		while (true) {
-			if (!list.b) {
-				return false;
-			} else {
-				var x = list.a;
-				var xs = list.b;
-				if (isOkay(x)) {
-					return true;
-				} else {
-					var $temp$isOkay = isOkay,
-						$temp$list = xs;
-					isOkay = $temp$isOkay;
-					list = $temp$list;
-					continue any;
-				}
-			}
-		}
-	});
-var $author$project$Extend$List$contains = F2(
-	function (item, list) {
-		return A2(
-			$elm$core$List$any,
-			$elm$core$Basics$eq(item),
-			list);
-	});
-var $elm$core$String$fromInt = _String_fromNumber;
-var $author$project$Rule$Definition$HasAttribute = function (a) {
-	return {$: 'HasAttribute', a: a};
-};
-var $author$project$Rule$Definition$ModifyDefense = function (a) {
-	return {$: 'ModifyDefense', a: a};
-};
-var $author$project$Rule$Definition$RepeatingEffect = function (a) {
-	return {$: 'RepeatingEffect', a: a};
-};
-var $author$project$Rule$Definition$toAttributeEffect = F2(
-	function (requirement, continuousEffect) {
-		return {continuousEffect: continuousEffect, requirement: requirement};
-	});
-var $author$project$Rule$Definition$alwaysTrue = $elm$core$List$map(
-	$author$project$Rule$Definition$toAttributeEffect($author$project$Rule$Definition$Always));
-var $author$project$Rule$Definition$createCondition = function (attributeBase) {
-	return A2(
-		$author$project$Rule$Definition$Condition,
-		{description: attributeBase.description, effects: attributeBase.effects, name: attributeBase.name, picture: attributeBase.picture},
-		attributeBase.duration);
-};
-var $author$project$World$PalackanFields$Stationary$temporaryConnectionWithFields = $author$project$Rule$Definition$createCondition(
-	{
-		description: 'You feel the innate life energy of the surrounding fields surge through you; in a way, it\'s like touching a god.',
-		duration: $author$project$Rule$Definition$RoundsLeft(10),
-		effects: $author$project$Rule$Definition$alwaysTrue(
-			_List_fromArray(
-				[
-					$author$project$Rule$Definition$RepeatingEffect($author$project$Rule$Definition$Heal),
-					$author$project$Rule$Definition$RepeatingEffect(
-					$author$project$Rule$Definition$LogEvent('Life energy from the fields heals your wounds...')),
-					$author$project$Rule$Definition$ModifyDefense(
-					{
-						amount: 3,
-						requirementOnVsMob: $author$project$Rule$Definition$HasAttribute($author$project$World$PalackanFields$Mob$undeadAttribute)
-					})
-				])),
-		name: 'Connection with Palackan Fields',
-		picture: _Utils_chr('🔆')
-	});
-var $author$project$World$PalackanFields$Map$getUndeadQuestDescription = function (state) {
-	var isUndead = function (mob) {
-		return A2($author$project$Extend$List$contains, $author$project$World$PalackanFields$Mob$undeadTrait, mob.traits);
-	};
-	var _v0 = state.undeadQuestState;
-	if (_v0.$ === 'UndeadNotStarted') {
-		return $author$project$State$Quest$NotStarted;
-	} else {
-		var numberUndeadLeft = _v0.a;
-		return $author$project$State$Quest$Started(
-			{
-				eventListener: function (event) {
-					if (event.$ === 'Died') {
-						var mob = event.a.mob;
-						var _v2 = state.undeadQuestState;
-						if (_v2.$ === 'UndeadLeft') {
-							var undeadLeft = _v2.a;
-							return isUndead(mob) ? A2(
-								$author$project$State$Quest$change,
-								_Utils_update(
-									state,
-									{
-										undeadQuestState: $author$project$World$State$UndeadLeft(undeadLeft - 1)
-									}),
-								(undeadLeft === 1) ? _List_fromArray(
-									[
-										$author$project$Rule$Definition$SetCondition($author$project$World$PalackanFields$Stationary$temporaryConnectionWithFields),
-										A2($author$project$Rule$Definition$GainExperience, $author$project$Extend$PositiveInt$two, $author$project$Rule$Definition$Fate),
-										A2($author$project$Rule$Definition$GainExperience, $author$project$Extend$PositiveInt$two, $author$project$Rule$Definition$Renown),
-										$author$project$Rule$Definition$LogEvent('Once again the beautiful yet terrifying voice enters your mind: ' + ('\'You have done well, little lamb. To show my gratitude, I grant you ' + 'connection with my lands as long as possible for a mortal.\''))
-									]) : _List_Nil) : $author$project$State$Quest$noChange;
-						} else {
-							return $author$project$State$Quest$noChange;
-						}
-					} else {
-						return $author$project$State$Quest$noChange;
-					}
-				},
-				name: 'Slay undead in Her name',
-				steps: _List_fromArray(
-					[
-						{
-						description: 'Slay ' + ($elm$core$String$fromInt(numberUndeadLeft) + ' more undead.'),
-						isCompleted: !numberUndeadLeft
-					}
-					]),
-				summary: 'The supposed \'Godess of tears\' wants you to rid the Palackan Fields of some the undead that have appeared there.'
-			});
-	}
-};
-var $author$project$Map$Hex$Hex = F4(
-	function (terrain, position, loot, stationary) {
-		return {loot: loot, position: position, stationary: stationary, terrain: terrain};
-	});
-var $author$project$Map$Hex$createHex = F4(
-	function (stationary, loot, terrain, pos) {
-		return A4($author$project$Map$Hex$Hex, terrain, pos, loot, stationary);
-	});
-var $author$project$Map$Hex$emptyLoot = _List_Nil;
-var $author$project$Map$Hex$createHexWStationary = function (stationary) {
-	return A2(
-		$author$project$Map$Hex$createHex,
-		$elm$core$Maybe$Just(stationary),
-		$author$project$Map$Hex$emptyLoot);
-};
-var $author$project$World$Stationary$NotExamined = {$: 'NotExamined'};
-var $author$project$World$PalackanFields$Stationary$initialBlackGateState = A2(
-	$author$project$World$PalackanFields$Stationary$blackGateStateDefinitionHelper,
-	$author$project$World$Stationary$Closed($author$project$World$Stationary$NotExamined),
-	function (_v0) {
-		return _List_Nil;
-	});
-var $author$project$World$PalackanFields$Map$tBp = A2($author$project$Map$Hex$createHexWStationary, $author$project$World$PalackanFields$Stationary$initialBlackGateState, $author$project$Map$Hex$Plains);
-var $author$project$Rule$Definition$ModifyToAttack = function (a) {
-	return {$: 'ModifyToAttack', a: a};
-};
-var $author$project$Rule$Definition$createAttackModVsAll = function (modAmount) {
-	return $author$project$Rule$Definition$ModifyToAttack(
-		{amount: modAmount, requirementOnVsMob: $author$project$Rule$Definition$Always});
-};
-var $author$project$Rule$Definition$createDefenseModVsAll = function (modAmount) {
-	return $author$project$Rule$Definition$ModifyDefense(
-		{amount: modAmount, requirementOnVsMob: $author$project$Rule$Definition$Always});
-};
-var $author$project$World$Common$Stationary$wellRestedCondition = $author$project$Rule$Definition$createCondition(
-	{
-		description: 'You have rested and full of energy',
-		duration: $author$project$Rule$Definition$RoundsLeft(4),
-		effects: $author$project$Rule$Definition$alwaysTrue(
-			_List_fromArray(
-				[
-					$author$project$Rule$Definition$createDefenseModVsAll(1),
-					$author$project$Rule$Definition$createAttackModVsAll(1)
-				])),
-		name: 'Well rested',
-		picture: _Utils_chr('💪')
-	});
-var $author$project$World$Common$Stationary$campDescription = $author$project$World$Stationary$createOrdinary(
-	{
-		dialogueDescription: 'A cozy campfire invites you to rest.',
-		dialogueOptions: _List_fromArray(
-			[
-				A3(
-				$author$project$World$Stationary$choice,
-				'Rest.',
-				_List_Nil,
-				_List_fromArray(
-					[
-						$author$project$Rule$Definition$SetCondition($author$project$World$Common$Stationary$wellRestedCondition),
-						$author$project$Rule$Definition$LogEvent('You sit down at the camp and relax in front of the heat. Time passes.')
-					]))
-			]),
-		mapPicture: _Utils_chr('🏕'),
-		name: 'Wilderness camp'
-	});
-var $author$project$World$PalackanFields$Map$tCf = A2($author$project$Map$Hex$createHexWStationary, $author$project$World$Common$Stationary$campDescription, $author$project$Map$Hex$Forest);
-var $author$project$World$Common$Stationary$createContainerDescription = F4(
-	function (items, name, picture, description) {
-		return A2(
-			$author$project$World$Stationary$createWithInventory,
-			$author$project$Inventory$Slot$backpackFromItems(items),
-			{dialogueDescription: description, dialogueOptions: _List_Nil, mapPicture: picture, name: name});
-	});
-var $author$project$World$Common$Stationary$createChestDescription = function (items) {
-	return A4(
-		$author$project$World$Common$Stationary$createContainerDescription,
-		items,
-		'Chest',
-		_Utils_chr('🗃'),
-		'A chest waiting to be plundered.');
-};
-var $author$project$Rule$Definition$Hunger = {$: 'Hunger'};
-var $author$project$World$Common$Mob$druggedCondition = $author$project$Rule$Definition$createCondition(
-	{
-		description: 'Irritability with sudden anger mood swings and warped perception of the surroundings.',
-		duration: $author$project$Rule$Definition$RoundsLeft(8),
-		effects: $author$project$Rule$Definition$alwaysTrue(
-			_List_fromArray(
-				[
-					$author$project$Rule$Definition$createDefenseModVsAll(-1),
-					$author$project$Rule$Definition$createAttackModVsAll(1)
-				])),
-		name: 'Drugged',
-		picture: _Utils_chr('🥴')
-	});
-var $author$project$World$PalackanFields$Mob$magicMushroom = A6(
-	$author$project$Inventory$Item$Item,
-	'Glowing mushroom',
-	_Utils_chr('🍄'),
-	4,
-	$author$project$Inventory$Item$Misc,
-	$author$project$Inventory$Item$consumedEffects(
-		_List_fromArray(
-			[
-				$author$project$Rule$Definition$SetCondition($author$project$World$Common$Mob$druggedCondition),
-				A2($author$project$Rule$Definition$ModifyWellbeing, $author$project$Rule$Definition$Hunger, 15)
-			])),
-	50);
-var $author$project$World$PalackanFields$Map$tCp = A2(
-	$author$project$Map$Hex$createHexWStationary,
-	$author$project$World$Common$Stationary$createChestDescription(
-		_List_fromArray(
-			[$author$project$World$PalackanFields$Mob$diamond, $author$project$World$PalackanFields$Mob$magicMushroom, $author$project$World$PalackanFields$Mob$magicMushroom])),
-	$author$project$Map$Hex$Plains);
-var $author$project$Map$Hex$createHexWLoot = $author$project$Map$Hex$createHex($elm$core$Maybe$Nothing);
-var $author$project$Map$Hex$createEmptyHex = $author$project$Map$Hex$createHexWLoot($author$project$Map$Hex$emptyLoot);
-var $author$project$World$PalackanFields$Map$tMm = $author$project$Map$Hex$createEmptyHex($author$project$Map$Hex$Mountains);
-var $author$project$World$Stationary$NotYetTouched = {$: 'NotYetTouched'};
 var $author$project$Rule$Definition$DropMoney = function (a) {
 	return {$: 'DropMoney', a: a};
 };
+var $author$project$Rule$Definition$HasAttribute = function (a) {
+	return {$: 'HasAttribute', a: a};
+};
 var $author$project$World$Stationary$HasKissedGivenQuest = {$: 'HasKissedGivenQuest'};
 var $author$project$World$Stationary$HaveTouched = {$: 'HaveTouched'};
+var $author$project$Rule$Definition$LogEvent = function (a) {
+	return {$: 'LogEvent', a: a};
+};
 var $author$project$Rule$Definition$SendWorldEvent = function (a) {
 	return {$: 'SendWorldEvent', a: a};
+};
+var $author$project$Rule$Definition$SetCondition = function (a) {
+	return {$: 'SetCondition', a: a};
 };
 var $author$project$World$State$StartUndeadQuest = {$: 'StartUndeadQuest'};
 var $author$project$World$Stationary$WeepingStatueChanged = function (a) {
@@ -6432,7 +5824,11 @@ var $author$project$Rule$Experience$add = F2(
 			});
 		return A3($elm$core$List$foldl, updatePerType, xp1, $author$project$Rule$Experience$allTypes);
 	});
+var $author$project$Rule$Experience$none = $author$project$Rule$Experience$Experience(
+	{fate: $author$project$Extend$PositiveInt$zero, magic: $author$project$Extend$PositiveInt$zero, mythos: $author$project$Extend$PositiveInt$zero, renown: $author$project$Extend$PositiveInt$zero, training: $author$project$Extend$PositiveInt$zero});
+var $author$project$Extend$PositiveInt$one = $author$project$Extend$PositiveInt$PositiveInt(1);
 var $author$project$World$Career$oneFate = A3($author$project$Rule$Experience$update, $author$project$Rule$Experience$Fate, $author$project$Extend$PositiveInt$one, $author$project$Rule$Experience$none);
+var $author$project$Extend$PositiveInt$two = $author$project$Extend$PositiveInt$PositiveInt(2);
 var $author$project$World$Career$masterFateTalkToGods = {
 	description: 'Unlocks dialogue options when talking to godlike beings.',
 	effects: _List_Nil,
@@ -6443,6 +5839,51 @@ var $author$project$World$Career$masterFateTalkToGods = {
 		$author$project$World$Career$oneFate,
 		A3($author$project$Rule$Experience$update, $author$project$Rule$Experience$Mythos, $author$project$Extend$PositiveInt$two, $author$project$Rule$Experience$none))
 };
+var $author$project$Rule$Definition$Heal = {$: 'Heal'};
+var $author$project$Rule$Definition$ModifyDefense = function (a) {
+	return {$: 'ModifyDefense', a: a};
+};
+var $author$project$Rule$Definition$RepeatingEffect = function (a) {
+	return {$: 'RepeatingEffect', a: a};
+};
+var $author$project$Rule$Definition$Always = {$: 'Always'};
+var $author$project$Rule$Definition$toAttributeEffect = F2(
+	function (requirement, continuousEffect) {
+		return {continuousEffect: continuousEffect, requirement: requirement};
+	});
+var $author$project$Rule$Definition$alwaysTrue = $elm$core$List$map(
+	$author$project$Rule$Definition$toAttributeEffect($author$project$Rule$Definition$Always));
+var $author$project$Rule$Definition$createCondition = function (attributeBase) {
+	return A2(
+		$author$project$Rule$Definition$Condition,
+		{description: attributeBase.description, effects: attributeBase.effects, name: attributeBase.name, picture: attributeBase.picture},
+		attributeBase.duration);
+};
+var $author$project$World$PalackanFields$Mob$undeadAttribute = {
+	description: 'Undead are once-living who returned to unlife from death.',
+	effects: _List_Nil,
+	name: 'Undead',
+	picture: _Utils_chr('🧟')
+};
+var $author$project$World$PalackanFields$Stationary$temporaryConnectionWithFields = $author$project$Rule$Definition$createCondition(
+	{
+		description: 'You feel the innate life energy of the surrounding fields surge through you; in a way, it\'s like touching a god.',
+		duration: $author$project$Rule$Definition$RoundsLeft(10),
+		effects: $author$project$Rule$Definition$alwaysTrue(
+			_List_fromArray(
+				[
+					$author$project$Rule$Definition$RepeatingEffect($author$project$Rule$Definition$Heal),
+					$author$project$Rule$Definition$RepeatingEffect(
+					$author$project$Rule$Definition$LogEvent('Life energy from the fields heals your wounds...')),
+					$author$project$Rule$Definition$ModifyDefense(
+					{
+						amount: 3,
+						requirementOnVsMob: $author$project$Rule$Definition$HasAttribute($author$project$World$PalackanFields$Mob$undeadAttribute)
+					})
+				])),
+		name: 'Connection with Palackan Fields',
+		picture: _Utils_chr('🔆')
+	});
 var $author$project$Rule$Career$toAttribute = function (skillStep) {
 	return {description: skillStep.description, effects: skillStep.effects, name: skillStep.name, picture: skillStep.picture};
 };
@@ -6511,72 +5952,33 @@ var $author$project$World$PalackanFields$Stationary$weepingStatueDefinition = fu
 			name: 'The weeping statue'
 		});
 };
-var $author$project$World$PalackanFields$Stationary$initialWeepingStatueState = $author$project$World$PalackanFields$Stationary$weepingStatueDefinition($author$project$World$Stationary$NotYetTouched);
-var $author$project$World$PalackanFields$Map$tSd = A2($author$project$Map$Hex$createHexWStationary, $author$project$World$PalackanFields$Stationary$initialWeepingStatueState, $author$project$Map$Hex$Desert);
-var $author$project$World$PalackanFields$Map$tTf = A2(
-	$author$project$Map$Hex$createHexWLoot,
-	_List_fromArray(
-		[$author$project$World$PalackanFields$Mob$magicMushroom]),
-	$author$project$Map$Hex$Forest);
-var $author$project$World$PalackanFields$Map$tWb = $author$project$Map$Hex$createEmptyHex($author$project$Map$Hex$BlessedGrounds);
-var $author$project$World$PalackanFields$Map$tYf = $author$project$Map$Hex$createEmptyHex($author$project$Map$Hex$Forest);
-var $author$project$World$PalackanFields$Map$t_p = $author$project$Map$Hex$createEmptyHex($author$project$Map$Hex$Plains);
-var $author$project$World$PalackanFields$Map$tws = $author$project$Map$Hex$createEmptyHex($author$project$Map$Hex$Sea);
-var $author$project$World$PalackanFields$Map$mapSetup = _List_fromArray(
-	[
-		_List_fromArray(
-		[$author$project$World$PalackanFields$Map$tCp, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tSd, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tws, $author$project$World$PalackanFields$Map$tYf, $author$project$World$PalackanFields$Map$tws, $author$project$World$PalackanFields$Map$tYf, $author$project$World$PalackanFields$Map$tws, $author$project$World$PalackanFields$Map$tYf]),
-		_List_fromArray(
-		[$author$project$World$PalackanFields$Map$tYf, $author$project$World$PalackanFields$Map$tBp, $author$project$World$PalackanFields$Map$tYf, $author$project$World$PalackanFields$Map$tWb, $author$project$World$PalackanFields$Map$t_p, $author$project$World$PalackanFields$Map$t_p, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tTf, $author$project$World$PalackanFields$Map$tTf, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tws, $author$project$World$PalackanFields$Map$tYf, $author$project$World$PalackanFields$Map$tws, $author$project$World$PalackanFields$Map$tYf, $author$project$World$PalackanFields$Map$tws, $author$project$World$PalackanFields$Map$tYf]),
-		_List_fromArray(
-		[$author$project$World$PalackanFields$Map$tCf, $author$project$World$PalackanFields$Map$tws, $author$project$World$PalackanFields$Map$t_p, $author$project$World$PalackanFields$Map$tWb, $author$project$World$PalackanFields$Map$tWb, $author$project$World$PalackanFields$Map$t_p, $author$project$World$PalackanFields$Map$tTf, $author$project$World$PalackanFields$Map$tCp, $author$project$World$PalackanFields$Map$tYf, $author$project$World$PalackanFields$Map$tYf, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tYf, $author$project$World$PalackanFields$Map$tYf, $author$project$World$PalackanFields$Map$tYf, $author$project$World$PalackanFields$Map$tYf, $author$project$World$PalackanFields$Map$tYf, $author$project$World$PalackanFields$Map$tYf]),
-		_List_fromArray(
-		[$author$project$World$PalackanFields$Map$tTf, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$t_p, $author$project$World$PalackanFields$Map$t_p, $author$project$World$PalackanFields$Map$t_p, $author$project$World$PalackanFields$Map$t_p, $author$project$World$PalackanFields$Map$tws, $author$project$World$PalackanFields$Map$tws, $author$project$World$PalackanFields$Map$tws, $author$project$World$PalackanFields$Map$tYf, $author$project$World$PalackanFields$Map$tYf, $author$project$World$PalackanFields$Map$tWb, $author$project$World$PalackanFields$Map$tYf, $author$project$World$PalackanFields$Map$tYf, $author$project$World$PalackanFields$Map$tYf, $author$project$World$PalackanFields$Map$tYf, $author$project$World$PalackanFields$Map$tYf]),
-		_List_fromArray(
-		[$author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$t_p, $author$project$World$PalackanFields$Map$t_p, $author$project$World$PalackanFields$Map$t_p, $author$project$World$PalackanFields$Map$t_p, $author$project$World$PalackanFields$Map$tws, $author$project$World$PalackanFields$Map$tws, $author$project$World$PalackanFields$Map$tws, $author$project$World$PalackanFields$Map$tws, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tWb, $author$project$World$PalackanFields$Map$tYf, $author$project$World$PalackanFields$Map$tYf, $author$project$World$PalackanFields$Map$tYf, $author$project$World$PalackanFields$Map$tYf, $author$project$World$PalackanFields$Map$tYf]),
-		_List_fromArray(
-		[$author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$t_p, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tws, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tYf, $author$project$World$PalackanFields$Map$tYf, $author$project$World$PalackanFields$Map$tYf, $author$project$World$PalackanFields$Map$tYf, $author$project$World$PalackanFields$Map$tYf, $author$project$World$PalackanFields$Map$tYf]),
-		_List_fromArray(
-		[$author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$t_p, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tws, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tYf, $author$project$World$PalackanFields$Map$tYf, $author$project$World$PalackanFields$Map$tYf, $author$project$World$PalackanFields$Map$tYf, $author$project$World$PalackanFields$Map$tYf, $author$project$World$PalackanFields$Map$tYf]),
-		_List_fromArray(
-		[$author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$t_p, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tws, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tYf, $author$project$World$PalackanFields$Map$tYf, $author$project$World$PalackanFields$Map$tYf, $author$project$World$PalackanFields$Map$tYf, $author$project$World$PalackanFields$Map$tYf, $author$project$World$PalackanFields$Map$tYf])
-	]);
-var $author$project$World$PalackanFields$Map$initialData = {
-	getMonstersForMap: $author$project$World$PalackanFields$Mob$getInitialMonsters,
-	map: $author$project$World$PalackanFields$Map$mapSetup,
-	quests: _List_fromArray(
-		[$author$project$World$PalackanFields$Map$getElsewhereQuestDescription, $author$project$World$PalackanFields$Map$getUndeadQuestDescription])
-};
-var $author$project$World$Definition$updateStationary = F2(
-	function (msg, _v0) {
+var $author$project$World$Definition$updateStationary = F3(
+	function (msg, stationaryPosition, _v0) {
 		if (msg.$ === 'BlackGateChanged') {
 			var blackGateState = msg.a;
-			return A2(
-				$author$project$World$PalackanFields$Stationary$blackGateStateDefinition,
-				blackGateState,
-				$author$project$Map$Position$Position(
-					$author$project$Map$Content$getCoordsFrom($author$project$World$PalackanFields$Map$initialData.map)));
+			return A2($author$project$World$PalackanFields$Stationary$blackGateStateDefinition, blackGateState, stationaryPosition);
 		} else {
 			var weepingStatueState = msg.a;
 			return $author$project$World$PalackanFields$Stationary$weepingStatueDefinition(weepingStatueState);
 		}
 	});
-var $author$project$Main$applyStationaryStateChangesHelper = F2(
-	function (msgs, oldStationary) {
+var $author$project$Main$applyStationaryStateChangesHelper = F3(
+	function (msgs, stationaryPosition, oldStationary) {
 		if (!msgs.b) {
 			return oldStationary;
 		} else {
 			var msg = msgs.a;
 			var rest = msgs.b;
-			return A2(
+			return A3(
 				$author$project$Main$applyStationaryStateChangesHelper,
 				rest,
-				A2($author$project$World$Definition$updateStationary, msg, oldStationary));
+				stationaryPosition,
+				A3($author$project$World$Definition$updateStationary, msg, stationaryPosition, oldStationary));
 		}
 	});
-var $author$project$Main$applyStationaryStateChanges = F3(
-	function (oldStationary, msgs, model) {
-		var newStationary = A2($author$project$Main$applyStationaryStateChangesHelper, msgs, oldStationary);
+var $author$project$Main$applyStationaryStateChanges = F4(
+	function (oldStationary, msgs, stationaryPos, model) {
+		var newStationary = A3($author$project$Main$applyStationaryStateChangesHelper, msgs, stationaryPos, oldStationary);
 		return _Utils_eq(newStationary, oldStationary) ? model : _Utils_update(
 			model,
 			{
@@ -6601,11 +6003,17 @@ var $author$project$Main$findStationaryAt = F2(
 	function (position, map) {
 		return A2(
 			$elm$core$Maybe$andThen,
-			function ($) {
-				return $.stationary;
-			},
+			A2(
+				$elm$core$Basics$composeR,
+				function ($) {
+					return $.data;
+				},
+				function ($) {
+					return $.stationary;
+				}),
 			A2($author$project$Map$Content$get, position, map));
 	});
+var $elm$core$String$fromInt = _String_fromNumber;
 var $author$project$Map$Position$toStringCoords = function (_v0) {
 	var totalRows = _v0.totalRows;
 	var totalCols = _v0.totalCols;
@@ -6632,10 +6040,11 @@ var $author$project$Main$applyInteractiveChoice = F2(
 			return A2(
 				$author$project$Rule$Effect$apply,
 				optionEffects,
-				A3(
+				A4(
 					$author$project$Main$applyStationaryStateChanges,
 					stationary,
 					option.stateChanges,
+					playerPos,
 					A2($author$project$Meta$Log$choice, '[' + (stationary.name + ('] ' + option.description)), model)));
 		}
 	});
@@ -6661,6 +6070,7 @@ var $elm$json$Json$Decode$OneOf = function (a) {
 	return {$: 'OneOf', a: a};
 };
 var $elm$core$String$all = _String_all;
+var $elm$core$Basics$and = _Basics_and;
 var $elm$json$Json$Encode$encode = _Json_encode;
 var $elm$core$String$join = F2(
 	function (sep, chunks) {
@@ -6680,6 +6090,50 @@ var $elm$json$Json$Decode$indent = function (str) {
 		'\n    ',
 		A2($elm$core$String$split, '\n', str));
 };
+var $elm$core$List$length = function (xs) {
+	return A3(
+		$elm$core$List$foldl,
+		F2(
+			function (_v0, i) {
+				return i + 1;
+			}),
+		0,
+		xs);
+};
+var $elm$core$List$map2 = _List_map2;
+var $elm$core$Basics$le = _Utils_le;
+var $elm$core$List$rangeHelp = F3(
+	function (lo, hi, list) {
+		rangeHelp:
+		while (true) {
+			if (_Utils_cmp(lo, hi) < 1) {
+				var $temp$lo = lo,
+					$temp$hi = hi - 1,
+					$temp$list = A2($elm$core$List$cons, hi, list);
+				lo = $temp$lo;
+				hi = $temp$hi;
+				list = $temp$list;
+				continue rangeHelp;
+			} else {
+				return list;
+			}
+		}
+	});
+var $elm$core$List$range = F2(
+	function (lo, hi) {
+		return A3($elm$core$List$rangeHelp, lo, hi, _List_Nil);
+	});
+var $elm$core$List$indexedMap = F2(
+	function (f, xs) {
+		return A3(
+			$elm$core$List$map2,
+			f,
+			A2(
+				$elm$core$List$range,
+				0,
+				$elm$core$List$length(xs) - 1),
+			xs);
+	});
 var $elm$core$Char$toCode = _Char_toCode;
 var $elm$core$Char$isLower = function (_char) {
 	var code = $elm$core$Char$toCode(_char);
@@ -7163,9 +6617,72 @@ var $elm$core$Task$perform = F2(
 	});
 var $elm$browser$Browser$document = _Browser_document;
 var $author$project$Map$Hex$CaveEntrance = {$: 'CaveEntrance'};
-var $author$project$World$TombOfTheAncient$Map$tAc = $author$project$Map$Hex$createEmptyHex($author$project$Map$Hex$CaveEntrance);
+var $author$project$Map$Content$createHex = F4(
+	function (stationary, loot, terrain, pos) {
+		return {
+			position: pos,
+			reference: $author$project$Map$Content$ActualHex(
+				{loot: loot, stationary: stationary, terrain: terrain})
+		};
+	});
+var $author$project$Map$Content$createHexWLoot = $author$project$Map$Content$createHex($elm$core$Maybe$Nothing);
+var $author$project$Map$Content$emptyLoot = _List_Nil;
+var $author$project$Map$Content$createEmptyHex = $author$project$Map$Content$createHexWLoot($author$project$Map$Content$emptyLoot);
+var $author$project$World$TombOfTheAncient$Map$tAc = $author$project$Map$Content$createEmptyHex($author$project$Map$Hex$CaveEntrance);
 var $author$project$Map$Hex$Cave = {$: 'Cave'};
+var $author$project$Inventory$Slot$Backpack = {$: 'Backpack'};
+var $author$project$Inventory$Slot$Slot = F4(
+	function (slotType, picture, contents, id) {
+		return {contents: contents, id: id, picture: picture, slotType: slotType};
+	});
+var $author$project$Inventory$Slot$createBackpack = A2(
+	$author$project$Inventory$Slot$Slot,
+	$author$project$Inventory$Slot$Backpack,
+	_Utils_chr('⬜'));
+var $author$project$Extend$List$indexedMapInvert = F2(
+	function (invertedFunc, list) {
+		return A2(
+			$elm$core$List$indexedMap,
+			F2(
+				function (ix, x) {
+					return A2(invertedFunc, x, ix);
+				}),
+			list);
+	});
+var $author$project$Inventory$Slot$backpackFromItems = function (items) {
+	return A2(
+		$author$project$Extend$List$indexedMapInvert,
+		$author$project$Inventory$Slot$createBackpack,
+		A2($elm$core$List$map, $elm$core$Maybe$Just, items));
+};
+var $author$project$World$Common$Stationary$createContainerDescription = F4(
+	function (items, name, picture, description) {
+		return A2(
+			$author$project$World$Stationary$createWithInventory,
+			$author$project$Inventory$Slot$backpackFromItems(items),
+			{dialogueDescription: description, dialogueOptions: _List_Nil, mapPicture: picture, name: name});
+	});
+var $author$project$Map$Content$createHexWStationary = function (stationary) {
+	return A2(
+		$author$project$Map$Content$createHex,
+		$elm$core$Maybe$Just(stationary),
+		$author$project$Map$Content$emptyLoot);
+};
+var $author$project$Rule$Definition$GainExperience = F2(
+	function (a, b) {
+		return {$: 'GainExperience', a: a, b: b};
+	});
 var $author$project$Rule$Definition$Magic = {$: 'Magic'};
+var $author$project$Inventory$Item$ConsumedEffects = function (a) {
+	return {$: 'ConsumedEffects', a: a};
+};
+var $author$project$Inventory$Item$toConsumedEffect = function (effect) {
+	return {effect: effect, requirement: $author$project$Rule$Definition$Always};
+};
+var $author$project$Inventory$Item$consumedEffects = function (effects) {
+	return $author$project$Inventory$Item$ConsumedEffects(
+		A2($elm$core$List$map, $author$project$Inventory$Item$toConsumedEffect, effects));
+};
 var $author$project$World$TombOfTheAncient$Map$weirdScroll = {
 	effect: $author$project$Inventory$Item$consumedEffects(
 		_List_fromArray(
@@ -7180,7 +6697,7 @@ var $author$project$World$TombOfTheAncient$Map$weirdScroll = {
 	value: 20
 };
 var $author$project$World$TombOfTheAncient$Map$tCc = A2(
-	$author$project$Map$Hex$createHexWStationary,
+	$author$project$Map$Content$createHexWStationary,
 	A4(
 		$author$project$World$Common$Stationary$createContainerDescription,
 		_List_fromArray(
@@ -7200,7 +6717,7 @@ var $author$project$World$TombOfTheAncient$Map$createSmallCave = function (targe
 				[
 					A3(
 					$author$project$World$Stationary$choice,
-					'Squeeze through dark passage',
+					'Squeeze through the dark passage',
 					_List_Nil,
 					_List_fromArray(
 						[
@@ -7218,7 +6735,7 @@ var $author$project$World$TombOfTheAncient$Map$createHexWCave = F3(
 	function (exitRow, exitCol, cavePosition) {
 		var mapCoords = cavePosition.coords;
 		return A3(
-			$author$project$Map$Hex$createHexWStationary,
+			$author$project$Map$Content$createHexWStationary,
 			$author$project$World$TombOfTheAncient$Map$createSmallCave(
 				A3($author$project$Map$Position$Position, mapCoords, exitRow, exitCol)),
 			$author$project$Map$Hex$Cave,
@@ -7228,6 +6745,34 @@ var $author$project$World$TombOfTheAncient$Map$tEc = A2($author$project$World$To
 var $author$project$Inventory$Item$EquippedAttributes = function (a) {
 	return {$: 'EquippedAttributes', a: a};
 };
+var $author$project$Inventory$Item$Long = {$: 'Long'};
+var $author$project$Inventory$Item$Weapon = function (a) {
+	return {$: 'Weapon', a: a};
+};
+var $author$project$Rule$Definition$ModifyToAttack = function (a) {
+	return {$: 'ModifyToAttack', a: a};
+};
+var $author$project$Rule$Definition$createAttackModVsAll = function (modAmount) {
+	return $author$project$Rule$Definition$ModifyToAttack(
+		{amount: modAmount, requirementOnVsMob: $author$project$Rule$Definition$Always});
+};
+var $author$project$Rule$Definition$createDefenseModVsAll = function (modAmount) {
+	return $author$project$Rule$Definition$ModifyDefense(
+		{amount: modAmount, requirementOnVsMob: $author$project$Rule$Definition$Always});
+};
+var $author$project$World$Common$Mob$druggedCondition = $author$project$Rule$Definition$createCondition(
+	{
+		description: 'Irritability with sudden anger mood swings and warped perception of the surroundings.',
+		duration: $author$project$Rule$Definition$RoundsLeft(8),
+		effects: $author$project$Rule$Definition$alwaysTrue(
+			_List_fromArray(
+				[
+					$author$project$Rule$Definition$createDefenseModVsAll(-1),
+					$author$project$Rule$Definition$createAttackModVsAll(1)
+				])),
+		name: 'Drugged',
+		picture: _Utils_chr('🥴')
+	});
 var $author$project$World$Common$Mob$magicDustConsumedEffects = _List_fromArray(
 	[
 		$author$project$Rule$Definition$LogEvent('As you consume the dust, some of it end up in your lungs and you loose your breath for a moment. As your senses come back, the world seems... distorted and odd...'),
@@ -7277,7 +6822,7 @@ var $author$project$World$TombOfTheAncient$Map$ancientBow = {
 	value: 250
 };
 var $author$project$World$TombOfTheAncient$Map$tFc = A2(
-	$author$project$Map$Hex$createHexWStationary,
+	$author$project$Map$Content$createHexWStationary,
 	A4(
 		$author$project$World$Common$Stationary$createContainerDescription,
 		_List_fromArray(
@@ -7286,9 +6831,9 @@ var $author$project$World$TombOfTheAncient$Map$tFc = A2(
 		_Utils_chr('📦'),
 		'A old chest that looks like it has a bow.'),
 	$author$project$Map$Hex$Cave);
-var $author$project$World$TombOfTheAncient$Map$tMm = $author$project$Map$Hex$createEmptyHex($author$project$Map$Hex$Mountains);
+var $author$project$World$TombOfTheAncient$Map$tMm = $author$project$Map$Content$createEmptyHex($author$project$Map$Hex$Mountains);
 var $author$project$World$TombOfTheAncient$Map$tXc = A2($author$project$World$TombOfTheAncient$Map$createHexWCave, 2, 3);
-var $author$project$World$TombOfTheAncient$Map$t_c = $author$project$Map$Hex$createEmptyHex($author$project$Map$Hex$Cave);
+var $author$project$World$TombOfTheAncient$Map$t_c = $author$project$Map$Content$createEmptyHex($author$project$Map$Hex$Cave);
 var $author$project$World$TombOfTheAncient$Map$mapSetup = _List_fromArray(
 	[
 		_List_fromArray(
@@ -7314,6 +6859,68 @@ var $author$project$World$TombOfTheAncient$Map$initialData = {
 	quests: _List_Nil
 };
 var $author$project$World$Definition$initialMapData = $author$project$World$TombOfTheAncient$Map$initialData;
+var $author$project$Map$Mob$Mob = function (name) {
+	return function (picture) {
+		return function (health) {
+			return function (order) {
+				return function (inventory) {
+					return function (position) {
+						return function (career) {
+							return function (currentShape) {
+								return function (traits) {
+									return function (id) {
+										return {career: career, currentShape: currentShape, health: health, id: id, inventory: inventory, name: name, order: order, picture: picture, position: position, traits: traits};
+									};
+								};
+							};
+						};
+					};
+				};
+			};
+		};
+	};
+};
+var $author$project$Map$Mob$getMaxFatigue = 5;
+var $author$project$Map$Mob$initialCurrentShape = {
+	conditions: _List_Nil,
+	drink: $author$project$Map$Mob$getMax($author$project$Map$Mob$Drink),
+	fatigue: $author$project$Map$Mob$getMaxFatigue,
+	food: $author$project$Map$Mob$getMax($author$project$Map$Mob$Food)
+};
+var $author$project$Map$Mob$create = F7(
+	function (name, picture, inventory, pos, traits, career, mobId) {
+		return $author$project$Map$Mob$Mob(name)(picture)($author$project$Map$Mob$Healthy)($author$project$Map$Mob$Guard)(inventory)(pos)(career)($author$project$Map$Mob$initialCurrentShape)(traits)(mobId);
+	});
+var $author$project$Rule$Career$AcquiredSkill = function (a) {
+	return {$: 'AcquiredSkill', a: a};
+};
+var $author$project$Rule$Career$toInitialAcquiredSkill = function (skill) {
+	return $author$project$Rule$Career$AcquiredSkill(
+		{degree: $author$project$Extend$PositiveInt$zero, skill: skill});
+};
+var $author$project$Rule$Career$toInitialCareer = function (allAvailableSkills) {
+	return $author$project$Rule$Career$Career(
+		{
+			acquiredSkills: A2($elm$core$List$map, $author$project$Rule$Career$toInitialAcquiredSkill, allAvailableSkills),
+			experience: $author$project$Rule$Experience$none
+		});
+};
+var $author$project$Map$Mob$typicalMonsterCareer = $author$project$Rule$Career$toInitialCareer(_List_Nil);
+var $author$project$Map$Mob$createMonster = F5(
+	function (name, picture, items, traits, pos) {
+		return A6(
+			$author$project$Map$Mob$create,
+			name,
+			picture,
+			$author$project$Inventory$Slot$backpackFromItems(items),
+			pos,
+			traits,
+			$author$project$Map$Mob$typicalMonsterCareer);
+	});
+var $author$project$Rule$Definition$Innate = function (a) {
+	return {$: 'Innate', a: a};
+};
+var $author$project$Rule$Definition$createTrait = $author$project$Rule$Definition$Innate;
 var $author$project$World$Common$Mob$magicBeingTrait = $author$project$Rule$Definition$createTrait($author$project$World$Common$Mob$magicBeingAttribute);
 var $author$project$World$AstralSpace$Mob$createLivingSpell = A4(
 	$author$project$Map$Mob$createMonster,
@@ -7363,7 +6970,46 @@ var $author$project$World$AstralSpace$Mob$getInitialMonsters = function (getPos)
 			A2(getPos, 4, 2))
 		]);
 };
-var $author$project$World$AstralSpace$Map$tCf = A2($author$project$Map$Hex$createHexWStationary, $author$project$World$Common$Stationary$campDescription, $author$project$Map$Hex$Forest);
+var $author$project$World$Common$Stationary$wellRestedCondition = $author$project$Rule$Definition$createCondition(
+	{
+		description: 'You have rested and full of energy',
+		duration: $author$project$Rule$Definition$RoundsLeft(4),
+		effects: $author$project$Rule$Definition$alwaysTrue(
+			_List_fromArray(
+				[
+					$author$project$Rule$Definition$createDefenseModVsAll(1),
+					$author$project$Rule$Definition$createAttackModVsAll(1)
+				])),
+		name: 'Well rested',
+		picture: _Utils_chr('💪')
+	});
+var $author$project$World$Common$Stationary$campDescription = $author$project$World$Stationary$createOrdinary(
+	{
+		dialogueDescription: 'A cozy campfire invites you to rest.',
+		dialogueOptions: _List_fromArray(
+			[
+				A3(
+				$author$project$World$Stationary$choice,
+				'Rest.',
+				_List_Nil,
+				_List_fromArray(
+					[
+						$author$project$Rule$Definition$SetCondition($author$project$World$Common$Stationary$wellRestedCondition),
+						$author$project$Rule$Definition$LogEvent('You sit down at the camp and relax in front of the heat. Time passes.')
+					]))
+			]),
+		mapPicture: _Utils_chr('🏕'),
+		name: 'Wilderness camp'
+	});
+var $author$project$World$AstralSpace$Map$tCf = A2($author$project$Map$Content$createHexWStationary, $author$project$World$Common$Stationary$campDescription, $author$project$Map$Hex$Forest);
+var $author$project$World$Common$Stationary$createChestDescription = function (items) {
+	return A4(
+		$author$project$World$Common$Stationary$createContainerDescription,
+		items,
+		'Chest',
+		_Utils_chr('🗃'),
+		'A chest waiting to be plundered.');
+};
 var $author$project$World$State$StartElsewhereQuest = {$: 'StartElsewhereQuest'};
 var $author$project$World$AstralSpace$Map$mysticBook = A6(
 	$author$project$Inventory$Item$Item,
@@ -7379,14 +7025,14 @@ var $author$project$World$AstralSpace$Map$mysticBook = A6(
 			])),
 	20);
 var $author$project$World$AstralSpace$Map$tCp = A2(
-	$author$project$Map$Hex$createHexWStationary,
+	$author$project$Map$Content$createHexWStationary,
 	$author$project$World$Common$Stationary$createChestDescription(
 		_List_fromArray(
 			[$author$project$World$AstralSpace$Map$mysticBook])),
 	$author$project$Map$Hex$Plains);
-var $author$project$World$AstralSpace$Map$tWb = $author$project$Map$Hex$createEmptyHex($author$project$Map$Hex$BlessedGrounds);
-var $author$project$World$AstralSpace$Map$tYf = $author$project$Map$Hex$createEmptyHex($author$project$Map$Hex$Forest);
-var $author$project$World$AstralSpace$Map$t_p = $author$project$Map$Hex$createEmptyHex($author$project$Map$Hex$Plains);
+var $author$project$World$AstralSpace$Map$tWb = $author$project$Map$Content$createEmptyHex($author$project$Map$Hex$BlessedGrounds);
+var $author$project$World$AstralSpace$Map$tYf = $author$project$Map$Content$createEmptyHex($author$project$Map$Hex$Forest);
+var $author$project$World$AstralSpace$Map$t_p = $author$project$Map$Content$createEmptyHex($author$project$Map$Hex$Plains);
 var $author$project$World$AstralSpace$Map$mapSetup = _List_fromArray(
 	[
 		_List_fromArray(
@@ -7401,12 +7047,365 @@ var $author$project$World$AstralSpace$Map$mapSetup = _List_fromArray(
 		[$author$project$World$AstralSpace$Map$tWb, $author$project$World$AstralSpace$Map$tYf, $author$project$World$AstralSpace$Map$tWb, $author$project$World$AstralSpace$Map$t_p])
 	]);
 var $author$project$World$AstralSpace$Map$initialData = {getMonstersForMap: $author$project$World$AstralSpace$Mob$getInitialMonsters, map: $author$project$World$AstralSpace$Map$mapSetup, quests: _List_Nil};
-var $author$project$World$ShadowForest$Map$tCp = A2($author$project$Map$Hex$createHexWStationary, $author$project$World$Common$Stationary$campDescription, $author$project$Map$Hex$Plains);
-var $author$project$World$ShadowForest$Map$tWb = $author$project$Map$Hex$createEmptyHex($author$project$Map$Hex$BlessedGrounds);
-var $author$project$World$ShadowForest$Map$tYf = $author$project$Map$Hex$createEmptyHex($author$project$Map$Hex$Forest);
-var $author$project$World$ShadowForest$Map$t_d = $author$project$Map$Hex$createEmptyHex($author$project$Map$Hex$Desert);
-var $author$project$World$ShadowForest$Map$t_p = $author$project$Map$Hex$createEmptyHex($author$project$Map$Hex$Plains);
-var $author$project$World$ShadowForest$Map$tws = $author$project$Map$Hex$createEmptyHex($author$project$Map$Hex$Sea);
+var $author$project$World$State$ElsewhereNotStarted = {$: 'ElsewhereNotStarted'};
+var $author$project$Rule$Definition$Mythos = {$: 'Mythos'};
+var $author$project$State$Quest$NotStarted = {$: 'NotStarted'};
+var $author$project$State$Quest$Started = function (a) {
+	return {$: 'Started', a: a};
+};
+var $author$project$World$State$Visited = {$: 'Visited'};
+var $author$project$State$Quest$Changed = F2(
+	function (a, b) {
+		return {$: 'Changed', a: a, b: b};
+	});
+var $author$project$State$Quest$change = F2(
+	function (newWorldState, effects) {
+		return A2($author$project$State$Quest$Changed, newWorldState, effects);
+	});
+var $elm$core$Basics$composeL = F3(
+	function (g, f, x) {
+		return g(
+			f(x));
+	});
+var $elm$core$Basics$not = _Basics_not;
+var $author$project$Map$Position$validPosition = function (_v0) {
+	var row = _v0.row;
+	var col = _v0.col;
+	var coords = _v0.coords;
+	var _v1 = coords;
+	var totalRows = _v1.totalRows;
+	var totalCols = _v1.totalCols;
+	return (row >= 0) && ((_Utils_cmp(row, totalRows) < 0) && ((col >= 0) && (_Utils_cmp(col, totalCols) < 0)));
+};
+var $author$project$Map$Position$isElsewhere = A2($elm$core$Basics$composeL, $elm$core$Basics$not, $author$project$Map$Position$validPosition);
+var $author$project$Map$Mob$playerIdAsInt = -1;
+var $author$project$Map$Mob$idToInt = function (id) {
+	if (id.$ === 'Player') {
+		return $author$project$Map$Mob$playerIdAsInt;
+	} else {
+		var idAsInt = id.a;
+		return idAsInt;
+	}
+};
+var $author$project$Map$Mob$isPlayer = function (id) {
+	return _Utils_eq(
+		$author$project$Map$Mob$playerIdAsInt,
+		$author$project$Map$Mob$idToInt(id));
+};
+var $author$project$State$Quest$NoChange = {$: 'NoChange'};
+var $author$project$State$Quest$noChange = $author$project$State$Quest$NoChange;
+var $author$project$World$PalackanFields$Map$getElsewhereQuestDescription = function (state) {
+	var _v0 = state;
+	var elseWhereQuestState = _v0.elseWhereQuestState;
+	return _Utils_eq(elseWhereQuestState, $author$project$World$State$ElsewhereNotStarted) ? $author$project$State$Quest$NotStarted : $author$project$State$Quest$Started(
+		{
+			eventListener: function (event) {
+				if (event.$ === 'Moved') {
+					var mob = event.a.mob;
+					var fromPos = event.a.fromPos;
+					var toPos = event.a.toPos;
+					return ($author$project$Map$Mob$isPlayer(mob.id) && ($author$project$Map$Position$isElsewhere(toPos) && (!_Utils_eq(elseWhereQuestState, $author$project$World$State$Visited)))) ? A2(
+						$author$project$State$Quest$change,
+						_Utils_update(
+							state,
+							{elseWhereQuestState: $author$project$World$State$Visited}),
+						_List_fromArray(
+							[
+								A2($author$project$Rule$Definition$GainExperience, $author$project$Extend$PositiveInt$two, $author$project$Rule$Definition$Mythos)
+							])) : $author$project$State$Quest$noChange;
+				} else {
+					return $author$project$State$Quest$noChange;
+				}
+			},
+			name: 'Visit Elsewhere',
+			steps: _List_fromArray(
+				[
+					{
+					description: 'Find a portal to Elsewhere and step through.',
+					isCompleted: _Utils_eq(elseWhereQuestState, $author$project$World$State$Visited)
+				}
+				]),
+			summary: _Utils_eq(elseWhereQuestState, $author$project$World$State$Visited) ? 'Elsewhere was a cold and unnerving experience. Still you have learnt a little more of the secrets of the universe.' : 'The voyage to the mythic void of Elsewhere remains...'
+		});
+};
+var $author$project$World$PalackanFields$Mob$diamond = A6(
+	$author$project$Inventory$Item$Item,
+	'Diamond',
+	_Utils_chr('💎'),
+	1,
+	$author$project$Inventory$Item$Misc,
+	$author$project$Inventory$Item$None,
+	1000);
+var $author$project$Rule$Definition$ModifyWellbeing = F2(
+	function (a, b) {
+		return {$: 'ModifyWellbeing', a: a, b: b};
+	});
+var $author$project$Rule$Definition$Thirst = {$: 'Thirst'};
+var $author$project$World$PalackanFields$Mob$dragonBloodEffect = $author$project$Inventory$Item$consumedEffects(
+	_List_fromArray(
+		[
+			A2($author$project$Rule$Definition$GainExperience, $author$project$Extend$PositiveInt$one, $author$project$Rule$Definition$Mythos),
+			$author$project$Rule$Definition$Hurt,
+			A2($author$project$Rule$Definition$ModifyWellbeing, $author$project$Rule$Definition$Thirst, 10),
+			$author$project$Rule$Definition$LogEvent('As you drink the dragon\'s blood, an intense heat spreads across your body ' + ('burning you from the inside with an excruciating pain. For a short moment, ' + 'you see glimpses into the past life of the age-old creature.'))
+		]));
+var $author$project$World$PalackanFields$Mob$dragonBlood = A6(
+	$author$project$Inventory$Item$Item,
+	'Dragon blood',
+	_Utils_chr('🩸'),
+	5,
+	$author$project$Inventory$Item$Misc,
+	$author$project$World$PalackanFields$Mob$dragonBloodEffect,
+	1000);
+var $author$project$World$PalackanFields$Mob$moneyBag = $author$project$Rule$ReferenceLoot$createMoneyBag(200);
+var $author$project$World$PalackanFields$Mob$dragonLoot = _List_fromArray(
+	[$author$project$World$PalackanFields$Mob$diamond, $author$project$World$PalackanFields$Mob$moneyBag, $author$project$World$PalackanFields$Mob$moneyBag, $author$project$World$PalackanFields$Mob$moneyBag, $author$project$World$PalackanFields$Mob$dragonBlood]);
+var $author$project$World$PalackanFields$Mob$dragonTraits = _List_Nil;
+var $author$project$World$PalackanFields$Mob$healingPotion = A6(
+	$author$project$Inventory$Item$Item,
+	'Healing potion',
+	_Utils_chr('🧪'),
+	5,
+	$author$project$Inventory$Item$Misc,
+	$author$project$Inventory$Item$consumedEffects(
+		_List_fromArray(
+			[
+				$author$project$Rule$Definition$Heal,
+				A2($author$project$Rule$Definition$ModifyWellbeing, $author$project$Rule$Definition$Thirst, 3)
+			])),
+	200);
+var $author$project$World$PalackanFields$Mob$trash = A6(
+	$author$project$Inventory$Item$Item,
+	'Trash',
+	_Utils_chr('📚'),
+	15,
+	$author$project$Inventory$Item$Misc,
+	$author$project$Inventory$Item$None,
+	1);
+var $author$project$World$PalackanFields$Mob$standardLoot = _List_fromArray(
+	[$author$project$World$PalackanFields$Mob$trash, $author$project$World$PalackanFields$Mob$healingPotion]);
+var $author$project$World$PalackanFields$Mob$magicOrb = A6(
+	$author$project$Inventory$Item$Item,
+	'Magic orb',
+	_Utils_chr('🔮'),
+	5,
+	$author$project$Inventory$Item$Weapon($author$project$Inventory$Item$Long),
+	$author$project$Inventory$Item$None,
+	450);
+var $author$project$World$PalackanFields$Mob$vampireLoot = _List_fromArray(
+	[$author$project$World$PalackanFields$Mob$magicOrb]);
+var $author$project$World$PalackanFields$Mob$undeadTrait = $author$project$Rule$Definition$createTrait($author$project$World$PalackanFields$Mob$undeadAttribute);
+var $author$project$World$PalackanFields$Mob$vampireTraits = _List_fromArray(
+	[$author$project$World$PalackanFields$Mob$undeadTrait]);
+var $author$project$World$PalackanFields$Mob$zombieTraits = _List_fromArray(
+	[$author$project$World$PalackanFields$Mob$undeadTrait]);
+var $author$project$World$PalackanFields$Mob$getInitialMonsters = function (getPos) {
+	return _List_fromArray(
+		[
+			A5(
+			$author$project$Map$Mob$createMonster,
+			'Zombie 1',
+			_Utils_chr('🧟'),
+			$author$project$World$PalackanFields$Mob$standardLoot,
+			$author$project$World$PalackanFields$Mob$zombieTraits,
+			A2(getPos, 3, 2)),
+			A5(
+			$author$project$Map$Mob$createMonster,
+			'Zombie 2',
+			_Utils_chr('🧟'),
+			$author$project$World$PalackanFields$Mob$standardLoot,
+			$author$project$World$PalackanFields$Mob$zombieTraits,
+			A2(getPos, 2, 3)),
+			A5(
+			$author$project$Map$Mob$createMonster,
+			'Zombie 3',
+			_Utils_chr('🧟'),
+			$author$project$World$PalackanFields$Mob$standardLoot,
+			$author$project$World$PalackanFields$Mob$zombieTraits,
+			A2(getPos, 2, 4)),
+			A5(
+			$author$project$Map$Mob$createMonster,
+			'Zombie 4',
+			_Utils_chr('🧟'),
+			$author$project$World$PalackanFields$Mob$standardLoot,
+			$author$project$World$PalackanFields$Mob$zombieTraits,
+			A2(getPos, 3, 3)),
+			A5(
+			$author$project$Map$Mob$createMonster,
+			'Vampire',
+			_Utils_chr('🧛'),
+			$author$project$World$PalackanFields$Mob$vampireLoot,
+			$author$project$World$PalackanFields$Mob$vampireTraits,
+			A2(getPos, 3, 5)),
+			A5(
+			$author$project$Map$Mob$createMonster,
+			'Dragon',
+			_Utils_chr('🐉'),
+			$author$project$World$PalackanFields$Mob$dragonLoot,
+			$author$project$World$PalackanFields$Mob$dragonTraits,
+			A2(getPos, 4, 4))
+		]);
+};
+var $author$project$Rule$Definition$Fate = {$: 'Fate'};
+var $author$project$Rule$Definition$Renown = {$: 'Renown'};
+var $elm$core$List$any = F2(
+	function (isOkay, list) {
+		any:
+		while (true) {
+			if (!list.b) {
+				return false;
+			} else {
+				var x = list.a;
+				var xs = list.b;
+				if (isOkay(x)) {
+					return true;
+				} else {
+					var $temp$isOkay = isOkay,
+						$temp$list = xs;
+					isOkay = $temp$isOkay;
+					list = $temp$list;
+					continue any;
+				}
+			}
+		}
+	});
+var $author$project$Extend$List$contains = F2(
+	function (item, list) {
+		return A2(
+			$elm$core$List$any,
+			$elm$core$Basics$eq(item),
+			list);
+	});
+var $author$project$World$PalackanFields$Map$getUndeadQuestDescription = function (state) {
+	var isUndead = function (mob) {
+		return A2($author$project$Extend$List$contains, $author$project$World$PalackanFields$Mob$undeadTrait, mob.traits);
+	};
+	var _v0 = state.undeadQuestState;
+	if (_v0.$ === 'UndeadNotStarted') {
+		return $author$project$State$Quest$NotStarted;
+	} else {
+		var numberUndeadLeft = _v0.a;
+		return $author$project$State$Quest$Started(
+			{
+				eventListener: function (event) {
+					if (event.$ === 'Died') {
+						var mob = event.a.mob;
+						var _v2 = state.undeadQuestState;
+						if (_v2.$ === 'UndeadLeft') {
+							var undeadLeft = _v2.a;
+							return isUndead(mob) ? A2(
+								$author$project$State$Quest$change,
+								_Utils_update(
+									state,
+									{
+										undeadQuestState: $author$project$World$State$UndeadLeft(undeadLeft - 1)
+									}),
+								(undeadLeft === 1) ? _List_fromArray(
+									[
+										$author$project$Rule$Definition$SetCondition($author$project$World$PalackanFields$Stationary$temporaryConnectionWithFields),
+										A2($author$project$Rule$Definition$GainExperience, $author$project$Extend$PositiveInt$two, $author$project$Rule$Definition$Fate),
+										A2($author$project$Rule$Definition$GainExperience, $author$project$Extend$PositiveInt$two, $author$project$Rule$Definition$Renown),
+										$author$project$Rule$Definition$LogEvent('Once again the beautiful yet terrifying voice enters your mind: ' + ('\'You have done well, little lamb. To show my gratitude, I grant you ' + 'connection with my lands as long as possible for a mortal.\''))
+									]) : _List_Nil) : $author$project$State$Quest$noChange;
+						} else {
+							return $author$project$State$Quest$noChange;
+						}
+					} else {
+						return $author$project$State$Quest$noChange;
+					}
+				},
+				name: 'Slay undead in Her name',
+				steps: _List_fromArray(
+					[
+						{
+						description: 'Slay ' + ($elm$core$String$fromInt(numberUndeadLeft) + ' more undead.'),
+						isCompleted: !numberUndeadLeft
+					}
+					]),
+				summary: 'The supposed \'Godess of tears\' wants you to rid the Palackan Fields of some the undead that have appeared there.'
+			});
+	}
+};
+var $author$project$World$Stationary$NotExamined = {$: 'NotExamined'};
+var $author$project$World$PalackanFields$Stationary$initialBlackGateState = function (startPos) {
+	return A2(
+		$author$project$World$PalackanFields$Stationary$blackGateStateDefinition,
+		$author$project$World$Stationary$Closed($author$project$World$Stationary$NotExamined),
+		startPos);
+};
+var $author$project$World$PalackanFields$Map$tBp = function (startPos) {
+	return A3(
+		$author$project$Map$Content$createHexWStationary,
+		$author$project$World$PalackanFields$Stationary$initialBlackGateState(startPos),
+		$author$project$Map$Hex$Plains,
+		startPos);
+};
+var $author$project$World$PalackanFields$Map$tCf = A2($author$project$Map$Content$createHexWStationary, $author$project$World$Common$Stationary$campDescription, $author$project$Map$Hex$Forest);
+var $author$project$Rule$Definition$Hunger = {$: 'Hunger'};
+var $author$project$World$PalackanFields$Mob$magicMushroom = A6(
+	$author$project$Inventory$Item$Item,
+	'Glowing mushroom',
+	_Utils_chr('🍄'),
+	4,
+	$author$project$Inventory$Item$Misc,
+	$author$project$Inventory$Item$consumedEffects(
+		_List_fromArray(
+			[
+				$author$project$Rule$Definition$SetCondition($author$project$World$Common$Mob$druggedCondition),
+				A2($author$project$Rule$Definition$ModifyWellbeing, $author$project$Rule$Definition$Hunger, 15)
+			])),
+	50);
+var $author$project$World$PalackanFields$Map$tCp = A2(
+	$author$project$Map$Content$createHexWStationary,
+	$author$project$World$Common$Stationary$createChestDescription(
+		_List_fromArray(
+			[$author$project$World$PalackanFields$Mob$diamond, $author$project$World$PalackanFields$Mob$magicMushroom, $author$project$World$PalackanFields$Mob$magicMushroom])),
+	$author$project$Map$Hex$Plains);
+var $author$project$World$PalackanFields$Map$tMm = $author$project$Map$Content$createEmptyHex($author$project$Map$Hex$Mountains);
+var $author$project$World$Stationary$NotYetTouched = {$: 'NotYetTouched'};
+var $author$project$World$PalackanFields$Stationary$initialWeepingStatueState = $author$project$World$PalackanFields$Stationary$weepingStatueDefinition($author$project$World$Stationary$NotYetTouched);
+var $author$project$World$PalackanFields$Map$tSd = A2($author$project$Map$Content$createHexWStationary, $author$project$World$PalackanFields$Stationary$initialWeepingStatueState, $author$project$Map$Hex$Desert);
+var $author$project$World$PalackanFields$Map$tTf = A2(
+	$author$project$Map$Content$createHexWLoot,
+	_List_fromArray(
+		[$author$project$World$PalackanFields$Mob$magicMushroom]),
+	$author$project$Map$Hex$Forest);
+var $author$project$World$PalackanFields$Map$tWb = $author$project$Map$Content$createEmptyHex($author$project$Map$Hex$BlessedGrounds);
+var $author$project$World$PalackanFields$Map$tYf = $author$project$Map$Content$createEmptyHex($author$project$Map$Hex$Forest);
+var $author$project$World$PalackanFields$Map$t_p = $author$project$Map$Content$createEmptyHex($author$project$Map$Hex$Plains);
+var $author$project$World$PalackanFields$Map$tws = $author$project$Map$Content$createEmptyHex($author$project$Map$Hex$Sea);
+var $author$project$World$PalackanFields$Map$mapSetup = _List_fromArray(
+	[
+		_List_fromArray(
+		[$author$project$World$PalackanFields$Map$tCp, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tSd, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tYf, $author$project$World$PalackanFields$Map$tws, $author$project$World$PalackanFields$Map$tws, $author$project$World$PalackanFields$Map$tws, $author$project$World$PalackanFields$Map$tws, $author$project$World$PalackanFields$Map$tYf]),
+		_List_fromArray(
+		[$author$project$World$PalackanFields$Map$tYf, $author$project$World$PalackanFields$Map$tBp, $author$project$World$PalackanFields$Map$tYf, $author$project$World$PalackanFields$Map$tWb, $author$project$World$PalackanFields$Map$t_p, $author$project$World$PalackanFields$Map$t_p, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tTf, $author$project$World$PalackanFields$Map$tTf, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tYf, $author$project$World$PalackanFields$Map$tws, $author$project$World$PalackanFields$Map$tws, $author$project$World$PalackanFields$Map$tYf, $author$project$World$PalackanFields$Map$tws, $author$project$World$PalackanFields$Map$tYf]),
+		_List_fromArray(
+		[$author$project$World$PalackanFields$Map$tCf, $author$project$World$PalackanFields$Map$tws, $author$project$World$PalackanFields$Map$t_p, $author$project$World$PalackanFields$Map$tWb, $author$project$World$PalackanFields$Map$tWb, $author$project$World$PalackanFields$Map$t_p, $author$project$World$PalackanFields$Map$tTf, $author$project$World$PalackanFields$Map$tCp, $author$project$World$PalackanFields$Map$tYf, $author$project$World$PalackanFields$Map$tYf, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tYf, $author$project$World$PalackanFields$Map$tYf, $author$project$World$PalackanFields$Map$t_p, $author$project$World$PalackanFields$Map$t_p, $author$project$World$PalackanFields$Map$tYf, $author$project$World$PalackanFields$Map$tYf]),
+		_List_fromArray(
+		[$author$project$World$PalackanFields$Map$tTf, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$t_p, $author$project$World$PalackanFields$Map$t_p, $author$project$World$PalackanFields$Map$t_p, $author$project$World$PalackanFields$Map$t_p, $author$project$World$PalackanFields$Map$tws, $author$project$World$PalackanFields$Map$tws, $author$project$World$PalackanFields$Map$tws, $author$project$World$PalackanFields$Map$tYf, $author$project$World$PalackanFields$Map$tYf, $author$project$World$PalackanFields$Map$tWb, $author$project$World$PalackanFields$Map$tYf, $author$project$World$PalackanFields$Map$t_p, $author$project$World$PalackanFields$Map$t_p, $author$project$World$PalackanFields$Map$t_p, $author$project$World$PalackanFields$Map$tYf]),
+		_List_fromArray(
+		[$author$project$World$PalackanFields$Map$tYf, $author$project$World$PalackanFields$Map$tYf, $author$project$World$PalackanFields$Map$t_p, $author$project$World$PalackanFields$Map$t_p, $author$project$World$PalackanFields$Map$t_p, $author$project$World$PalackanFields$Map$tws, $author$project$World$PalackanFields$Map$tws, $author$project$World$PalackanFields$Map$tws, $author$project$World$PalackanFields$Map$tws, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tWb, $author$project$World$PalackanFields$Map$t_p, $author$project$World$PalackanFields$Map$t_p, $author$project$World$PalackanFields$Map$t_p, $author$project$World$PalackanFields$Map$t_p, $author$project$World$PalackanFields$Map$tYf]),
+		_List_fromArray(
+		[$author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$t_p, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tws, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tYf, $author$project$World$PalackanFields$Map$t_p, $author$project$World$PalackanFields$Map$t_p, $author$project$World$PalackanFields$Map$t_p, $author$project$World$PalackanFields$Map$t_p, $author$project$World$PalackanFields$Map$tYf]),
+		_List_fromArray(
+		[$author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tws, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tYf, $author$project$World$PalackanFields$Map$t_p, $author$project$World$PalackanFields$Map$tYf, $author$project$World$PalackanFields$Map$tYf, $author$project$World$PalackanFields$Map$t_p, $author$project$World$PalackanFields$Map$tYf]),
+		_List_fromArray(
+		[$author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tws, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tYf, $author$project$World$PalackanFields$Map$tYf, $author$project$World$PalackanFields$Map$tYf, $author$project$World$PalackanFields$Map$tYf, $author$project$World$PalackanFields$Map$tYf, $author$project$World$PalackanFields$Map$tYf])
+	]);
+var $author$project$World$PalackanFields$Map$initialData = {
+	getMonstersForMap: $author$project$World$PalackanFields$Mob$getInitialMonsters,
+	map: $author$project$World$PalackanFields$Map$mapSetup,
+	quests: _List_fromArray(
+		[$author$project$World$PalackanFields$Map$getElsewhereQuestDescription, $author$project$World$PalackanFields$Map$getUndeadQuestDescription])
+};
+var $author$project$World$ShadowForest$Map$tCp = A2($author$project$Map$Content$createHexWStationary, $author$project$World$Common$Stationary$campDescription, $author$project$Map$Hex$Plains);
+var $author$project$World$ShadowForest$Map$tMm = $author$project$Map$Content$createEmptyHex($author$project$Map$Hex$Mountains);
+var $author$project$World$ShadowForest$Map$tWb = $author$project$Map$Content$createEmptyHex($author$project$Map$Hex$BlessedGrounds);
+var $author$project$World$ShadowForest$Map$tYf = $author$project$Map$Content$createEmptyHex($author$project$Map$Hex$Forest);
+var $author$project$World$ShadowForest$Map$t_d = $author$project$Map$Content$createEmptyHex($author$project$Map$Hex$Desert);
+var $author$project$World$ShadowForest$Map$t_p = $author$project$Map$Content$createEmptyHex($author$project$Map$Hex$Plains);
+var $author$project$World$ShadowForest$Map$tws = $author$project$Map$Content$createEmptyHex($author$project$Map$Hex$Sea);
 var $author$project$World$ShadowForest$Map$mapSetup = _List_fromArray(
 	[
 		_List_fromArray(
@@ -7434,9 +7433,9 @@ var $author$project$World$ShadowForest$Map$mapSetup = _List_fromArray(
 		_List_fromArray(
 		[$author$project$World$ShadowForest$Map$tYf, $author$project$World$ShadowForest$Map$tYf, $author$project$World$ShadowForest$Map$tYf, $author$project$World$ShadowForest$Map$tYf, $author$project$World$ShadowForest$Map$tYf, $author$project$World$ShadowForest$Map$t_p, $author$project$World$ShadowForest$Map$tYf, $author$project$World$ShadowForest$Map$tYf, $author$project$World$ShadowForest$Map$tws, $author$project$World$ShadowForest$Map$t_p, $author$project$World$ShadowForest$Map$t_p, $author$project$World$ShadowForest$Map$t_p, $author$project$World$ShadowForest$Map$tYf, $author$project$World$ShadowForest$Map$tYf, $author$project$World$ShadowForest$Map$tYf, $author$project$World$ShadowForest$Map$tYf, $author$project$World$ShadowForest$Map$tYf]),
 		_List_fromArray(
-		[$author$project$World$ShadowForest$Map$tYf, $author$project$World$ShadowForest$Map$tYf, $author$project$World$ShadowForest$Map$tYf, $author$project$World$ShadowForest$Map$tYf, $author$project$World$ShadowForest$Map$tYf, $author$project$World$ShadowForest$Map$tYf, $author$project$World$ShadowForest$Map$tYf, $author$project$World$ShadowForest$Map$tYf, $author$project$World$ShadowForest$Map$tYf, $author$project$World$ShadowForest$Map$tYf, $author$project$World$ShadowForest$Map$tYf, $author$project$World$ShadowForest$Map$t_p, $author$project$World$ShadowForest$Map$tYf, $author$project$World$ShadowForest$Map$tYf, $author$project$World$ShadowForest$Map$tYf, $author$project$World$ShadowForest$Map$tYf, $author$project$World$ShadowForest$Map$tYf]),
+		[$author$project$World$ShadowForest$Map$tYf, $author$project$World$ShadowForest$Map$tYf, $author$project$World$ShadowForest$Map$tYf, $author$project$World$ShadowForest$Map$tYf, $author$project$World$ShadowForest$Map$tYf, $author$project$World$ShadowForest$Map$tYf, $author$project$World$ShadowForest$Map$tYf, $author$project$World$ShadowForest$Map$tYf, $author$project$World$ShadowForest$Map$tYf, $author$project$World$ShadowForest$Map$tYf, $author$project$World$ShadowForest$Map$tYf, $author$project$World$ShadowForest$Map$t_p, $author$project$World$ShadowForest$Map$tYf, $author$project$World$ShadowForest$Map$tYf, $author$project$World$ShadowForest$Map$tMm, $author$project$World$ShadowForest$Map$tYf, $author$project$World$ShadowForest$Map$tYf]),
 		_List_fromArray(
-		[$author$project$World$ShadowForest$Map$tYf, $author$project$World$ShadowForest$Map$tYf, $author$project$World$ShadowForest$Map$tYf, $author$project$World$ShadowForest$Map$tYf, $author$project$World$ShadowForest$Map$tYf, $author$project$World$ShadowForest$Map$tYf, $author$project$World$ShadowForest$Map$tYf, $author$project$World$ShadowForest$Map$tYf, $author$project$World$ShadowForest$Map$tYf, $author$project$World$ShadowForest$Map$tYf, $author$project$World$ShadowForest$Map$tYf, $author$project$World$ShadowForest$Map$tYf, $author$project$World$ShadowForest$Map$tYf, $author$project$World$ShadowForest$Map$tYf, $author$project$World$ShadowForest$Map$tYf, $author$project$World$ShadowForest$Map$tYf, $author$project$World$ShadowForest$Map$tYf])
+		[$author$project$World$ShadowForest$Map$tYf, $author$project$World$ShadowForest$Map$tYf, $author$project$World$ShadowForest$Map$tYf, $author$project$World$ShadowForest$Map$tYf, $author$project$World$ShadowForest$Map$tYf, $author$project$World$ShadowForest$Map$tYf, $author$project$World$ShadowForest$Map$tYf, $author$project$World$ShadowForest$Map$tYf, $author$project$World$ShadowForest$Map$tYf, $author$project$World$ShadowForest$Map$tYf, $author$project$World$ShadowForest$Map$tYf, $author$project$World$ShadowForest$Map$tYf, $author$project$World$ShadowForest$Map$tMm, $author$project$World$ShadowForest$Map$tYf, $author$project$World$ShadowForest$Map$tMm, $author$project$World$ShadowForest$Map$tYf, $author$project$World$ShadowForest$Map$tYf])
 	]);
 var $author$project$World$ShadowForest$Map$initialData = {
 	getMonstersForMap: function (_v0) {
@@ -7717,6 +7716,35 @@ var $author$project$Map$Mob$fromDefinitionListHelper = F3(
 		}
 	});
 var $author$project$Map$Mob$fromDefinitionList = A2($author$project$Map$Mob$fromDefinitionListHelper, 0, $author$project$Map$Mob$emptySet);
+var $author$project$Extend$List$getFirst = function (list) {
+	if (!list.b) {
+		return $elm$core$Maybe$Nothing;
+	} else {
+		var x = list.a;
+		return $elm$core$Maybe$Just(x);
+	}
+};
+var $elm$core$Maybe$withDefault = F2(
+	function (_default, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return value;
+		} else {
+			return _default;
+		}
+	});
+var $author$project$Map$Content$getCoordsFrom = function (posToHexLists) {
+	return {
+		totalCols: A2(
+			$elm$core$Basics$composeR,
+			$author$project$Extend$List$getFirst,
+			A2(
+				$elm$core$Basics$composeR,
+				$elm$core$Maybe$map($elm$core$List$length),
+				$elm$core$Maybe$withDefault(0)))(posToHexLists),
+		totalRows: $elm$core$List$length(posToHexLists)
+	};
+};
 var $author$project$World$Definition$initialMonsters = function () {
 	var getMonstersForMap = function (mapContent) {
 		return mapContent.getMonstersForMap(
@@ -8031,13 +8059,83 @@ var $author$project$Map$Content$createMapFromLists = function (subMapsToPosToHex
 	return $author$project$Map$Content$Map(
 		A2($elm$core$List$map, $author$project$Map$Content$createSubMapFromList, subMapsToPosToHexLists));
 };
-var $author$project$World$Definition$initialWorldMap = $author$project$Map$Content$createMapFromLists(
+var $author$project$Map$Content$getPosOf = function (mapDefinition) {
+	return $author$project$Map$Position$Position(
+		$author$project$Map$Content$getCoordsFrom(mapDefinition));
+};
+var $author$project$Map$Position$Above = {$: 'Above'};
+var $author$project$Map$Position$Below = {$: 'Below'};
+var $author$project$Map$Position$aboveOffset = _Utils_Tuple2(-1, 0);
+var $author$project$Map$Position$belowOffset = _Utils_Tuple2(1, 0);
+var $author$project$Map$Position$getPosFrom = F2(
+	function (direction, position) {
+		var _v0 = function () {
+			if (direction.$ === 'Above') {
+				return $author$project$Map$Position$aboveOffset;
+			} else {
+				return $author$project$Map$Position$belowOffset;
+			}
+		}();
+		var rowOffs = _v0.a;
+		var colOffs = _v0.b;
+		return _Utils_update(
+			position,
+			{col: position.col + colOffs, row: position.row + rowOffs});
+	});
+var $author$project$Map$Content$LinkedHex = function (a) {
+	return {$: 'LinkedHex', a: a};
+};
+var $author$project$Map$Content$setLink = F2(
+	function (linkData, worldMap) {
+		return A2(
+			$elm$core$Maybe$withDefault,
+			true,
+			A2(
+				$elm$core$Maybe$map,
+				function ($) {
+					return $.isViaLink;
+				},
+				A2($author$project$Map$Content$get, linkData.linkToHexPos, worldMap))) ? worldMap : A2(
+			$author$project$Map$Content$setHexContent,
+			{
+				position: linkData.atPositition,
+				reference: $author$project$Map$Content$LinkedHex(linkData.linkToHexPos)
+			},
+			worldMap);
+	});
+var $author$project$Map$Content$setVerticalPathBetween = function (pathData) {
+	return A2(
+		$elm$core$Basics$composeR,
+		$author$project$Map$Content$setLink(
+			{
+				atPositition: A2($author$project$Map$Position$getPosFrom, $author$project$Map$Position$Below, pathData.above),
+				linkToHexPos: pathData.below
+			}),
+		$author$project$Map$Content$setLink(
+			{
+				atPositition: A2($author$project$Map$Position$getPosFrom, $author$project$Map$Position$Above, pathData.below),
+				linkToHexPos: pathData.above
+			}));
+};
+var $author$project$World$Definition$initialWorldMap = A2(
+	$author$project$Map$Content$setVerticalPathBetween,
+	{
+		above: A3($author$project$Map$Content$getPosOf, $author$project$World$ShadowForest$Map$initialData.map, 12, 13),
+		below: A3($author$project$Map$Content$getPosOf, $author$project$World$PalackanFields$Map$initialData.map, 1, 11)
+	},
 	A2(
-		$elm$core$List$map,
-		function ($) {
-			return $.map;
+		$author$project$Map$Content$setVerticalPathBetween,
+		{
+			above: A3($author$project$Map$Content$getPosOf, $author$project$World$PalackanFields$Map$initialData.map, 5, 2),
+			below: A3($author$project$Map$Content$getPosOf, $author$project$World$TombOfTheAncient$Map$initialData.map, 1, 0)
 		},
-		$author$project$World$Definition$allContent));
+		$author$project$Map$Content$createMapFromLists(
+			A2(
+				$elm$core$List$map,
+				function ($) {
+					return $.map;
+				},
+				$author$project$World$Definition$allContent))));
 var $author$project$Meta$Log$State = {$: 'State'};
 var $author$project$Meta$Log$status = $author$project$Meta$Log$logRow($author$project$Meta$Log$State);
 var $author$project$Main$initialModel = A2(
@@ -9867,7 +9965,7 @@ var $author$project$Rule$Effect$isFulfilledFor = F3(
 					return false;
 				} else {
 					var hex = _v1.a;
-					return _Utils_eq(hex.terrain, terrain);
+					return _Utils_eq(hex.data.terrain, terrain);
 				}
 			default:
 				var attribute = requirement.a;
@@ -10108,8 +10206,8 @@ var $author$project$Rule$Order$setAttackerAsGuardingIfTargetDead = F2(
 	function (mobs, attackingMob) {
 		var _v0 = attackingMob.order;
 		if (_v0.$ === 'AdvanceTo') {
-			var position = _v0.a;
-			return A2($author$project$Rule$Order$mobIsDeadAt, position, mobs) ? _Utils_update(
+			var data = _v0.a;
+			return A2($author$project$Rule$Order$mobIsDeadAt, data.actualPos, mobs) ? _Utils_update(
 				attackingMob,
 				{order: $author$project$Map$Mob$Guard}) : attackingMob;
 		} else {
@@ -10498,8 +10596,8 @@ var $author$project$Rule$Order$addTargetPos = F2(
 	function (mob, dict) {
 		var _v0 = mob.order;
 		if (_v0.$ === 'AdvanceTo') {
-			var pos = _v0.a;
-			var posIx = $author$project$Map$Position$toIndex(pos);
+			var data = _v0.a;
+			var posIx = $author$project$Map$Position$toIndex(data.actualPos);
 			var posCount = A2(
 				$elm$core$Maybe$withDefault,
 				0,
@@ -10540,7 +10638,8 @@ var $author$project$Rule$Order$computeOrderEffect = F4(
 			case 'Interact':
 				return $elm$core$Maybe$Nothing;
 			default:
-				var targetPos = _v0.a;
+				var targetData = _v0.a;
+				var targetPos = targetData.actualPos;
 				return $elm$core$Maybe$Just(
 					function () {
 						var _v1 = A2($author$project$Map$Mob$findAt, targetPos, allMobs);
@@ -10889,11 +10988,11 @@ var $author$project$State$Phase$nextPhaseStep = function (_v0) {
 var $author$project$Map$Mob$AdvanceTo = function (a) {
 	return {$: 'AdvanceTo', a: a};
 };
-var $author$project$Map$Hex$Target = {$: 'Target'};
-var $author$project$Map$Hex$Guard = {$: 'Guard'};
-var $author$project$Map$Hex$Interact = {$: 'Interact'};
-var $author$project$Map$Hex$None = {$: 'None'};
-var $author$project$Map$Hex$isMaybeMobDead = function (maybeMob) {
+var $author$project$Rule$Order$Target = {$: 'Target'};
+var $author$project$Rule$Order$Guard = {$: 'Guard'};
+var $author$project$Rule$Order$Interact = {$: 'Interact'};
+var $author$project$Rule$Order$None = {$: 'None'};
+var $author$project$Rule$Order$isMaybeMobDead = function (maybeMob) {
 	if (maybeMob.$ === 'Just') {
 		var mob = maybeMob.a;
 		return _Utils_eq(mob.health, $author$project$Map$Mob$Dead);
@@ -10914,21 +11013,24 @@ var $author$project$Map$Position$offsets = _List_fromArray(
 	[
 		_Utils_Tuple2(0, -1),
 		_Utils_Tuple2(1, -1),
-		_Utils_Tuple2(-1, 0),
-		_Utils_Tuple2(1, 0),
+		$author$project$Map$Position$belowOffset,
+		$author$project$Map$Position$aboveOffset,
 		_Utils_Tuple2(0, 1),
 		_Utils_Tuple2(1, 1)
 	]);
 var $author$project$Map$Position$isNextTo = F2(
 	function (pos1, pos2) {
-		return _Utils_eq(pos1.coords, pos2.coords) && ($author$project$Map$Position$validatePosition(pos1) && ($author$project$Map$Position$validatePosition(pos2) && A2(
+		return _Utils_eq(pos1.coords, pos2.coords) && ($author$project$Map$Position$validPosition(pos1) && ($author$project$Map$Position$validPosition(pos2) && A2(
 			$elm$core$List$any,
 			A2($author$project$Map$Position$isNeighbourAt, pos1, pos2),
 			$author$project$Map$Position$offsets)));
 	});
-var $author$project$Map$Hex$isWalkable = function (hex) {
-	var _v0 = hex.terrain;
-	switch (_v0.$) {
+var $author$project$Rule$Order$isNextTo = F2(
+	function (aggregatedHexData, orderMob) {
+		return A2($author$project$Map$Position$isNextTo, orderMob.position, aggregatedHexData.actualPosition) || A2($author$project$Map$Position$isNextTo, orderMob.position, aggregatedHexData.renderPosition);
+	});
+var $author$project$Map$Hex$isWalkable = function (terrain) {
+	switch (terrain.$) {
 		case 'Plains':
 			return true;
 		case 'Mountains':
@@ -10943,48 +11045,54 @@ var $author$project$Map$Hex$isWalkable = function (hex) {
 			return false;
 		case 'Desert':
 			return true;
+		case 'BlessedGrounds':
+			return true;
 		default:
 			return true;
 	}
 };
-var $author$project$Map$Hex$canMobTargetHex = F3(
-	function (orderMob, nextToHex, maybeHexMob) {
-		return $author$project$Map$Hex$isWalkable(nextToHex) && (A2($author$project$Map$Position$isNextTo, orderMob.position, nextToHex.position) && (!$author$project$Map$Hex$isMaybeMobDead(maybeHexMob)));
+var $author$project$Rule$Order$canMobTargetHex = F3(
+	function (orderMob, targetHex, targetHexMob) {
+		return $author$project$Map$Hex$isWalkable(targetHex.data.terrain) && (A2($author$project$Rule$Order$isNextTo, targetHex, orderMob) && (!$author$project$Rule$Order$isMaybeMobDead(targetHexMob)));
 	});
-var $author$project$Map$Hex$getPossibleOrderForHex = F3(
-	function (orderMob, hex, maybeHexMob) {
+var $author$project$Rule$Order$getPossibleForMob = F3(
+	function (orderMob, targetHex, targetHexMob) {
 		var currentOrder = orderMob.order;
 		if (_Utils_eq(orderMob.health, $author$project$Map$Mob$Dead) || (_Utils_eq(currentOrder, $author$project$Map$Mob$UsingItem) || _Utils_eq(currentOrder, $author$project$Map$Mob$OffGuard))) {
-			return $author$project$Map$Hex$None;
+			return $author$project$Rule$Order$None;
 		} else {
-			if (A3($author$project$Map$Hex$canMobTargetHex, orderMob, hex, maybeHexMob)) {
-				return $author$project$Map$Hex$Target;
+			if (A3($author$project$Rule$Order$canMobTargetHex, orderMob, targetHex, targetHexMob)) {
+				return $author$project$Rule$Order$Target;
 			} else {
-				if (_Utils_eq(hex.position, orderMob.position)) {
-					var _v0 = hex.stationary;
+				if (_Utils_eq(targetHex.actualPosition, orderMob.position)) {
+					var _v0 = targetHex.data.stationary;
 					if (_v0.$ === 'Just') {
-						return $author$project$Map$Hex$Interact;
+						return $author$project$Rule$Order$Interact;
 					} else {
-						return $author$project$Map$Hex$Guard;
+						return $author$project$Rule$Order$Guard;
 					}
 				} else {
-					return $author$project$Map$Hex$None;
+					return $author$project$Rule$Order$None;
 				}
 			}
 		}
 	});
 var $author$project$Update$setDecidedOrderForMonster = F2(
 	function (model, monster) {
+		var player = model.player;
 		var newOrder = function () {
-			var _v0 = A2($author$project$Map$Content$get, model.player.position, model.map);
+			var _v0 = A2($author$project$Map$Content$get, player.position, model.map);
 			if (_v0.$ === 'Nothing') {
 				return $author$project$Map$Mob$Guard;
 			} else {
-				var targetHex = _v0.a;
-				var targetPosition = targetHex.position;
-				var playerAtTargetHex = _Utils_eq(targetHex.position, model.player.position) ? $elm$core$Maybe$Just(model.player) : $elm$core$Maybe$Nothing;
-				var possibleOrderForHex = A3($author$project$Map$Hex$getPossibleOrderForHex, monster, targetHex, playerAtTargetHex);
-				return _Utils_eq($author$project$Map$Hex$Target, possibleOrderForHex) ? $author$project$Map$Mob$AdvanceTo(targetPosition) : $author$project$Map$Mob$Guard;
+				var targetHexData = _v0.a;
+				var possibleOrderForHex = A3(
+					$author$project$Rule$Order$getPossibleForMob,
+					monster,
+					targetHexData,
+					$elm$core$Maybe$Just(player));
+				return _Utils_eq($author$project$Rule$Order$Target, possibleOrderForHex) ? $author$project$Map$Mob$AdvanceTo(
+					{actualPos: targetHexData.actualPosition, renderPos: targetHexData.renderPosition}) : $author$project$Map$Mob$Guard;
 			}
 		}();
 		return _Utils_eq(monster.order, newOrder) ? monster : _Utils_update(
@@ -11129,13 +11237,26 @@ var $author$project$Update$updateWithMsg = F3(
 						{beingUsed: $elm$core$Maybe$Nothing}),
 					$elm$core$Platform$Cmd$none);
 			case 'ClickLoot':
-				var lootHex = msg.a;
+				var hexPos = msg.a;
 				var newPos = msg.b;
 				return _Utils_Tuple2(
 					function () {
 						var _v2 = model.dragging;
 						if (_v2.$ === 'Nothing') {
-							var _v3 = lootHex.loot;
+							var _v3 = A2(
+								$elm$core$Maybe$withDefault,
+								_List_Nil,
+								A2(
+									$elm$core$Maybe$map,
+									A2(
+										$elm$core$Basics$composeR,
+										function ($) {
+											return $.data;
+										},
+										function ($) {
+											return $.loot;
+										}),
+									A2($author$project$Map$Content$get, hexPos, model.map)));
 							if (!_v3.b) {
 								return model;
 							} else {
@@ -11146,11 +11267,14 @@ var $author$project$Update$updateWithMsg = F3(
 									{
 										dragging: $elm$core$Maybe$Just(
 											A2($author$project$Msg$Drag, itemOnTop, newPos)),
-										map: A2(
-											$author$project$Map$Content$set,
-											_Utils_update(
-												lootHex,
-												{loot: pile}),
+										map: A3(
+											$author$project$Map$Content$update,
+											hexPos,
+											function (lootHex) {
+												return _Utils_update(
+													lootHex,
+													{loot: pile});
+											},
 											model.map)
 									});
 							}
@@ -11160,13 +11284,16 @@ var $author$project$Update$updateWithMsg = F3(
 								model,
 								{
 									dragging: $elm$core$Maybe$Nothing,
-									map: A2(
-										$author$project$Map$Content$set,
-										_Utils_update(
-											lootHex,
-											{
-												loot: A2($elm$core$List$cons, drag.item, lootHex.loot)
-											}),
+									map: A3(
+										$author$project$Map$Content$update,
+										hexPos,
+										function (lootHex) {
+											return _Utils_update(
+												lootHex,
+												{
+													loot: A2($elm$core$List$cons, drag.item, lootHex.loot)
+												});
+										},
 										model.map)
 								});
 						}
@@ -11326,8 +11453,10 @@ var $author$project$Map$Hex$nameOfTerrain = function (terrain) {
 			return 'Sea';
 		case 'Desert':
 			return 'Desert';
-		default:
+		case 'BlessedGrounds':
 			return 'Holy lands';
+		default:
+			return 'Elsewhere...';
 	}
 };
 var $author$project$Rule$DefinitionMapping$toProperTerrainName = function (ruleTerrain) {
@@ -12233,6 +12362,19 @@ var $author$project$Map$Hex$getDescription = F2(
 		var basicDescr = $author$project$Map$Hex$nameOfTerrain(hex.terrain);
 		return $elm$core$String$isEmpty(contentDescription) ? basicDescr : (contentDescription + ($author$project$Text$rn + ($author$project$Text$rn + ('in ' + basicDescr))));
 	});
+var $author$project$Map$Hex$Elsewhere = {$: 'Elsewhere'};
+var $author$project$Map$Content$elsewhereData = {loot: $author$project$Map$Content$emptyLoot, stationary: $elm$core$Maybe$Nothing, terrain: $author$project$Map$Hex$Elsewhere};
+var $author$project$Map$Content$withDefaultAggregatedHexData = function (hexPos) {
+	return $elm$core$Maybe$withDefault(
+		{actualPosition: hexPos, data: $author$project$Map$Content$elsewhereData, isViaLink: true, renderPosition: hexPos});
+};
+var $author$project$Map$Content$getWithDefault = F2(
+	function (pos, worldMap) {
+		return A2(
+			$author$project$Map$Content$withDefaultAggregatedHexData,
+			pos,
+			A2($author$project$Map$Content$get, pos, worldMap));
+	});
 var $author$project$Msg$ChooseOption = function (a) {
 	return {$: 'ChooseOption', a: a};
 };
@@ -12631,30 +12773,16 @@ var $author$project$Map$Hex$symbolOfTerrain = function (terrain) {
 			return '🌊';
 		case 'Desert':
 			return '🏜';
-		default:
+		case 'BlessedGrounds':
 			return '✨';
+		default:
+			return '🌌';
 	}
 };
 var $author$project$Areas$InteractArea$render = function (interactHolder) {
 	var player = interactHolder.player;
-	var maybePlayerHex = A2($author$project$Map$Content$get, player.position, interactHolder.map);
-	var itemInteractedWith = _Utils_eq(player.order, $author$project$Map$Mob$Interact) ? A2(
-		$elm$core$Maybe$andThen,
-		function ($) {
-			return $.stationary;
-		},
-		maybePlayerHex) : $elm$core$Maybe$Nothing;
-	var hexInfo = function () {
-		if (maybePlayerHex.$ === 'Just') {
-			var mobHex = maybePlayerHex.a;
-			return {
-				background: $author$project$Map$Hex$symbolOfTerrain(mobHex.terrain),
-				description: A2($author$project$Map$Hex$getDescription, mobHex, $elm$core$Maybe$Nothing)
-			};
-		} else {
-			return {background: '🌌', description: 'Elsewhere...'};
-		}
-	}();
+	var playerHex = A2($author$project$Map$Content$getWithDefault, player.position, interactHolder.map);
+	var itemInteractedWith = _Utils_eq(player.order, $author$project$Map$Mob$Interact) ? playerHex.data.stationary : $elm$core$Maybe$Nothing;
 	return A2(
 		$elm$html$Html$div,
 		_List_Nil,
@@ -12670,7 +12798,8 @@ var $author$project$Areas$InteractArea$render = function (interactHolder) {
 					]),
 				_List_fromArray(
 					[
-						$elm$html$Html$text(hexInfo.background)
+						$elm$html$Html$text(
+						$author$project$Map$Hex$symbolOfTerrain(playerHex.data.terrain))
 					])),
 				function () {
 				if (itemInteractedWith.$ === 'Just') {
@@ -12756,7 +12885,8 @@ var $author$project$Areas$InteractArea$render = function (interactHolder) {
 							]),
 						_List_fromArray(
 							[
-								$elm$html$Html$text(hexInfo.description)
+								$elm$html$Html$text(
+								A2($author$project$Map$Hex$getDescription, playerHex.data, $elm$core$Maybe$Nothing))
 							]));
 				}
 			}()
@@ -13154,28 +13284,39 @@ var $elm$virtual_dom$VirtualDom$keyedNodeNS = F2(
 			_VirtualDom_noScript(tag));
 	});
 var $elm$svg$Svg$Keyed$node = $elm$virtual_dom$VirtualDom$keyedNodeNS('http://www.w3.org/2000/svg');
+var $author$project$Map$Content$toDefaultAggregatedHexData = F2(
+	function (worldMap, hex) {
+		return A2(
+			$author$project$Map$Content$withDefaultAggregatedHexData,
+			hex.position,
+			A2($author$project$Map$Content$getHelper, worldMap, hex));
+	});
 var $author$project$Map$Content$mapToList = F3(
-	function (coordsIdOfMap, mapFun, map) {
-		var _v0 = A2($author$project$Map$Content$getSubMap, coordsIdOfMap, map);
+	function (coordsIdOfMap, mapFun, worldMap) {
+		var _v0 = A2($author$project$Map$Content$getSubMap, coordsIdOfMap, worldMap);
 		if (_v0.$ === 'Nothing') {
 			return _List_Nil;
 		} else {
 			var subMap = _v0.a;
 			return A3(
 				$elm$core$Array$foldr,
-				A2($elm$core$Basics$composeR, mapFun, $elm$core$List$cons),
+				A2(
+					$elm$core$Basics$composeR,
+					$author$project$Map$Content$toDefaultAggregatedHexData(worldMap),
+					A2($elm$core$Basics$composeR, mapFun, $elm$core$List$cons)),
 				_List_Nil,
 				subMap.hexes);
 		}
 	});
-var $elm$virtual_dom$VirtualDom$lazy3 = _VirtualDom_lazy3;
-var $elm$svg$Svg$Lazy$lazy3 = $elm$virtual_dom$VirtualDom$lazy3;
-var $elm$virtual_dom$VirtualDom$lazy4 = _VirtualDom_lazy4;
-var $elm$svg$Svg$Lazy$lazy4 = $elm$virtual_dom$VirtualDom$lazy4;
+var $elm$virtual_dom$VirtualDom$lazy5 = _VirtualDom_lazy5;
+var $elm$svg$Svg$Lazy$lazy5 = $elm$virtual_dom$VirtualDom$lazy5;
+var $elm$virtual_dom$VirtualDom$lazy6 = _VirtualDom_lazy6;
+var $elm$svg$Svg$Lazy$lazy6 = $elm$virtual_dom$VirtualDom$lazy6;
 var $author$project$Msg$ClickLoot = F2(
 	function (a, b) {
 		return {$: 'ClickLoot', a: a, b: b};
 	});
+var $author$project$Areas$MapArea$LinkedPathHex = {$: 'LinkedPathHex'};
 var $author$project$Msg$SetPlayerOrder = function (a) {
 	return {$: 'SetPlayerOrder', a: a};
 };
@@ -13195,8 +13336,10 @@ var $author$project$Map$Hex$colorOf = function (terrain) {
 			return 'blue';
 		case 'Desert':
 			return 'yellow';
-		default:
+		case 'BlessedGrounds':
 			return 'white';
+		default:
+			return 'darkgrey';
 	}
 };
 var $author$project$Areas$MapArea$RelHexPoint = F2(
@@ -13361,8 +13504,16 @@ var $elm$svg$Svg$svg = $elm$svg$Svg$trustedNode('svg');
 var $elm$svg$Svg$Attributes$cursor = _VirtualDom_attribute('cursor');
 var $author$project$Areas$MapArea$svgClickable = $elm$svg$Svg$Attributes$cursor('pointer');
 var $elm$svg$Svg$title = $elm$svg$Svg$trustedNode('title');
-var $author$project$Areas$MapArea$renderHexHelper = F4(
-	function (mobInHex, hexTargetMode, interactiveInHex, hex) {
+var $elm$svg$Svg$Attributes$filter = _VirtualDom_attribute('filter');
+var $author$project$Areas$MapArea$getFilterId = function (filter) {
+	return 'hex_path_svg_filter_id';
+};
+var $author$project$Areas$MapArea$toFilterAttribute = function (filter) {
+	var filterId = $author$project$Areas$MapArea$getFilterId(filter);
+	return $elm$svg$Svg$Attributes$filter('url(#' + (filterId + ')'));
+};
+var $author$project$Areas$MapArea$renderHexHelper = F6(
+	function (mobInHex, hexTargetMode, renderPosition, actualPosition, isHexLinked, hexData) {
 		var renderedTooltip = _List_fromArray(
 			[
 				A2(
@@ -13373,7 +13524,7 @@ var $author$project$Areas$MapArea$renderHexHelper = F4(
 						$elm$svg$Svg$text(
 						A2(
 							$author$project$Map$Hex$getDescription,
-							hex,
+							hexData,
 							A2($elm$core$Maybe$map, $author$project$Areas$MapArea$getMobTooltip, mobInHex)))
 					]))
 			]);
@@ -13386,8 +13537,9 @@ var $author$project$Areas$MapArea$renderHexHelper = F4(
 			}
 		}();
 		var renderedInteractiveItem = function () {
-			if (interactiveInHex.$ === 'Just') {
-				var interactive = interactiveInHex.a;
+			var _v5 = hexData.stationary;
+			if (_v5.$ === 'Just') {
+				var interactive = _v5.a;
 				return _List_fromArray(
 					[
 						A2(
@@ -13432,7 +13584,8 @@ var $author$project$Areas$MapArea$renderHexHelper = F4(
 					return A2(
 						renderHexTargetMode,
 						'blue',
-						$author$project$Map$Mob$AdvanceTo(hex.position));
+						$author$project$Map$Mob$AdvanceTo(
+							{actualPos: actualPosition, renderPos: renderPosition}));
 				case 'Interact':
 					return A2(renderHexTargetMode, 'orange', $author$project$Map$Mob$Interact);
 				default:
@@ -13443,6 +13596,10 @@ var $author$project$Areas$MapArea$renderHexHelper = F4(
 						]);
 			}
 		}();
+		var linkedHexAttrs = isHexLinked ? _List_fromArray(
+			[
+				$author$project$Areas$MapArea$toFilterAttribute($author$project$Areas$MapArea$LinkedPathHex)
+			]) : _List_Nil;
 		var isPlayerHex = function () {
 			if (mobInHex.$ === 'Just') {
 				var mob = mobInHex.a;
@@ -13460,9 +13617,9 @@ var $author$project$Areas$MapArea$renderHexHelper = F4(
 			[
 				$author$project$Areas$MapArea$svgClickable,
 				$author$project$Extend$Mouse$onClickExt(
-				$author$project$Msg$ClickLoot(hex))
+				$author$project$Msg$ClickLoot(actualPosition))
 			]) : $author$project$Areas$MapArea$svgNonInteractive;
-		var renderedLootPile = ((!isPlayerHex) && $elm$core$List$isEmpty(hex.loot)) ? _List_Nil : _List_fromArray(
+		var renderedLootPile = ((!isPlayerHex) && $elm$core$List$isEmpty(hexData.loot)) ? _List_Nil : _List_fromArray(
 			[
 				A2(
 				$elm$svg$Svg$text_,
@@ -13472,7 +13629,7 @@ var $author$project$Areas$MapArea$renderHexHelper = F4(
 							$elm$svg$Svg$Attributes$fontSize(
 							$elm$core$String$fromFloat($author$project$Areas$MapArea$hexRadius * 0.5)),
 							$elm$svg$Svg$Attributes$opacity(
-							$elm$core$List$isEmpty(hex.loot) ? '0.5' : '1'),
+							$elm$core$List$isEmpty(hexData.loot) ? '0.5' : '1'),
 							$elm$svg$Svg$Attributes$x(
 							$elm$core$String$fromFloat($author$project$Areas$MapArea$hexRadius * 0.25)),
 							$elm$svg$Svg$Attributes$y(
@@ -13483,7 +13640,7 @@ var $author$project$Areas$MapArea$renderHexHelper = F4(
 					[
 						$elm$svg$Svg$text(
 						function () {
-							var _v1 = hex.loot;
+							var _v1 = hexData.loot;
 							if (_v1.b && (!_v1.b.b)) {
 								var singleLoot = _v1.a;
 								return $elm$core$String$fromChar(singleLoot.picture);
@@ -13497,7 +13654,7 @@ var $author$project$Areas$MapArea$renderHexHelper = F4(
 			[
 				$elm$svg$Svg$Attributes$points($author$project$Areas$MapArea$concatPts),
 				$elm$svg$Svg$Attributes$fill(
-				$author$project$Map$Hex$colorOf(hex.terrain))
+				$author$project$Map$Hex$colorOf(hexData.terrain))
 			]);
 		var renderedTerrain = _List_fromArray(
 			[
@@ -13521,7 +13678,7 @@ var $author$project$Areas$MapArea$renderHexHelper = F4(
 				_List_fromArray(
 					[
 						$elm$svg$Svg$text(
-						$author$project$Map$Hex$symbolOfTerrain(hex.terrain))
+						$author$project$Map$Hex$symbolOfTerrain(hexData.terrain))
 					]))
 			]);
 		var contents = _Utils_ap(
@@ -13531,18 +13688,20 @@ var $author$project$Areas$MapArea$renderHexHelper = F4(
 				_Utils_ap(
 					renderedInteractiveItem,
 					_Utils_ap(renderedTooltip, renderedMob))));
-		var _v0 = $author$project$Areas$MapArea$hexPositionToPixels(hex.position);
+		var _v0 = $author$project$Areas$MapArea$hexPositionToPixels(renderPosition);
 		var svgx = _v0.a;
 		var svgy = _v0.b;
 		return A2(
 			$elm$svg$Svg$svg,
-			_List_fromArray(
-				[
-					$elm$svg$Svg$Attributes$x(
-					$elm$core$String$fromInt(svgx)),
-					$elm$svg$Svg$Attributes$y(
-					$elm$core$String$fromInt(svgy))
-				]),
+			_Utils_ap(
+				_List_fromArray(
+					[
+						$elm$svg$Svg$Attributes$x(
+						$elm$core$String$fromInt(svgx)),
+						$elm$svg$Svg$Attributes$y(
+						$elm$core$String$fromInt(svgy))
+					]),
+				linkedHexAttrs),
 			contents);
 	});
 var $author$project$Areas$MapArea$renderHexHelperNoMob = $author$project$Areas$MapArea$renderHexHelper($elm$core$Maybe$Nothing);
@@ -13551,45 +13710,41 @@ var $author$project$Areas$MapArea$renderHexHelperWithMob = function (mob) {
 		$elm$core$Maybe$Just(mob));
 };
 var $author$project$Areas$MapArea$getKey = F2(
-	function (prefix, posHolder) {
+	function (prefix, position) {
 		return _Utils_ap(
 			prefix,
 			$elm$core$String$fromInt(
-				$author$project$Map$Position$toIndex(posHolder.position)));
+				$author$project$Map$Position$toIndex(position)));
 	});
-var $author$project$Areas$MapArea$toKeyed = F3(
-	function (renderFunc, prefix, posHolder) {
+var $author$project$Areas$MapArea$toKeyed = F4(
+	function (renderFunc, prefix, position, hexData) {
 		return _Utils_Tuple2(
-			A2($author$project$Areas$MapArea$getKey, prefix, posHolder),
-			renderFunc(posHolder));
+			A2($author$project$Areas$MapArea$getKey, prefix, position),
+			renderFunc(hexData));
 	});
-var $author$project$Areas$MapArea$renderHex = F4(
-	function (player, findMob, findInteractive, hex) {
-		var mobInHex = findMob(hex);
-		var possiblePlayerOrder = A3($author$project$Map$Hex$getPossibleOrderForHex, player, hex, mobInHex);
-		var interactiveInHex = findInteractive(hex);
+var $author$project$Areas$MapArea$renderHex = F3(
+	function (player, findMob, hex) {
+		var mobInHex = findMob(hex.actualPosition);
+		var possiblePlayerOrder = A3($author$project$Rule$Order$getPossibleForMob, player, hex, mobInHex);
 		var renderFunc = function () {
 			if (mobInHex.$ === 'Just') {
 				var mob = mobInHex.a;
-				return A4($elm$svg$Svg$Lazy$lazy4, $author$project$Areas$MapArea$renderHexHelperWithMob, mob, possiblePlayerOrder, interactiveInHex);
+				return A6($elm$svg$Svg$Lazy$lazy6, $author$project$Areas$MapArea$renderHexHelperWithMob, mob, possiblePlayerOrder, hex.renderPosition, hex.actualPosition, hex.isViaLink);
 			} else {
-				return A3($elm$svg$Svg$Lazy$lazy3, $author$project$Areas$MapArea$renderHexHelperNoMob, possiblePlayerOrder, interactiveInHex);
+				return A5($elm$svg$Svg$Lazy$lazy5, $author$project$Areas$MapArea$renderHexHelperNoMob, possiblePlayerOrder, hex.renderPosition, hex.actualPosition, hex.isViaLink);
 			}
 		}();
-		return A3($author$project$Areas$MapArea$toKeyed, renderFunc, 'hex', hex);
+		return A4($author$project$Areas$MapArea$toKeyed, renderFunc, 'hex', hex.renderPosition, hex.data);
 	});
 var $author$project$Areas$MapArea$renderHexes = function (mapModel) {
-	var findInteractive = function ($) {
-		return $.stationary;
-	};
 	var allMobs = $author$project$Map$Mob$collectAllMobs(mapModel);
-	var findMob = function (hex) {
-		return A2($author$project$Map$Mob$findAt, hex.position, allMobs);
+	var findMob = function (position) {
+		return A2($author$project$Map$Mob$findAt, position, allMobs);
 	};
 	return A3(
 		$author$project$Map$Content$mapToList,
 		mapModel.player.position.coords,
-		A3($author$project$Areas$MapArea$renderHex, mapModel.player, findMob, findInteractive),
+		A2($author$project$Areas$MapArea$renderHex, mapModel.player, findMob),
 		mapModel.map);
 };
 var $author$project$Areas$MapArea$ConflictAction = {$: 'ConflictAction'};
@@ -13617,21 +13772,21 @@ var $author$project$Areas$MapArea$renderOrder = F2(
 			case 'OffGuard':
 				return _List_Nil;
 			default:
-				var toPos = _v0.a;
-				var target = A2(
+				var data = _v0.a;
+				var drawnArrow = A3($author$project$Areas$MapArea$drawArrow, $author$project$Areas$MapArea$ConflictAction, orderMob.position, data.renderPos);
+				var _v1 = A2(
 					$author$project$Map$Mob$findAt,
-					toPos,
+					data.actualPos,
 					$author$project$Map$Mob$collectAllMobs(mapHolder));
-				var drawnArrow = A3($author$project$Areas$MapArea$drawArrow, $author$project$Areas$MapArea$ConflictAction, orderMob.position, toPos);
-				if (target.$ === 'Nothing') {
+				if (_v1.$ === 'Nothing') {
 					return _List_fromArray(
 						[drawnArrow]);
 				} else {
-					var targetMob = target.a;
+					var targetMob = _v1.a;
 					var renderedHitChance = A2($elm$core$Basics$composeL, $elm$core$String$fromInt, $elm$core$Basics$round)(
 						100 * A3($author$project$Rule$Combat$getHitChancePercent, mapHolder, orderMob, targetMob)) + '%';
 					var fontSize = $author$project$Areas$MapArea$hexRadius / 5;
-					var _v2 = $author$project$Areas$MapArea$hexPositionToPixels(toPos);
+					var _v2 = $author$project$Areas$MapArea$hexPositionToPixels(data.renderPos);
 					var tgtX = _v2.a;
 					var tgtY = _v2.b;
 					var _v3 = $author$project$Areas$MapArea$hexPositionToPixels(orderMob.position);
@@ -13663,6 +13818,73 @@ var $author$project$Areas$MapArea$renderOrder = F2(
 		}
 	});
 var $elm$svg$Svg$Attributes$style = _VirtualDom_attribute('style');
+var $elm$svg$Svg$defs = $elm$svg$Svg$trustedNode('defs');
+var $elm$svg$Svg$feComponentTransfer = $elm$svg$Svg$trustedNode('feComponentTransfer');
+var $elm$svg$Svg$feFuncB = $elm$svg$Svg$trustedNode('feFuncB');
+var $elm$svg$Svg$feFuncG = $elm$svg$Svg$trustedNode('feFuncG');
+var $elm$svg$Svg$feFuncR = $elm$svg$Svg$trustedNode('feFuncR');
+var $elm$svg$Svg$feGaussianBlur = $elm$svg$Svg$trustedNode('feGaussianBlur');
+var $elm$svg$Svg$filter = $elm$svg$Svg$trustedNode('filter');
+var $elm$svg$Svg$Attributes$id = _VirtualDom_attribute('id');
+var $elm$svg$Svg$Attributes$in_ = _VirtualDom_attribute('in');
+var $elm$svg$Svg$Attributes$slope = _VirtualDom_attribute('slope');
+var $elm$svg$Svg$Attributes$stdDeviation = _VirtualDom_attribute('stdDeviation');
+var $elm$svg$Svg$Attributes$type_ = _VirtualDom_attribute('type');
+var $author$project$Areas$MapArea$svgDefs = A2(
+	$elm$svg$Svg$defs,
+	_List_Nil,
+	_List_fromArray(
+		[
+			A2(
+			$elm$svg$Svg$filter,
+			_List_fromArray(
+				[
+					$elm$svg$Svg$Attributes$id(
+					$author$project$Areas$MapArea$getFilterId($author$project$Areas$MapArea$LinkedPathHex))
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$svg$Svg$feGaussianBlur,
+					_List_fromArray(
+						[
+							$elm$svg$Svg$Attributes$in_('SourceGraphic'),
+							$elm$svg$Svg$Attributes$stdDeviation('1'),
+							$elm$svg$Svg$Attributes$y('-')
+						]),
+					_List_Nil),
+					A2(
+					$elm$svg$Svg$feComponentTransfer,
+					_List_Nil,
+					_List_fromArray(
+						[
+							A2(
+							$elm$svg$Svg$feFuncR,
+							_List_fromArray(
+								[
+									$elm$svg$Svg$Attributes$type_('linear'),
+									$elm$svg$Svg$Attributes$slope('0.3')
+								]),
+							_List_Nil),
+							A2(
+							$elm$svg$Svg$feFuncG,
+							_List_fromArray(
+								[
+									$elm$svg$Svg$Attributes$type_('linear'),
+									$elm$svg$Svg$Attributes$slope('0.3')
+								]),
+							_List_Nil),
+							A2(
+							$elm$svg$Svg$feFuncB,
+							_List_fromArray(
+								[
+									$elm$svg$Svg$Attributes$type_('linear'),
+									$elm$svg$Svg$Attributes$slope('0.3')
+								]),
+							_List_Nil)
+						]))
+				]))
+		]));
 var $elm$svg$Svg$Attributes$width = _VirtualDom_attribute('width');
 var $author$project$Areas$MapArea$render = function (mapHolder) {
 	var renderedOrders = A2($author$project$Areas$MapArea$renderOrder, mapHolder, mapHolder.player);
@@ -13684,6 +13906,7 @@ var $author$project$Areas$MapArea$render = function (mapHolder) {
 		_Utils_ap(
 			_List_fromArray(
 				[
+					$author$project$Areas$MapArea$svgDefs,
 					A3($elm$svg$Svg$Keyed$node, 'svg', _List_Nil, renderedMap)
 				]),
 			_Utils_ap(renderedOrders, renderedOrderEffects)));
@@ -14005,8 +14228,8 @@ var $author$project$Map$Mob$describeOrder = function (order) {
 		case 'Interact':
 			return 'Interacting ';
 		default:
-			var pos = order.a;
-			return 'Advance to ' + $author$project$Map$Position$toString(pos);
+			var data = order.a;
+			return 'Advance to ' + $author$project$Map$Position$toString(data.actualPos);
 	}
 };
 var $author$project$Areas$StatsArea$aggregatedModifierToDescription = function (aggregatedModifier) {
