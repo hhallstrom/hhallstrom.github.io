@@ -4364,181 +4364,6 @@ function _Browser_load(url)
 
 
 
-// SEND REQUEST
-
-var _Http_toTask = F3(function(router, toTask, request)
-{
-	return _Scheduler_binding(function(callback)
-	{
-		function done(response) {
-			callback(toTask(request.expect.a(response)));
-		}
-
-		var xhr = new XMLHttpRequest();
-		xhr.addEventListener('error', function() { done($elm$http$Http$NetworkError_); });
-		xhr.addEventListener('timeout', function() { done($elm$http$Http$Timeout_); });
-		xhr.addEventListener('load', function() { done(_Http_toResponse(request.expect.b, xhr)); });
-		$elm$core$Maybe$isJust(request.tracker) && _Http_track(router, xhr, request.tracker.a);
-
-		try {
-			xhr.open(request.method, request.url, true);
-		} catch (e) {
-			return done($elm$http$Http$BadUrl_(request.url));
-		}
-
-		_Http_configureRequest(xhr, request);
-
-		request.body.a && xhr.setRequestHeader('Content-Type', request.body.a);
-		xhr.send(request.body.b);
-
-		return function() { xhr.c = true; xhr.abort(); };
-	});
-});
-
-
-// CONFIGURE
-
-function _Http_configureRequest(xhr, request)
-{
-	for (var headers = request.headers; headers.b; headers = headers.b) // WHILE_CONS
-	{
-		xhr.setRequestHeader(headers.a.a, headers.a.b);
-	}
-	xhr.timeout = request.timeout.a || 0;
-	xhr.responseType = request.expect.d;
-	xhr.withCredentials = request.allowCookiesFromOtherDomains;
-}
-
-
-// RESPONSES
-
-function _Http_toResponse(toBody, xhr)
-{
-	return A2(
-		200 <= xhr.status && xhr.status < 300 ? $elm$http$Http$GoodStatus_ : $elm$http$Http$BadStatus_,
-		_Http_toMetadata(xhr),
-		toBody(xhr.response)
-	);
-}
-
-
-// METADATA
-
-function _Http_toMetadata(xhr)
-{
-	return {
-		url: xhr.responseURL,
-		statusCode: xhr.status,
-		statusText: xhr.statusText,
-		headers: _Http_parseHeaders(xhr.getAllResponseHeaders())
-	};
-}
-
-
-// HEADERS
-
-function _Http_parseHeaders(rawHeaders)
-{
-	if (!rawHeaders)
-	{
-		return $elm$core$Dict$empty;
-	}
-
-	var headers = $elm$core$Dict$empty;
-	var headerPairs = rawHeaders.split('\r\n');
-	for (var i = headerPairs.length; i--; )
-	{
-		var headerPair = headerPairs[i];
-		var index = headerPair.indexOf(': ');
-		if (index > 0)
-		{
-			var key = headerPair.substring(0, index);
-			var value = headerPair.substring(index + 2);
-
-			headers = A3($elm$core$Dict$update, key, function(oldValue) {
-				return $elm$core$Maybe$Just($elm$core$Maybe$isJust(oldValue)
-					? value + ', ' + oldValue.a
-					: value
-				);
-			}, headers);
-		}
-	}
-	return headers;
-}
-
-
-// EXPECT
-
-var _Http_expect = F3(function(type, toBody, toValue)
-{
-	return {
-		$: 0,
-		d: type,
-		b: toBody,
-		a: toValue
-	};
-});
-
-var _Http_mapExpect = F2(function(func, expect)
-{
-	return {
-		$: 0,
-		d: expect.d,
-		b: expect.b,
-		a: function(x) { return func(expect.a(x)); }
-	};
-});
-
-function _Http_toDataView(arrayBuffer)
-{
-	return new DataView(arrayBuffer);
-}
-
-
-// BODY and PARTS
-
-var _Http_emptyBody = { $: 0 };
-var _Http_pair = F2(function(a, b) { return { $: 0, a: a, b: b }; });
-
-function _Http_toFormData(parts)
-{
-	for (var formData = new FormData(); parts.b; parts = parts.b) // WHILE_CONS
-	{
-		var part = parts.a;
-		formData.append(part.a, part.b);
-	}
-	return formData;
-}
-
-var _Http_bytesToBlob = F2(function(mime, bytes)
-{
-	return new Blob([bytes], { type: mime });
-});
-
-
-// PROGRESS
-
-function _Http_track(router, xhr, tracker)
-{
-	// TODO check out lengthComputable on loadstart event
-
-	xhr.upload.addEventListener('progress', function(event) {
-		if (xhr.c) { return; }
-		_Scheduler_rawSpawn(A2($elm$core$Platform$sendToSelf, router, _Utils_Tuple2(tracker, $elm$http$Http$Sending({
-			sent: event.loaded,
-			size: event.total
-		}))));
-	});
-	xhr.addEventListener('progress', function(event) {
-		if (xhr.c) { return; }
-		_Scheduler_rawSpawn(A2($elm$core$Platform$sendToSelf, router, _Utils_Tuple2(tracker, $elm$http$Http$Receiving({
-			received: event.loaded,
-			size: event.lengthComputable ? $elm$core$Maybe$Just(event.total) : $elm$core$Maybe$Nothing
-		}))));
-	});
-}
-
-
 function _Time_now(millisToPosix)
 {
 	return _Scheduler_binding(function(callback)
@@ -4662,9 +4487,6 @@ var $elm$core$Set$toList = function (_v0) {
 	return $elm$core$Dict$keys(dict);
 };
 var $elm$core$Basics$GT = {$: 'GT'};
-var $author$project$Msg$SetServerStatus = function (a) {
-	return {$: 'SetServerStatus', a: a};
-};
 var $elm$core$Basics$apR = F2(
 	function (x, f) {
 		return f(x);
@@ -7160,7 +6982,15 @@ var $author$project$World$PalackanFields$Mob$dragonBlood = A6(
 var $author$project$World$PalackanFields$Mob$moneyBag = $author$project$Rule$ReferenceLoot$createMoneyBag(200);
 var $author$project$World$PalackanFields$Mob$dragonLoot = _List_fromArray(
 	[$author$project$World$PalackanFields$Mob$diamond, $author$project$World$PalackanFields$Mob$moneyBag, $author$project$World$PalackanFields$Mob$moneyBag, $author$project$World$PalackanFields$Mob$moneyBag, $author$project$World$PalackanFields$Mob$dragonBlood]);
-var $author$project$World$PalackanFields$Mob$dragonTraits = _List_Nil;
+var $author$project$World$Common$Mob$flyerTrait = $author$project$Rule$Definition$createTrait(
+	{
+		description: 'Flying creatures do not suffer any penalty from terrain.',
+		effects: _List_Nil,
+		name: 'Flyer',
+		picture: _Utils_chr('🦅')
+	});
+var $author$project$World$PalackanFields$Mob$dragonTraits = _List_fromArray(
+	[$author$project$World$Common$Mob$flyerTrait]);
 var $author$project$World$PalackanFields$Mob$healingPotion = A6(
 	$author$project$Inventory$Item$Item,
 	'Healing potion',
@@ -8142,727 +7972,9 @@ var $author$project$Main$initialModel = A2(
 	$author$project$Meta$Log$status,
 	'Game initiated',
 	{beingUsed: $elm$core$Maybe$Nothing, dragging: $author$project$Main$initialPointer, logs: $author$project$Meta$Log$initial, map: $author$project$World$Definition$initialWorldMap, monsters: $author$project$World$Definition$initialMonsters, orderEffects: _List_Nil, phase: $author$project$State$Phase$initial, player: $author$project$World$Definition$initialPlayer, serverStatus: $author$project$Meta$Server$Calling, worldState: $author$project$World$State$initialState});
-var $elm$core$Platform$Cmd$map = _Platform_map;
-var $elm$json$Json$Decode$decodeString = _Json_runOnString;
-var $elm$http$Http$BadStatus_ = F2(
-	function (a, b) {
-		return {$: 'BadStatus_', a: a, b: b};
-	});
-var $elm$http$Http$BadUrl_ = function (a) {
-	return {$: 'BadUrl_', a: a};
-};
-var $elm$http$Http$GoodStatus_ = F2(
-	function (a, b) {
-		return {$: 'GoodStatus_', a: a, b: b};
-	});
-var $elm$http$Http$NetworkError_ = {$: 'NetworkError_'};
-var $elm$http$Http$Receiving = function (a) {
-	return {$: 'Receiving', a: a};
-};
-var $elm$http$Http$Sending = function (a) {
-	return {$: 'Sending', a: a};
-};
-var $elm$http$Http$Timeout_ = {$: 'Timeout_'};
-var $elm$core$Maybe$isJust = function (maybe) {
-	if (maybe.$ === 'Just') {
-		return true;
-	} else {
-		return false;
-	}
-};
-var $elm$core$Platform$sendToSelf = _Platform_sendToSelf;
-var $elm$core$Dict$get = F2(
-	function (targetKey, dict) {
-		get:
-		while (true) {
-			if (dict.$ === 'RBEmpty_elm_builtin') {
-				return $elm$core$Maybe$Nothing;
-			} else {
-				var key = dict.b;
-				var value = dict.c;
-				var left = dict.d;
-				var right = dict.e;
-				var _v1 = A2($elm$core$Basics$compare, targetKey, key);
-				switch (_v1.$) {
-					case 'LT':
-						var $temp$targetKey = targetKey,
-							$temp$dict = left;
-						targetKey = $temp$targetKey;
-						dict = $temp$dict;
-						continue get;
-					case 'EQ':
-						return $elm$core$Maybe$Just(value);
-					default:
-						var $temp$targetKey = targetKey,
-							$temp$dict = right;
-						targetKey = $temp$targetKey;
-						dict = $temp$dict;
-						continue get;
-				}
-			}
-		}
-	});
-var $elm$core$Dict$getMin = function (dict) {
-	getMin:
-	while (true) {
-		if ((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) {
-			var left = dict.d;
-			var $temp$dict = left;
-			dict = $temp$dict;
-			continue getMin;
-		} else {
-			return dict;
-		}
-	}
-};
-var $elm$core$Dict$moveRedLeft = function (dict) {
-	if (((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) && (dict.e.$ === 'RBNode_elm_builtin')) {
-		if ((dict.e.d.$ === 'RBNode_elm_builtin') && (dict.e.d.a.$ === 'Red')) {
-			var clr = dict.a;
-			var k = dict.b;
-			var v = dict.c;
-			var _v1 = dict.d;
-			var lClr = _v1.a;
-			var lK = _v1.b;
-			var lV = _v1.c;
-			var lLeft = _v1.d;
-			var lRight = _v1.e;
-			var _v2 = dict.e;
-			var rClr = _v2.a;
-			var rK = _v2.b;
-			var rV = _v2.c;
-			var rLeft = _v2.d;
-			var _v3 = rLeft.a;
-			var rlK = rLeft.b;
-			var rlV = rLeft.c;
-			var rlL = rLeft.d;
-			var rlR = rLeft.e;
-			var rRight = _v2.e;
-			return A5(
-				$elm$core$Dict$RBNode_elm_builtin,
-				$elm$core$Dict$Red,
-				rlK,
-				rlV,
-				A5(
-					$elm$core$Dict$RBNode_elm_builtin,
-					$elm$core$Dict$Black,
-					k,
-					v,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
-					rlL),
-				A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, rK, rV, rlR, rRight));
-		} else {
-			var clr = dict.a;
-			var k = dict.b;
-			var v = dict.c;
-			var _v4 = dict.d;
-			var lClr = _v4.a;
-			var lK = _v4.b;
-			var lV = _v4.c;
-			var lLeft = _v4.d;
-			var lRight = _v4.e;
-			var _v5 = dict.e;
-			var rClr = _v5.a;
-			var rK = _v5.b;
-			var rV = _v5.c;
-			var rLeft = _v5.d;
-			var rRight = _v5.e;
-			if (clr.$ === 'Black') {
-				return A5(
-					$elm$core$Dict$RBNode_elm_builtin,
-					$elm$core$Dict$Black,
-					k,
-					v,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight));
-			} else {
-				return A5(
-					$elm$core$Dict$RBNode_elm_builtin,
-					$elm$core$Dict$Black,
-					k,
-					v,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight));
-			}
-		}
-	} else {
-		return dict;
-	}
-};
-var $elm$core$Dict$moveRedRight = function (dict) {
-	if (((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) && (dict.e.$ === 'RBNode_elm_builtin')) {
-		if ((dict.d.d.$ === 'RBNode_elm_builtin') && (dict.d.d.a.$ === 'Red')) {
-			var clr = dict.a;
-			var k = dict.b;
-			var v = dict.c;
-			var _v1 = dict.d;
-			var lClr = _v1.a;
-			var lK = _v1.b;
-			var lV = _v1.c;
-			var _v2 = _v1.d;
-			var _v3 = _v2.a;
-			var llK = _v2.b;
-			var llV = _v2.c;
-			var llLeft = _v2.d;
-			var llRight = _v2.e;
-			var lRight = _v1.e;
-			var _v4 = dict.e;
-			var rClr = _v4.a;
-			var rK = _v4.b;
-			var rV = _v4.c;
-			var rLeft = _v4.d;
-			var rRight = _v4.e;
-			return A5(
-				$elm$core$Dict$RBNode_elm_builtin,
-				$elm$core$Dict$Red,
-				lK,
-				lV,
-				A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, llK, llV, llLeft, llRight),
-				A5(
-					$elm$core$Dict$RBNode_elm_builtin,
-					$elm$core$Dict$Black,
-					k,
-					v,
-					lRight,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight)));
-		} else {
-			var clr = dict.a;
-			var k = dict.b;
-			var v = dict.c;
-			var _v5 = dict.d;
-			var lClr = _v5.a;
-			var lK = _v5.b;
-			var lV = _v5.c;
-			var lLeft = _v5.d;
-			var lRight = _v5.e;
-			var _v6 = dict.e;
-			var rClr = _v6.a;
-			var rK = _v6.b;
-			var rV = _v6.c;
-			var rLeft = _v6.d;
-			var rRight = _v6.e;
-			if (clr.$ === 'Black') {
-				return A5(
-					$elm$core$Dict$RBNode_elm_builtin,
-					$elm$core$Dict$Black,
-					k,
-					v,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight));
-			} else {
-				return A5(
-					$elm$core$Dict$RBNode_elm_builtin,
-					$elm$core$Dict$Black,
-					k,
-					v,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight));
-			}
-		}
-	} else {
-		return dict;
-	}
-};
-var $elm$core$Dict$removeHelpPrepEQGT = F7(
-	function (targetKey, dict, color, key, value, left, right) {
-		if ((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) {
-			var _v1 = left.a;
-			var lK = left.b;
-			var lV = left.c;
-			var lLeft = left.d;
-			var lRight = left.e;
-			return A5(
-				$elm$core$Dict$RBNode_elm_builtin,
-				color,
-				lK,
-				lV,
-				lLeft,
-				A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, key, value, lRight, right));
-		} else {
-			_v2$2:
-			while (true) {
-				if ((right.$ === 'RBNode_elm_builtin') && (right.a.$ === 'Black')) {
-					if (right.d.$ === 'RBNode_elm_builtin') {
-						if (right.d.a.$ === 'Black') {
-							var _v3 = right.a;
-							var _v4 = right.d;
-							var _v5 = _v4.a;
-							return $elm$core$Dict$moveRedRight(dict);
-						} else {
-							break _v2$2;
-						}
-					} else {
-						var _v6 = right.a;
-						var _v7 = right.d;
-						return $elm$core$Dict$moveRedRight(dict);
-					}
-				} else {
-					break _v2$2;
-				}
-			}
-			return dict;
-		}
-	});
-var $elm$core$Dict$removeMin = function (dict) {
-	if ((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) {
-		var color = dict.a;
-		var key = dict.b;
-		var value = dict.c;
-		var left = dict.d;
-		var lColor = left.a;
-		var lLeft = left.d;
-		var right = dict.e;
-		if (lColor.$ === 'Black') {
-			if ((lLeft.$ === 'RBNode_elm_builtin') && (lLeft.a.$ === 'Red')) {
-				var _v3 = lLeft.a;
-				return A5(
-					$elm$core$Dict$RBNode_elm_builtin,
-					color,
-					key,
-					value,
-					$elm$core$Dict$removeMin(left),
-					right);
-			} else {
-				var _v4 = $elm$core$Dict$moveRedLeft(dict);
-				if (_v4.$ === 'RBNode_elm_builtin') {
-					var nColor = _v4.a;
-					var nKey = _v4.b;
-					var nValue = _v4.c;
-					var nLeft = _v4.d;
-					var nRight = _v4.e;
-					return A5(
-						$elm$core$Dict$balance,
-						nColor,
-						nKey,
-						nValue,
-						$elm$core$Dict$removeMin(nLeft),
-						nRight);
-				} else {
-					return $elm$core$Dict$RBEmpty_elm_builtin;
-				}
-			}
-		} else {
-			return A5(
-				$elm$core$Dict$RBNode_elm_builtin,
-				color,
-				key,
-				value,
-				$elm$core$Dict$removeMin(left),
-				right);
-		}
-	} else {
-		return $elm$core$Dict$RBEmpty_elm_builtin;
-	}
-};
-var $elm$core$Dict$removeHelp = F2(
-	function (targetKey, dict) {
-		if (dict.$ === 'RBEmpty_elm_builtin') {
-			return $elm$core$Dict$RBEmpty_elm_builtin;
-		} else {
-			var color = dict.a;
-			var key = dict.b;
-			var value = dict.c;
-			var left = dict.d;
-			var right = dict.e;
-			if (_Utils_cmp(targetKey, key) < 0) {
-				if ((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Black')) {
-					var _v4 = left.a;
-					var lLeft = left.d;
-					if ((lLeft.$ === 'RBNode_elm_builtin') && (lLeft.a.$ === 'Red')) {
-						var _v6 = lLeft.a;
-						return A5(
-							$elm$core$Dict$RBNode_elm_builtin,
-							color,
-							key,
-							value,
-							A2($elm$core$Dict$removeHelp, targetKey, left),
-							right);
-					} else {
-						var _v7 = $elm$core$Dict$moveRedLeft(dict);
-						if (_v7.$ === 'RBNode_elm_builtin') {
-							var nColor = _v7.a;
-							var nKey = _v7.b;
-							var nValue = _v7.c;
-							var nLeft = _v7.d;
-							var nRight = _v7.e;
-							return A5(
-								$elm$core$Dict$balance,
-								nColor,
-								nKey,
-								nValue,
-								A2($elm$core$Dict$removeHelp, targetKey, nLeft),
-								nRight);
-						} else {
-							return $elm$core$Dict$RBEmpty_elm_builtin;
-						}
-					}
-				} else {
-					return A5(
-						$elm$core$Dict$RBNode_elm_builtin,
-						color,
-						key,
-						value,
-						A2($elm$core$Dict$removeHelp, targetKey, left),
-						right);
-				}
-			} else {
-				return A2(
-					$elm$core$Dict$removeHelpEQGT,
-					targetKey,
-					A7($elm$core$Dict$removeHelpPrepEQGT, targetKey, dict, color, key, value, left, right));
-			}
-		}
-	});
-var $elm$core$Dict$removeHelpEQGT = F2(
-	function (targetKey, dict) {
-		if (dict.$ === 'RBNode_elm_builtin') {
-			var color = dict.a;
-			var key = dict.b;
-			var value = dict.c;
-			var left = dict.d;
-			var right = dict.e;
-			if (_Utils_eq(targetKey, key)) {
-				var _v1 = $elm$core$Dict$getMin(right);
-				if (_v1.$ === 'RBNode_elm_builtin') {
-					var minKey = _v1.b;
-					var minValue = _v1.c;
-					return A5(
-						$elm$core$Dict$balance,
-						color,
-						minKey,
-						minValue,
-						left,
-						$elm$core$Dict$removeMin(right));
-				} else {
-					return $elm$core$Dict$RBEmpty_elm_builtin;
-				}
-			} else {
-				return A5(
-					$elm$core$Dict$balance,
-					color,
-					key,
-					value,
-					left,
-					A2($elm$core$Dict$removeHelp, targetKey, right));
-			}
-		} else {
-			return $elm$core$Dict$RBEmpty_elm_builtin;
-		}
-	});
-var $elm$core$Dict$remove = F2(
-	function (key, dict) {
-		var _v0 = A2($elm$core$Dict$removeHelp, key, dict);
-		if ((_v0.$ === 'RBNode_elm_builtin') && (_v0.a.$ === 'Red')) {
-			var _v1 = _v0.a;
-			var k = _v0.b;
-			var v = _v0.c;
-			var l = _v0.d;
-			var r = _v0.e;
-			return A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, k, v, l, r);
-		} else {
-			var x = _v0;
-			return x;
-		}
-	});
-var $elm$core$Dict$update = F3(
-	function (targetKey, alter, dictionary) {
-		var _v0 = alter(
-			A2($elm$core$Dict$get, targetKey, dictionary));
-		if (_v0.$ === 'Just') {
-			var value = _v0.a;
-			return A3($elm$core$Dict$insert, targetKey, value, dictionary);
-		} else {
-			return A2($elm$core$Dict$remove, targetKey, dictionary);
-		}
-	});
-var $elm$http$Http$expectStringResponse = F2(
-	function (toMsg, toResult) {
-		return A3(
-			_Http_expect,
-			'',
-			$elm$core$Basics$identity,
-			A2($elm$core$Basics$composeR, toResult, toMsg));
-	});
-var $elm$core$Result$mapError = F2(
-	function (f, result) {
-		if (result.$ === 'Ok') {
-			var v = result.a;
-			return $elm$core$Result$Ok(v);
-		} else {
-			var e = result.a;
-			return $elm$core$Result$Err(
-				f(e));
-		}
-	});
-var $elm$http$Http$BadBody = function (a) {
-	return {$: 'BadBody', a: a};
-};
-var $elm$http$Http$BadStatus = function (a) {
-	return {$: 'BadStatus', a: a};
-};
-var $elm$http$Http$BadUrl = function (a) {
-	return {$: 'BadUrl', a: a};
-};
-var $elm$http$Http$NetworkError = {$: 'NetworkError'};
-var $elm$http$Http$Timeout = {$: 'Timeout'};
-var $elm$http$Http$resolve = F2(
-	function (toResult, response) {
-		switch (response.$) {
-			case 'BadUrl_':
-				var url = response.a;
-				return $elm$core$Result$Err(
-					$elm$http$Http$BadUrl(url));
-			case 'Timeout_':
-				return $elm$core$Result$Err($elm$http$Http$Timeout);
-			case 'NetworkError_':
-				return $elm$core$Result$Err($elm$http$Http$NetworkError);
-			case 'BadStatus_':
-				var metadata = response.a;
-				return $elm$core$Result$Err(
-					$elm$http$Http$BadStatus(metadata.statusCode));
-			default:
-				var body = response.b;
-				return A2(
-					$elm$core$Result$mapError,
-					$elm$http$Http$BadBody,
-					toResult(body));
-		}
-	});
-var $elm$http$Http$expectJson = F2(
-	function (toMsg, decoder) {
-		return A2(
-			$elm$http$Http$expectStringResponse,
-			toMsg,
-			$elm$http$Http$resolve(
-				function (string) {
-					return A2(
-						$elm$core$Result$mapError,
-						$elm$json$Json$Decode$errorToString,
-						A2($elm$json$Json$Decode$decodeString, decoder, string));
-				}));
-	});
-var $elm$http$Http$emptyBody = _Http_emptyBody;
-var $elm$http$Http$Request = function (a) {
-	return {$: 'Request', a: a};
-};
-var $elm$http$Http$State = F2(
-	function (reqs, subs) {
-		return {reqs: reqs, subs: subs};
-	});
-var $elm$http$Http$init = $elm$core$Task$succeed(
-	A2($elm$http$Http$State, $elm$core$Dict$empty, _List_Nil));
-var $elm$core$Process$kill = _Scheduler_kill;
-var $elm$core$Process$spawn = _Scheduler_spawn;
-var $elm$http$Http$updateReqs = F3(
-	function (router, cmds, reqs) {
-		updateReqs:
-		while (true) {
-			if (!cmds.b) {
-				return $elm$core$Task$succeed(reqs);
-			} else {
-				var cmd = cmds.a;
-				var otherCmds = cmds.b;
-				if (cmd.$ === 'Cancel') {
-					var tracker = cmd.a;
-					var _v2 = A2($elm$core$Dict$get, tracker, reqs);
-					if (_v2.$ === 'Nothing') {
-						var $temp$router = router,
-							$temp$cmds = otherCmds,
-							$temp$reqs = reqs;
-						router = $temp$router;
-						cmds = $temp$cmds;
-						reqs = $temp$reqs;
-						continue updateReqs;
-					} else {
-						var pid = _v2.a;
-						return A2(
-							$elm$core$Task$andThen,
-							function (_v3) {
-								return A3(
-									$elm$http$Http$updateReqs,
-									router,
-									otherCmds,
-									A2($elm$core$Dict$remove, tracker, reqs));
-							},
-							$elm$core$Process$kill(pid));
-					}
-				} else {
-					var req = cmd.a;
-					return A2(
-						$elm$core$Task$andThen,
-						function (pid) {
-							var _v4 = req.tracker;
-							if (_v4.$ === 'Nothing') {
-								return A3($elm$http$Http$updateReqs, router, otherCmds, reqs);
-							} else {
-								var tracker = _v4.a;
-								return A3(
-									$elm$http$Http$updateReqs,
-									router,
-									otherCmds,
-									A3($elm$core$Dict$insert, tracker, pid, reqs));
-							}
-						},
-						$elm$core$Process$spawn(
-							A3(
-								_Http_toTask,
-								router,
-								$elm$core$Platform$sendToApp(router),
-								req)));
-				}
-			}
-		}
-	});
-var $elm$http$Http$onEffects = F4(
-	function (router, cmds, subs, state) {
-		return A2(
-			$elm$core$Task$andThen,
-			function (reqs) {
-				return $elm$core$Task$succeed(
-					A2($elm$http$Http$State, reqs, subs));
-			},
-			A3($elm$http$Http$updateReqs, router, cmds, state.reqs));
-	});
-var $elm$core$List$maybeCons = F3(
-	function (f, mx, xs) {
-		var _v0 = f(mx);
-		if (_v0.$ === 'Just') {
-			var x = _v0.a;
-			return A2($elm$core$List$cons, x, xs);
-		} else {
-			return xs;
-		}
-	});
-var $elm$core$List$filterMap = F2(
-	function (f, xs) {
-		return A3(
-			$elm$core$List$foldr,
-			$elm$core$List$maybeCons(f),
-			_List_Nil,
-			xs);
-	});
-var $elm$http$Http$maybeSend = F4(
-	function (router, desiredTracker, progress, _v0) {
-		var actualTracker = _v0.a;
-		var toMsg = _v0.b;
-		return _Utils_eq(desiredTracker, actualTracker) ? $elm$core$Maybe$Just(
-			A2(
-				$elm$core$Platform$sendToApp,
-				router,
-				toMsg(progress))) : $elm$core$Maybe$Nothing;
-	});
-var $elm$http$Http$onSelfMsg = F3(
-	function (router, _v0, state) {
-		var tracker = _v0.a;
-		var progress = _v0.b;
-		return A2(
-			$elm$core$Task$andThen,
-			function (_v1) {
-				return $elm$core$Task$succeed(state);
-			},
-			$elm$core$Task$sequence(
-				A2(
-					$elm$core$List$filterMap,
-					A3($elm$http$Http$maybeSend, router, tracker, progress),
-					state.subs)));
-	});
-var $elm$http$Http$Cancel = function (a) {
-	return {$: 'Cancel', a: a};
-};
-var $elm$http$Http$cmdMap = F2(
-	function (func, cmd) {
-		if (cmd.$ === 'Cancel') {
-			var tracker = cmd.a;
-			return $elm$http$Http$Cancel(tracker);
-		} else {
-			var r = cmd.a;
-			return $elm$http$Http$Request(
-				{
-					allowCookiesFromOtherDomains: r.allowCookiesFromOtherDomains,
-					body: r.body,
-					expect: A2(_Http_mapExpect, func, r.expect),
-					headers: r.headers,
-					method: r.method,
-					timeout: r.timeout,
-					tracker: r.tracker,
-					url: r.url
-				});
-		}
-	});
-var $elm$http$Http$MySub = F2(
-	function (a, b) {
-		return {$: 'MySub', a: a, b: b};
-	});
-var $elm$http$Http$subMap = F2(
-	function (func, _v0) {
-		var tracker = _v0.a;
-		var toMsg = _v0.b;
-		return A2(
-			$elm$http$Http$MySub,
-			tracker,
-			A2($elm$core$Basics$composeR, toMsg, func));
-	});
-_Platform_effectManagers['Http'] = _Platform_createManager($elm$http$Http$init, $elm$http$Http$onEffects, $elm$http$Http$onSelfMsg, $elm$http$Http$cmdMap, $elm$http$Http$subMap);
-var $elm$http$Http$command = _Platform_leaf('Http');
-var $elm$http$Http$subscription = _Platform_leaf('Http');
-var $elm$http$Http$request = function (r) {
-	return $elm$http$Http$command(
-		$elm$http$Http$Request(
-			{allowCookiesFromOtherDomains: false, body: r.body, expect: r.expect, headers: r.headers, method: r.method, timeout: r.timeout, tracker: r.tracker, url: r.url}));
-};
-var $elm$http$Http$get = function (r) {
-	return $elm$http$Http$request(
-		{body: $elm$http$Http$emptyBody, expect: r.expect, headers: _List_Nil, method: 'GET', timeout: $elm$core$Maybe$Nothing, tracker: $elm$core$Maybe$Nothing, url: r.url});
-};
-var $author$project$Meta$Server$OfflineOrError = function (a) {
-	return {$: 'OfflineOrError', a: a};
-};
-var $author$project$Meta$Server$handleStatusResponse = function (result) {
-	if (result.$ === 'Ok') {
-		var status = result.a;
-		return status;
-	} else {
-		var error = result.a;
-		return $author$project$Meta$Server$OfflineOrError(error);
-	}
-};
-var $elm$json$Json$Decode$field = _Json_decodeField;
-var $elm$json$Json$Decode$string = _Json_decodeString;
-var $author$project$Meta$Server$Maintenance = {$: 'Maintenance'};
-var $author$project$Meta$Server$Online = function (a) {
-	return {$: 'Online', a: a};
-};
-var $author$project$Meta$Server$Unknown = function (a) {
-	return {$: 'Unknown', a: a};
-};
-var $author$project$Meta$Server$toStatus = F2(
-	function (status, message) {
-		var _v0 = $elm$core$String$toLower(status);
-		switch (_v0) {
-			case 'maintenance':
-				return $author$project$Meta$Server$Maintenance;
-			case 'online':
-				return $author$project$Meta$Server$Online(message);
-			default:
-				var notMatched = _v0;
-				return $author$project$Meta$Server$Unknown(notMatched);
-		}
-	});
-var $author$project$Meta$Server$statusDecoder = A3(
-	$elm$json$Json$Decode$map2,
-	$author$project$Meta$Server$toStatus,
-	A2($elm$json$Json$Decode$field, 'status', $elm$json$Json$Decode$string),
-	A2($elm$json$Json$Decode$field, 'message', $elm$json$Json$Decode$string));
-var $author$project$Meta$Server$statusCmd = $elm$http$Http$get(
-	{
-		expect: A2($elm$http$Http$expectJson, $author$project$Meta$Server$handleStatusResponse, $author$project$Meta$Server$statusDecoder),
-		url: '/status'
-	});
-var $author$project$Msg$PerformCmd = function (a) {
-	return {$: 'PerformCmd', a: a};
-};
+var $elm$core$Platform$Cmd$batch = _Platform_batch;
+var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $elm$core$Platform$Sub$batch = _Platform_batch;
-var $elm$core$Platform$Sub$map = _Platform_map;
 var $author$project$Msg$MoveItem = function (a) {
 	return {$: 'MoveItem', a: a};
 };
@@ -8870,6 +7982,7 @@ var $author$project$Extend$Mouse$Position = F2(
 	function (x, y) {
 		return {x: x, y: y};
 	});
+var $elm$json$Json$Decode$field = _Json_decodeField;
 var $elm$json$Json$Decode$int = _Json_decodeInt;
 var $author$project$Extend$Mouse$position = A3(
 	$elm$json$Json$Decode$map2,
@@ -8918,6 +8031,7 @@ var $elm$core$Dict$fromList = function (assocs) {
 		$elm$core$Dict$empty,
 		assocs);
 };
+var $elm$core$Process$kill = _Scheduler_kill;
 var $elm$core$Dict$foldl = F3(
 	function (func, acc, dict) {
 		foldl:
@@ -9008,6 +8122,7 @@ var $elm$browser$Browser$Events$Event = F2(
 	function (key, event) {
 		return {event: event, key: key};
 	});
+var $elm$core$Platform$sendToSelf = _Platform_sendToSelf;
 var $elm$browser$Browser$Events$spawn = F3(
 	function (router, key, _v0) {
 		var node = _v0.a;
@@ -9106,6 +8221,24 @@ var $elm$browser$Browser$Events$onEffects = F3(
 				$elm$core$Task$sequence(
 					A2($elm$core$List$map, $elm$core$Process$kill, deadPids))));
 	});
+var $elm$core$List$maybeCons = F3(
+	function (f, mx, xs) {
+		var _v0 = f(mx);
+		if (_v0.$ === 'Just') {
+			var x = _v0.a;
+			return A2($elm$core$List$cons, x, xs);
+		} else {
+			return xs;
+		}
+	});
+var $elm$core$List$filterMap = F2(
+	function (f, xs) {
+		return A3(
+			$elm$core$List$foldr,
+			$elm$core$List$maybeCons(f),
+			_List_Nil,
+			xs);
+	});
 var $elm$browser$Browser$Events$onSelfMsg = F3(
 	function (router, _v0, state) {
 		var key = _v0.key;
@@ -9173,6 +8306,7 @@ var $author$project$Main$pointerSubscriptions = function (dragging) {
 			}
 		}());
 };
+var $author$project$Msg$ChangePhase = {$: 'ChangePhase'};
 var $elm$time$Time$Every = F2(
 	function (a, b) {
 		return {$: 'Every', a: a, b: b};
@@ -9183,6 +8317,37 @@ var $elm$time$Time$State = F2(
 	});
 var $elm$time$Time$init = $elm$core$Task$succeed(
 	A2($elm$time$Time$State, $elm$core$Dict$empty, $elm$core$Dict$empty));
+var $elm$core$Dict$get = F2(
+	function (targetKey, dict) {
+		get:
+		while (true) {
+			if (dict.$ === 'RBEmpty_elm_builtin') {
+				return $elm$core$Maybe$Nothing;
+			} else {
+				var key = dict.b;
+				var value = dict.c;
+				var left = dict.d;
+				var right = dict.e;
+				var _v1 = A2($elm$core$Basics$compare, targetKey, key);
+				switch (_v1.$) {
+					case 'LT':
+						var $temp$targetKey = targetKey,
+							$temp$dict = left;
+						targetKey = $temp$targetKey;
+						dict = $temp$dict;
+						continue get;
+					case 'EQ':
+						return $elm$core$Maybe$Just(value);
+					default:
+						var $temp$targetKey = targetKey,
+							$temp$dict = right;
+						targetKey = $temp$targetKey;
+						dict = $temp$dict;
+						continue get;
+				}
+			}
+		}
+	});
 var $elm$time$Time$addMySub = F2(
 	function (_v0, state) {
 		var interval = _v0.a;
@@ -9216,6 +8381,7 @@ var $elm$time$Time$Zone = F2(
 	});
 var $elm$time$Time$customZone = $elm$time$Time$Zone;
 var $elm$time$Time$setInterval = _Time_setInterval;
+var $elm$core$Process$spawn = _Scheduler_spawn;
 var $elm$time$Time$spawnHelp = F3(
 	function (router, intervals, processes) {
 		if (!intervals.b) {
@@ -9352,14 +8518,6 @@ var $elm$time$Time$every = F2(
 		return $elm$time$Time$subscription(
 			A2($elm$time$Time$Every, interval, tagger));
 	});
-var $author$project$Meta$Server$pollTimeInMs = 5000;
-var $author$project$Meta$Server$pollStatus = A2(
-	$elm$time$Time$every,
-	$author$project$Meta$Server$pollTimeInMs,
-	function (_v0) {
-		return $author$project$Meta$Server$statusCmd;
-	});
-var $author$project$Msg$ChangePhase = {$: 'ChangePhase'};
 var $author$project$Style$Definitions$ordersHiddenTimeInMs = 2000.0;
 var $author$project$Style$Definitions$resolveOrdersTimeInMs = 1000.0;
 var $author$project$State$Phase$getTimeoutInMsFor = function (_v0) {
@@ -9383,17 +8541,9 @@ var $author$project$Main$subscriptions = function (model) {
 		_List_fromArray(
 			[
 				$author$project$State$Phase$subscription(model.phase),
-				$author$project$Main$pointerSubscriptions(model.dragging),
-				A2(
-				$elm$core$Platform$Sub$map,
-				A2(
-					$elm$core$Basics$composeR,
-					$elm$core$Platform$Cmd$map($author$project$Msg$SetServerStatus),
-					$author$project$Msg$PerformCmd),
-				$author$project$Meta$Server$pollStatus)
+				$author$project$Main$pointerSubscriptions(model.dragging)
 			]));
 };
-var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $author$project$Msg$NoOp = {$: 'NoOp'};
 var $author$project$State$Event$Died = function (a) {
 	return {$: 'Died', a: a};
@@ -9515,7 +8665,6 @@ var $author$project$State$Event$extract = function (changeData) {
 		oldMobs);
 	return _Utils_ap(mobEvents, phaseEvents);
 };
-var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $author$project$Meta$Log$NoOp = {$: 'NoOp'};
 var $elm$core$Task$onError = _Scheduler_onError;
 var $elm$core$Task$attempt = F2(
@@ -9616,6 +8765,7 @@ var $author$project$Update$logDeath = F2(
 			A3($elm$core$List$foldl, fromDeathToMsgs, _List_Nil, events),
 			latestModel);
 	});
+var $elm$core$Platform$Cmd$map = _Platform_map;
 var $elm$core$Tuple$mapSecond = F2(
 	function (func, _v0) {
 		var x = _v0.a;
@@ -10233,6 +9383,368 @@ var $author$project$Rule$Order$applyOrderEffects = F2(
 var $author$project$Map$Mob$isDead = function (mob) {
 	return _Utils_eq(mob.health, $author$project$Map$Mob$Dead);
 };
+var $elm$core$Dict$getMin = function (dict) {
+	getMin:
+	while (true) {
+		if ((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) {
+			var left = dict.d;
+			var $temp$dict = left;
+			dict = $temp$dict;
+			continue getMin;
+		} else {
+			return dict;
+		}
+	}
+};
+var $elm$core$Dict$moveRedLeft = function (dict) {
+	if (((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) && (dict.e.$ === 'RBNode_elm_builtin')) {
+		if ((dict.e.d.$ === 'RBNode_elm_builtin') && (dict.e.d.a.$ === 'Red')) {
+			var clr = dict.a;
+			var k = dict.b;
+			var v = dict.c;
+			var _v1 = dict.d;
+			var lClr = _v1.a;
+			var lK = _v1.b;
+			var lV = _v1.c;
+			var lLeft = _v1.d;
+			var lRight = _v1.e;
+			var _v2 = dict.e;
+			var rClr = _v2.a;
+			var rK = _v2.b;
+			var rV = _v2.c;
+			var rLeft = _v2.d;
+			var _v3 = rLeft.a;
+			var rlK = rLeft.b;
+			var rlV = rLeft.c;
+			var rlL = rLeft.d;
+			var rlR = rLeft.e;
+			var rRight = _v2.e;
+			return A5(
+				$elm$core$Dict$RBNode_elm_builtin,
+				$elm$core$Dict$Red,
+				rlK,
+				rlV,
+				A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Black,
+					k,
+					v,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
+					rlL),
+				A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, rK, rV, rlR, rRight));
+		} else {
+			var clr = dict.a;
+			var k = dict.b;
+			var v = dict.c;
+			var _v4 = dict.d;
+			var lClr = _v4.a;
+			var lK = _v4.b;
+			var lV = _v4.c;
+			var lLeft = _v4.d;
+			var lRight = _v4.e;
+			var _v5 = dict.e;
+			var rClr = _v5.a;
+			var rK = _v5.b;
+			var rV = _v5.c;
+			var rLeft = _v5.d;
+			var rRight = _v5.e;
+			if (clr.$ === 'Black') {
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Black,
+					k,
+					v,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight));
+			} else {
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Black,
+					k,
+					v,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight));
+			}
+		}
+	} else {
+		return dict;
+	}
+};
+var $elm$core$Dict$moveRedRight = function (dict) {
+	if (((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) && (dict.e.$ === 'RBNode_elm_builtin')) {
+		if ((dict.d.d.$ === 'RBNode_elm_builtin') && (dict.d.d.a.$ === 'Red')) {
+			var clr = dict.a;
+			var k = dict.b;
+			var v = dict.c;
+			var _v1 = dict.d;
+			var lClr = _v1.a;
+			var lK = _v1.b;
+			var lV = _v1.c;
+			var _v2 = _v1.d;
+			var _v3 = _v2.a;
+			var llK = _v2.b;
+			var llV = _v2.c;
+			var llLeft = _v2.d;
+			var llRight = _v2.e;
+			var lRight = _v1.e;
+			var _v4 = dict.e;
+			var rClr = _v4.a;
+			var rK = _v4.b;
+			var rV = _v4.c;
+			var rLeft = _v4.d;
+			var rRight = _v4.e;
+			return A5(
+				$elm$core$Dict$RBNode_elm_builtin,
+				$elm$core$Dict$Red,
+				lK,
+				lV,
+				A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, llK, llV, llLeft, llRight),
+				A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Black,
+					k,
+					v,
+					lRight,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight)));
+		} else {
+			var clr = dict.a;
+			var k = dict.b;
+			var v = dict.c;
+			var _v5 = dict.d;
+			var lClr = _v5.a;
+			var lK = _v5.b;
+			var lV = _v5.c;
+			var lLeft = _v5.d;
+			var lRight = _v5.e;
+			var _v6 = dict.e;
+			var rClr = _v6.a;
+			var rK = _v6.b;
+			var rV = _v6.c;
+			var rLeft = _v6.d;
+			var rRight = _v6.e;
+			if (clr.$ === 'Black') {
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Black,
+					k,
+					v,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight));
+			} else {
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Black,
+					k,
+					v,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight));
+			}
+		}
+	} else {
+		return dict;
+	}
+};
+var $elm$core$Dict$removeHelpPrepEQGT = F7(
+	function (targetKey, dict, color, key, value, left, right) {
+		if ((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) {
+			var _v1 = left.a;
+			var lK = left.b;
+			var lV = left.c;
+			var lLeft = left.d;
+			var lRight = left.e;
+			return A5(
+				$elm$core$Dict$RBNode_elm_builtin,
+				color,
+				lK,
+				lV,
+				lLeft,
+				A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, key, value, lRight, right));
+		} else {
+			_v2$2:
+			while (true) {
+				if ((right.$ === 'RBNode_elm_builtin') && (right.a.$ === 'Black')) {
+					if (right.d.$ === 'RBNode_elm_builtin') {
+						if (right.d.a.$ === 'Black') {
+							var _v3 = right.a;
+							var _v4 = right.d;
+							var _v5 = _v4.a;
+							return $elm$core$Dict$moveRedRight(dict);
+						} else {
+							break _v2$2;
+						}
+					} else {
+						var _v6 = right.a;
+						var _v7 = right.d;
+						return $elm$core$Dict$moveRedRight(dict);
+					}
+				} else {
+					break _v2$2;
+				}
+			}
+			return dict;
+		}
+	});
+var $elm$core$Dict$removeMin = function (dict) {
+	if ((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) {
+		var color = dict.a;
+		var key = dict.b;
+		var value = dict.c;
+		var left = dict.d;
+		var lColor = left.a;
+		var lLeft = left.d;
+		var right = dict.e;
+		if (lColor.$ === 'Black') {
+			if ((lLeft.$ === 'RBNode_elm_builtin') && (lLeft.a.$ === 'Red')) {
+				var _v3 = lLeft.a;
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					color,
+					key,
+					value,
+					$elm$core$Dict$removeMin(left),
+					right);
+			} else {
+				var _v4 = $elm$core$Dict$moveRedLeft(dict);
+				if (_v4.$ === 'RBNode_elm_builtin') {
+					var nColor = _v4.a;
+					var nKey = _v4.b;
+					var nValue = _v4.c;
+					var nLeft = _v4.d;
+					var nRight = _v4.e;
+					return A5(
+						$elm$core$Dict$balance,
+						nColor,
+						nKey,
+						nValue,
+						$elm$core$Dict$removeMin(nLeft),
+						nRight);
+				} else {
+					return $elm$core$Dict$RBEmpty_elm_builtin;
+				}
+			}
+		} else {
+			return A5(
+				$elm$core$Dict$RBNode_elm_builtin,
+				color,
+				key,
+				value,
+				$elm$core$Dict$removeMin(left),
+				right);
+		}
+	} else {
+		return $elm$core$Dict$RBEmpty_elm_builtin;
+	}
+};
+var $elm$core$Dict$removeHelp = F2(
+	function (targetKey, dict) {
+		if (dict.$ === 'RBEmpty_elm_builtin') {
+			return $elm$core$Dict$RBEmpty_elm_builtin;
+		} else {
+			var color = dict.a;
+			var key = dict.b;
+			var value = dict.c;
+			var left = dict.d;
+			var right = dict.e;
+			if (_Utils_cmp(targetKey, key) < 0) {
+				if ((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Black')) {
+					var _v4 = left.a;
+					var lLeft = left.d;
+					if ((lLeft.$ === 'RBNode_elm_builtin') && (lLeft.a.$ === 'Red')) {
+						var _v6 = lLeft.a;
+						return A5(
+							$elm$core$Dict$RBNode_elm_builtin,
+							color,
+							key,
+							value,
+							A2($elm$core$Dict$removeHelp, targetKey, left),
+							right);
+					} else {
+						var _v7 = $elm$core$Dict$moveRedLeft(dict);
+						if (_v7.$ === 'RBNode_elm_builtin') {
+							var nColor = _v7.a;
+							var nKey = _v7.b;
+							var nValue = _v7.c;
+							var nLeft = _v7.d;
+							var nRight = _v7.e;
+							return A5(
+								$elm$core$Dict$balance,
+								nColor,
+								nKey,
+								nValue,
+								A2($elm$core$Dict$removeHelp, targetKey, nLeft),
+								nRight);
+						} else {
+							return $elm$core$Dict$RBEmpty_elm_builtin;
+						}
+					}
+				} else {
+					return A5(
+						$elm$core$Dict$RBNode_elm_builtin,
+						color,
+						key,
+						value,
+						A2($elm$core$Dict$removeHelp, targetKey, left),
+						right);
+				}
+			} else {
+				return A2(
+					$elm$core$Dict$removeHelpEQGT,
+					targetKey,
+					A7($elm$core$Dict$removeHelpPrepEQGT, targetKey, dict, color, key, value, left, right));
+			}
+		}
+	});
+var $elm$core$Dict$removeHelpEQGT = F2(
+	function (targetKey, dict) {
+		if (dict.$ === 'RBNode_elm_builtin') {
+			var color = dict.a;
+			var key = dict.b;
+			var value = dict.c;
+			var left = dict.d;
+			var right = dict.e;
+			if (_Utils_eq(targetKey, key)) {
+				var _v1 = $elm$core$Dict$getMin(right);
+				if (_v1.$ === 'RBNode_elm_builtin') {
+					var minKey = _v1.b;
+					var minValue = _v1.c;
+					return A5(
+						$elm$core$Dict$balance,
+						color,
+						minKey,
+						minValue,
+						left,
+						$elm$core$Dict$removeMin(right));
+				} else {
+					return $elm$core$Dict$RBEmpty_elm_builtin;
+				}
+			} else {
+				return A5(
+					$elm$core$Dict$balance,
+					color,
+					key,
+					value,
+					left,
+					A2($elm$core$Dict$removeHelp, targetKey, right));
+			}
+		} else {
+			return $elm$core$Dict$RBEmpty_elm_builtin;
+		}
+	});
+var $elm$core$Dict$remove = F2(
+	function (key, dict) {
+		var _v0 = A2($elm$core$Dict$removeHelp, key, dict);
+		if ((_v0.$ === 'RBNode_elm_builtin') && (_v0.a.$ === 'Red')) {
+			var _v1 = _v0.a;
+			var k = _v0.b;
+			var v = _v0.c;
+			var l = _v0.d;
+			var r = _v0.e;
+			return A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, k, v, l, r);
+		} else {
+			var x = _v0;
+			return x;
+		}
+	});
 var $author$project$Map$Mob$remove = F2(
 	function (id, dict) {
 		return A2(
@@ -10991,7 +10503,6 @@ var $author$project$Map$Mob$AdvanceTo = function (a) {
 var $author$project$Rule$Order$Target = {$: 'Target'};
 var $author$project$Rule$Order$Guard = {$: 'Guard'};
 var $author$project$Rule$Order$Interact = {$: 'Interact'};
-var $author$project$Rule$Order$None = {$: 'None'};
 var $author$project$Rule$Order$isMaybeMobDead = function (maybeMob) {
 	if (maybeMob.$ === 'Just') {
 		var mob = maybeMob.a;
@@ -11057,25 +10568,36 @@ var $author$project$Rule$Order$canMobTargetHex = F3(
 	});
 var $author$project$Rule$Order$getPossibleForMob = F3(
 	function (orderMob, targetHex, targetHexMob) {
-		var currentOrder = orderMob.order;
-		if (_Utils_eq(orderMob.health, $author$project$Map$Mob$Dead) || (_Utils_eq(currentOrder, $author$project$Map$Mob$UsingItem) || _Utils_eq(currentOrder, $author$project$Map$Mob$OffGuard))) {
-			return $author$project$Rule$Order$None;
+		if (_Utils_eq(orderMob.health, $author$project$Map$Mob$Dead) || (_Utils_eq(orderMob.order, $author$project$Map$Mob$UsingItem) || _Utils_eq(orderMob.order, $author$project$Map$Mob$OffGuard))) {
+			return _List_Nil;
 		} else {
-			if (A3($author$project$Rule$Order$canMobTargetHex, orderMob, targetHex, targetHexMob)) {
-				return $author$project$Rule$Order$Target;
-			} else {
-				if (_Utils_eq(targetHex.actualPosition, orderMob.position)) {
-					var _v0 = targetHex.data.stationary;
-					if (_v0.$ === 'Just') {
-						return $author$project$Rule$Order$Interact;
-					} else {
-						return $author$project$Rule$Order$Guard;
-					}
-				} else {
-					return $author$project$Rule$Order$None;
-				}
-			}
+			var isPlayerHex = _Utils_eq(targetHex.actualPosition, orderMob.position);
+			return A2(
+				$elm$core$List$map,
+				$elm$core$Tuple$second,
+				A2(
+					$elm$core$List$filter,
+					$elm$core$Tuple$first,
+					_List_fromArray(
+						[
+							_Utils_Tuple2(
+							A3($author$project$Rule$Order$canMobTargetHex, orderMob, targetHex, targetHexMob),
+							$author$project$Rule$Order$Target),
+							_Utils_Tuple2(isPlayerHex, $author$project$Rule$Order$Guard),
+							_Utils_Tuple2(
+							isPlayerHex && (!_Utils_eq(targetHex.data.stationary, $elm$core$Maybe$Nothing)),
+							$author$project$Rule$Order$Interact)
+						])));
 		}
+	});
+var $elm$core$List$member = F2(
+	function (x, xs) {
+		return A2(
+			$elm$core$List$any,
+			function (a) {
+				return _Utils_eq(a, x);
+			},
+			xs);
 	});
 var $author$project$Update$setDecidedOrderForMonster = F2(
 	function (model, monster) {
@@ -11086,12 +10608,12 @@ var $author$project$Update$setDecidedOrderForMonster = F2(
 				return $author$project$Map$Mob$Guard;
 			} else {
 				var targetHexData = _v0.a;
-				var possibleOrderForHex = A3(
+				var possibleOrdersForHex = A3(
 					$author$project$Rule$Order$getPossibleForMob,
-					monster,
+					{health: monster.health, order: monster.order, position: monster.position},
 					targetHexData,
 					$elm$core$Maybe$Just(player));
-				return _Utils_eq($author$project$Rule$Order$Target, possibleOrderForHex) ? $author$project$Map$Mob$AdvanceTo(
+				return A2($elm$core$List$member, $author$project$Rule$Order$Target, possibleOrdersForHex) ? $author$project$Map$Mob$AdvanceTo(
 					{actualPos: targetHexData.actualPosition, renderPos: targetHexData.renderPosition}) : $author$project$Map$Mob$Guard;
 			}
 		}();
@@ -13078,11 +12600,12 @@ var $author$project$Areas$LogArea$areaDefinition = function (rows) {
 		title: 'Logs'
 	};
 };
+var $author$project$Areas$MapArea$numHexCorners = 6;
 var $elm$core$Basics$pi = _Basics_pi;
-var $author$project$Areas$MapArea$angle = $elm$core$Basics$pi / 3;
+var $author$project$Areas$MapArea$hexAngle = (2 * $elm$core$Basics$pi) / $author$project$Areas$MapArea$numHexCorners;
 var $author$project$Areas$MapArea$hexRadius = 45;
 var $elm$core$Basics$sin = _Basics_sin;
-var $author$project$Areas$MapArea$halfHexHeight = $author$project$Areas$MapArea$hexRadius * $elm$core$Basics$sin($author$project$Areas$MapArea$angle);
+var $author$project$Areas$MapArea$halfHexHeight = $author$project$Areas$MapArea$hexRadius * $elm$core$Basics$sin($author$project$Areas$MapArea$hexAngle);
 var $elm$core$Basics$round = _Basics_round;
 var $author$project$Areas$MapArea$halfHexHeightAsInt = $elm$core$Basics$round($author$project$Areas$MapArea$halfHexHeight);
 var $author$project$Areas$MapArea$hexHeightAsInt = $author$project$Areas$MapArea$halfHexHeightAsInt * 2;
@@ -13106,6 +12629,17 @@ var $author$project$Areas$MapArea$SuccessResult = {$: 'SuccessResult'};
 var $elm$core$Basics$atan2 = _Basics_atan2;
 var $elm$core$Basics$cos = _Basics_cos;
 var $elm$svg$Svg$Attributes$fill = _VirtualDom_attribute('fill');
+var $author$project$Areas$MapArea$fromPtToStr = function (_v0) {
+	var x = _v0.x;
+	var y = _v0.y;
+	return $elm$core$String$fromFloat(x + $author$project$Areas$MapArea$hexRadius) + (', ' + $elm$core$String$fromFloat(y + $author$project$Areas$MapArea$halfHexHeight));
+};
+var $author$project$Areas$MapArea$fromPtsToString = A2(
+	$elm$core$Basics$composeR,
+	$elm$core$List$map($author$project$Areas$MapArea$fromPtToStr),
+	$elm$core$String$join(' '));
+var $elm$svg$Svg$Attributes$points = _VirtualDom_attribute('points');
+var $author$project$Areas$MapArea$fromPtsToAttribute = A2($elm$core$Basics$composeR, $author$project$Areas$MapArea$fromPtsToString, $elm$svg$Svg$Attributes$points);
 var $author$project$Areas$MapArea$hexPositionToPixels = function (pos) {
 	var yOffset = A2($elm$core$Basics$modBy, 2, pos.col) * $author$project$Areas$MapArea$oddYOffset;
 	var svgy = yOffset + (pos.row * $author$project$Areas$MapArea$hexHeightAsInt);
@@ -13113,7 +12647,6 @@ var $author$project$Areas$MapArea$hexPositionToPixels = function (pos) {
 	return _Utils_Tuple2(svgx, svgy);
 };
 var $elm$svg$Svg$Attributes$pointerEvents = _VirtualDom_attribute('pointer-events');
-var $elm$svg$Svg$Attributes$points = _VirtualDom_attribute('points');
 var $elm$svg$Svg$trustedNode = _VirtualDom_nodeNS('http://www.w3.org/2000/svg');
 var $elm$svg$Svg$polyline = $elm$svg$Svg$trustedNode('polyline');
 var $elm$svg$Svg$Attributes$strokeOpacity = _VirtualDom_attribute('stroke-opacity');
@@ -13142,11 +12675,6 @@ var $elm$svg$Svg$Attributes$z = _VirtualDom_attribute('z');
 var $author$project$Areas$MapArea$drawArrow = F3(
 	function (color, fromPos, toPos) {
 		var tipLength = $author$project$Areas$MapArea$hexRadius / 3;
-		var ptToStr = function (_v3) {
-			var x = _v3.a;
-			var y = _v3.b;
-			return $elm$core$String$fromFloat(x + $author$project$Areas$MapArea$hexRadius) + (', ' + $elm$core$String$fromFloat(y + $author$project$Areas$MapArea$halfHexHeight));
-		};
 		var convertPos = function (pos) {
 			return function (_v2) {
 				var x = _v2.a;
@@ -13172,30 +12700,28 @@ var $author$project$Areas$MapArea$drawArrow = F3(
 		var toTipPt = F2(
 			function (tipAngle, tipOffsetMultiple) {
 				var ptOffset = tipOffsetMultiple * tipLength;
-				return _Utils_Tuple2(
-					(endX + arrowOffsetX) + (ptOffset * $elm$core$Basics$cos(tipAngle)),
-					(endY + arrowOffsetY) + (ptOffset * $elm$core$Basics$sin(tipAngle)));
+				return {
+					x: (endX + arrowOffsetX) + (ptOffset * $elm$core$Basics$cos(tipAngle)),
+					y: (endY + arrowOffsetY) + (ptOffset * $elm$core$Basics$sin(tipAngle))
+				};
 			});
 		var arrowTip1Angle = arrowAngle + ($elm$core$Basics$pi / 6);
 		var arrowTip2Angle = arrowTip1Angle - ($elm$core$Basics$pi / 3);
-		var arrowPts = A2(
-			$elm$core$List$map,
-			ptToStr,
+		var renderedArrowPts = $author$project$Areas$MapArea$fromPtsToAttribute(
 			_List_fromArray(
 				[
-					_Utils_Tuple2(startX - arrowOffsetX, startY - arrowOffsetY),
+					{x: startX - arrowOffsetX, y: startY - arrowOffsetY},
 					A2(toTipPt, arrowAngle, 1),
 					A2(toTipPt, arrowTip1Angle, 1),
 					A2(toTipPt, arrowAngle, 0),
 					A2(toTipPt, arrowTip2Angle, 1),
 					A2(toTipPt, arrowAngle, 1)
 				]));
-		var renderedArrowPts = A2($elm$core$String$join, ' ', arrowPts);
 		return A2(
 			$elm$svg$Svg$polyline,
 			_List_fromArray(
 				[
-					$elm$svg$Svg$Attributes$points(renderedArrowPts),
+					renderedArrowPts,
 					$author$project$Areas$MapArea$toSvgAttribute(color),
 					$elm$svg$Svg$Attributes$strokeWidth(
 					$elm$core$String$fromFloat((3 * tipLength) / 4)),
@@ -13308,18 +12834,15 @@ var $author$project$Map$Content$mapToList = F3(
 				subMap.hexes);
 		}
 	});
-var $elm$virtual_dom$VirtualDom$lazy5 = _VirtualDom_lazy5;
-var $elm$svg$Svg$Lazy$lazy5 = $elm$virtual_dom$VirtualDom$lazy5;
-var $elm$virtual_dom$VirtualDom$lazy6 = _VirtualDom_lazy6;
-var $elm$svg$Svg$Lazy$lazy6 = $elm$virtual_dom$VirtualDom$lazy6;
+var $elm$virtual_dom$VirtualDom$lazy7 = _VirtualDom_lazy7;
+var $elm$svg$Svg$Lazy$lazy7 = $elm$virtual_dom$VirtualDom$lazy7;
+var $elm$virtual_dom$VirtualDom$lazy8 = _VirtualDom_lazy8;
+var $elm$svg$Svg$Lazy$lazy8 = $elm$virtual_dom$VirtualDom$lazy8;
 var $author$project$Msg$ClickLoot = F2(
 	function (a, b) {
 		return {$: 'ClickLoot', a: a, b: b};
 	});
 var $author$project$Areas$MapArea$LinkedPathHex = {$: 'LinkedPathHex'};
-var $author$project$Msg$SetPlayerOrder = function (a) {
-	return {$: 'SetPlayerOrder', a: a};
-};
 var $author$project$Map$Hex$colorOf = function (terrain) {
 	switch (terrain.$) {
 		case 'Plains':
@@ -13342,59 +12865,6 @@ var $author$project$Map$Hex$colorOf = function (terrain) {
 			return 'darkgrey';
 	}
 };
-var $author$project$Areas$MapArea$RelHexPoint = F2(
-	function (x, y) {
-		return {x: x, y: y};
-	});
-var $elm$core$Basics$truncate = _Basics_truncate;
-var $author$project$Areas$MapArea$relativeCorners = function () {
-	var correctXPt = A2(
-		$elm$core$Basics$composeR,
-		$elm$core$Basics$truncate,
-		A2(
-			$elm$core$Basics$composeR,
-			$elm$core$Basics$toFloat,
-			function (xPt) {
-				return (xPt < 0) ? xPt : (xPt + 1);
-			}));
-	var calcPos = F2(
-		function (radToPos, cornerIx) {
-			return $author$project$Areas$MapArea$hexRadius * radToPos(cornerIx * $author$project$Areas$MapArea$angle);
-		});
-	var createHexPoint = function (cornerIx) {
-		return A2(
-			$author$project$Areas$MapArea$RelHexPoint,
-			correctXPt(
-				A2(calcPos, $elm$core$Basics$cos, cornerIx)),
-			A2(calcPos, $elm$core$Basics$sin, cornerIx));
-	};
-	return A2(
-		$elm$core$List$map,
-		createHexPoint,
-		A2($elm$core$List$range, 0, 5));
-}();
-var $author$project$Areas$MapArea$xyToString = F2(
-	function (x, y) {
-		return $elm$core$String$fromInt(x) + (',' + $elm$core$String$fromInt(y));
-	});
-var $author$project$Areas$MapArea$concatPts = A2(
-	$elm$core$String$join,
-	' ',
-	A2(
-		$elm$core$List$map,
-		function (_v0) {
-			var x = _v0.a;
-			var y = _v0.b;
-			return A2($author$project$Areas$MapArea$xyToString, x + $author$project$Areas$MapArea$hexRadAsInt, y + $author$project$Areas$MapArea$halfHexHeightAsInt);
-		},
-		A2(
-			$elm$core$List$map,
-			function (c) {
-				return _Utils_Tuple2(
-					$elm$core$Basics$round(c.x),
-					$elm$core$Basics$round(c.y));
-			},
-			$author$project$Areas$MapArea$relativeCorners)));
 var $elm$svg$Svg$Attributes$fontSize = _VirtualDom_attribute('font-size');
 var $author$project$Map$Mob$fromHealthToString = function (health) {
 	switch (health.$) {
@@ -13436,8 +12906,136 @@ var $author$project$Areas$MapArea$getMobAttributesTooltip = function (targetMob)
 var $author$project$Areas$MapArea$getMobTooltip = function (mob) {
 	return mob.name + ($author$project$Text$rn + ($author$project$Text$t + ('Health: ' + ($author$project$Map$Mob$fromHealthToString(mob.health) + ($author$project$Text$rn + ($author$project$Text$rn + $author$project$Areas$MapArea$getMobAttributesTooltip(mob)))))));
 };
+var $author$project$Areas$MapArea$RelHexPoint = F2(
+	function (x, y) {
+		return {x: x, y: y};
+	});
+var $author$project$Areas$MapArea$calcPos = F2(
+	function (radToPos, hexCornerAngle) {
+		return $author$project$Areas$MapArea$hexRadius * radToPos(hexCornerAngle);
+	});
+var $elm$core$Basics$truncate = _Basics_truncate;
+var $author$project$Areas$MapArea$correctXPt = A2(
+	$elm$core$Basics$composeR,
+	$elm$core$Basics$truncate,
+	A2(
+		$elm$core$Basics$composeR,
+		$elm$core$Basics$toFloat,
+		function (xPt) {
+			return (xPt < 0) ? xPt : (xPt + 1);
+		}));
+var $author$project$Areas$MapArea$createHexPoint = function (hexCornerAngle) {
+	return A2(
+		$author$project$Areas$MapArea$RelHexPoint,
+		$author$project$Areas$MapArea$correctXPt(
+			A2($author$project$Areas$MapArea$calcPos, $elm$core$Basics$cos, hexCornerAngle)),
+		A2($author$project$Areas$MapArea$calcPos, $elm$core$Basics$sin, hexCornerAngle));
+};
+var $author$project$Areas$MapArea$hexAnglesInRadians = A2(
+	$elm$core$List$map,
+	A2(
+		$elm$core$Basics$composeR,
+		$elm$core$Basics$toFloat,
+		$elm$core$Basics$mul($author$project$Areas$MapArea$hexAngle)),
+	A2($elm$core$List$range, 0, $author$project$Areas$MapArea$numHexCorners - 1));
+var $author$project$Areas$MapArea$hexPts = A2($elm$core$List$map, $author$project$Areas$MapArea$createHexPoint, $author$project$Areas$MapArea$hexAnglesInRadians);
+var $author$project$Areas$MapArea$hexPtsAsAttribute = $author$project$Areas$MapArea$fromPtsToAttribute($author$project$Areas$MapArea$hexPts);
 var $elm$svg$Svg$Attributes$opacity = _VirtualDom_attribute('opacity');
 var $elm$svg$Svg$polygon = $elm$svg$Svg$trustedNode('polygon');
+var $author$project$Msg$SetPlayerOrder = function (a) {
+	return {$: 'SetPlayerOrder', a: a};
+};
+var $author$project$Areas$MapArea$getPtsBetweenAngles = F2(
+	function (startAngle, endAngle) {
+		return A2(
+			$elm$core$List$map,
+			$author$project$Areas$MapArea$createHexPoint,
+			A2(
+				$elm$core$List$filter,
+				function (hexCornerAngle) {
+					return (_Utils_cmp(hexCornerAngle, startAngle) > 0) && (_Utils_cmp(hexCornerAngle, endAngle) < 0);
+				},
+				$author$project$Areas$MapArea$hexAnglesInRadians));
+	});
+var $author$project$Areas$MapArea$getPtsIncludingAngles = F2(
+	function (startAngle, endAngle) {
+		return _Utils_ap(
+			_List_fromArray(
+				[
+					$author$project$Areas$MapArea$createHexPoint(startAngle)
+				]),
+			_Utils_ap(
+				A2($author$project$Areas$MapArea$getPtsBetweenAngles, startAngle, endAngle),
+				_List_fromArray(
+					[
+						$author$project$Areas$MapArea$createHexPoint(endAngle)
+					])));
+	});
+var $author$project$Areas$MapArea$bottomHalfPts = A2($author$project$Areas$MapArea$getPtsIncludingAngles, $elm$core$Basics$pi, 2 * $elm$core$Basics$pi);
+var $author$project$Areas$MapArea$centerPos = {x: 0, y: 0};
+var $elm$svg$Svg$Attributes$cursor = _VirtualDom_attribute('cursor');
+var $author$project$Areas$MapArea$svgClickable = $elm$svg$Svg$Attributes$cursor('pointer');
+var $author$project$Areas$MapArea$topHalfPts = A2($author$project$Areas$MapArea$getPtsIncludingAngles, 0, $elm$core$Basics$pi);
+var $author$project$Areas$MapArea$wholeHexPts = $author$project$Areas$MapArea$hexPts;
+var $author$project$Areas$MapArea$renderHexOrder = F4(
+	function (hexData, hexOrderLength, hexOrderIx, hexOrder) {
+		var pts = function () {
+			switch (hexOrderLength) {
+				case 1:
+					return $author$project$Areas$MapArea$wholeHexPts;
+				case 2:
+					return (!hexOrderIx) ? $author$project$Areas$MapArea$topHalfPts : $author$project$Areas$MapArea$bottomHalfPts;
+				default:
+					var ixAsFloat = hexOrderIx;
+					var angleIncrement = (2 * $elm$core$Basics$pi) / hexOrderLength;
+					var endAngle = (ixAsFloat + 1) * angleIncrement;
+					var startAngle = ixAsFloat * angleIncrement;
+					return A2(
+						$elm$core$List$cons,
+						$author$project$Areas$MapArea$centerPos,
+						A2($author$project$Areas$MapArea$getPtsIncludingAngles, startAngle, endAngle));
+			}
+		}();
+		var _v0 = function () {
+			switch (hexOrder.$) {
+				case 'Guard':
+					return _Utils_Tuple2('green', $author$project$Map$Mob$Guard);
+				case 'Target':
+					return _Utils_Tuple2(
+						'blue',
+						$author$project$Map$Mob$AdvanceTo(
+							{actualPos: hexData.actualHexPos, renderPos: hexData.renderHexPos}));
+				default:
+					return _Utils_Tuple2('orange', $author$project$Map$Mob$Interact);
+			}
+		}();
+		var strokeColor = _v0.a;
+		var playerOrder = _v0.b;
+		return A2(
+			$elm$svg$Svg$polygon,
+			_List_fromArray(
+				[
+					$author$project$Areas$MapArea$svgClickable,
+					$author$project$Areas$MapArea$fromPtsToAttribute(pts),
+					$elm$svg$Svg$Attributes$strokeWidth('1.5'),
+					$elm$svg$Svg$Attributes$strokeOpacity('0.5'),
+					$elm$svg$Svg$Attributes$fill('transparent'),
+					$elm$svg$Svg$Attributes$stroke(strokeColor),
+					$elm$html$Html$Events$onClick(
+					$author$project$Msg$SetPlayerOrder(playerOrder))
+				]),
+			_List_Nil);
+	});
+var $author$project$Areas$MapArea$renderHexOrders = F2(
+	function (hexData, hexTargetOrders) {
+		return A2(
+			$elm$core$List$indexedMap,
+			A2(
+				$author$project$Areas$MapArea$renderHexOrder,
+				hexData,
+				$elm$core$List$length(hexTargetOrders)),
+			hexTargetOrders);
+	});
 var $author$project$Map$Mob$getEffectsIcon = function (health) {
 	switch (health.$) {
 		case 'Dead':
@@ -13501,8 +13099,6 @@ var $author$project$Areas$MapArea$renderMob = function (mob) {
 			[character]));
 };
 var $elm$svg$Svg$svg = $elm$svg$Svg$trustedNode('svg');
-var $elm$svg$Svg$Attributes$cursor = _VirtualDom_attribute('cursor');
-var $author$project$Areas$MapArea$svgClickable = $elm$svg$Svg$Attributes$cursor('pointer');
 var $elm$svg$Svg$title = $elm$svg$Svg$trustedNode('title');
 var $elm$svg$Svg$Attributes$filter = _VirtualDom_attribute('filter');
 var $author$project$Areas$MapArea$getFilterId = function (filter) {
@@ -13512,8 +13108,8 @@ var $author$project$Areas$MapArea$toFilterAttribute = function (filter) {
 	var filterId = $author$project$Areas$MapArea$getFilterId(filter);
 	return $elm$svg$Svg$Attributes$filter('url(#' + (filterId + ')'));
 };
-var $author$project$Areas$MapArea$renderHexHelper = F6(
-	function (mobInHex, hexTargetMode, renderPosition, actualPosition, isHexLinked, hexData) {
+var $author$project$Areas$MapArea$renderHexHelper = F8(
+	function (mobInHex, playerPosition, playerOrder, playerHealth, renderPosition, actualPosition, isHexLinked, hexData) {
 		var renderedTooltip = _List_fromArray(
 			[
 				A2(
@@ -13537,9 +13133,9 @@ var $author$project$Areas$MapArea$renderHexHelper = F6(
 			}
 		}();
 		var renderedInteractiveItem = function () {
-			var _v5 = hexData.stationary;
-			if (_v5.$ === 'Just') {
-				var interactive = _v5.a;
+			var _v4 = hexData.stationary;
+			if (_v4.$ === 'Just') {
+				var interactive = _v4.a;
 				return _List_fromArray(
 					[
 						A2(
@@ -13562,38 +13158,6 @@ var $author$project$Areas$MapArea$renderHexHelper = F6(
 					]);
 			} else {
 				return _List_Nil;
-			}
-		}();
-		var orderAttrs = function () {
-			var renderHexTargetMode = F2(
-				function (strokeColor, playerOrder) {
-					return _List_fromArray(
-						[
-							$author$project$Areas$MapArea$svgClickable,
-							$elm$svg$Svg$Attributes$strokeWidth('1.5'),
-							$elm$svg$Svg$Attributes$strokeOpacity('0.5'),
-							$elm$svg$Svg$Attributes$stroke(strokeColor),
-							$elm$html$Html$Events$onClick(
-							$author$project$Msg$SetPlayerOrder(playerOrder))
-						]);
-				});
-			switch (hexTargetMode.$) {
-				case 'Guard':
-					return A2(renderHexTargetMode, 'green', $author$project$Map$Mob$Guard);
-				case 'Target':
-					return A2(
-						renderHexTargetMode,
-						'blue',
-						$author$project$Map$Mob$AdvanceTo(
-							{actualPos: actualPosition, renderPos: renderPosition}));
-				case 'Interact':
-					return A2(renderHexTargetMode, 'orange', $author$project$Map$Mob$Interact);
-				default:
-					return _List_fromArray(
-						[
-							$elm$svg$Svg$Attributes$strokeWidth('0.25'),
-							$elm$svg$Svg$Attributes$stroke('black')
-						]);
 			}
 		}();
 		var linkedHexAttrs = isHexLinked ? _List_fromArray(
@@ -13650,17 +13214,31 @@ var $author$project$Areas$MapArea$renderHexHelper = F6(
 						}())
 					]))
 			]);
+		var hexTargetOrders = A3(
+			$author$project$Rule$Order$getPossibleForMob,
+			{health: playerHealth, order: playerOrder, position: playerPosition},
+			{actualPosition: actualPosition, data: hexData, isViaLink: isHexLinked, renderPosition: renderPosition},
+			mobInHex);
+		var renderedHexOrderOptions = A2(
+			$author$project$Areas$MapArea$renderHexOrders,
+			{actualHexPos: actualPosition, renderHexPos: renderPosition},
+			hexTargetOrders);
 		var commonTerrainAttrs = _List_fromArray(
 			[
-				$elm$svg$Svg$Attributes$points($author$project$Areas$MapArea$concatPts),
+				$author$project$Areas$MapArea$hexPtsAsAttribute,
 				$elm$svg$Svg$Attributes$fill(
 				$author$project$Map$Hex$colorOf(hexData.terrain))
+			]);
+		var commonHexAttrs = _List_fromArray(
+			[
+				$elm$svg$Svg$Attributes$strokeWidth('0.25'),
+				$elm$svg$Svg$Attributes$stroke('black')
 			]);
 		var renderedTerrain = _List_fromArray(
 			[
 				A2(
 				$elm$svg$Svg$polygon,
-				_Utils_ap(orderAttrs, commonTerrainAttrs),
+				_Utils_ap(commonHexAttrs, commonTerrainAttrs),
 				_List_Nil),
 				A2(
 				$elm$svg$Svg$text_,
@@ -13687,7 +13265,9 @@ var $author$project$Areas$MapArea$renderHexHelper = F6(
 				renderedLootPile,
 				_Utils_ap(
 					renderedInteractiveItem,
-					_Utils_ap(renderedTooltip, renderedMob))));
+					_Utils_ap(
+						renderedTooltip,
+						_Utils_ap(renderedMob, renderedHexOrderOptions)))));
 		var _v0 = $author$project$Areas$MapArea$hexPositionToPixels(renderPosition);
 		var svgx = _v0.a;
 		var svgy = _v0.b;
@@ -13725,13 +13305,12 @@ var $author$project$Areas$MapArea$toKeyed = F4(
 var $author$project$Areas$MapArea$renderHex = F3(
 	function (player, findMob, hex) {
 		var mobInHex = findMob(hex.actualPosition);
-		var possiblePlayerOrder = A3($author$project$Rule$Order$getPossibleForMob, player, hex, mobInHex);
 		var renderFunc = function () {
 			if (mobInHex.$ === 'Just') {
 				var mob = mobInHex.a;
-				return A6($elm$svg$Svg$Lazy$lazy6, $author$project$Areas$MapArea$renderHexHelperWithMob, mob, possiblePlayerOrder, hex.renderPosition, hex.actualPosition, hex.isViaLink);
+				return A8($elm$svg$Svg$Lazy$lazy8, $author$project$Areas$MapArea$renderHexHelperWithMob, mob, player.position, player.order, player.health, hex.renderPosition, hex.actualPosition, hex.isViaLink);
 			} else {
-				return A5($elm$svg$Svg$Lazy$lazy5, $author$project$Areas$MapArea$renderHexHelperNoMob, possiblePlayerOrder, hex.renderPosition, hex.actualPosition, hex.isViaLink);
+				return A7($elm$svg$Svg$Lazy$lazy7, $author$project$Areas$MapArea$renderHexHelperNoMob, player.position, player.order, player.health, hex.renderPosition, hex.actualPosition, hex.isViaLink);
 			}
 		}();
 		return A4($author$project$Areas$MapArea$toKeyed, renderFunc, 'hex', hex.renderPosition, hex.data);
@@ -14722,9 +14301,7 @@ var $author$project$Main$view = function (model) {
 var $author$project$Main$main = $elm$browser$Browser$document(
 	{
 		init: function (_v0) {
-			return _Utils_Tuple2(
-				$author$project$Main$initialModel,
-				A2($elm$core$Platform$Cmd$map, $author$project$Msg$SetServerStatus, $author$project$Meta$Server$statusCmd));
+			return _Utils_Tuple2($author$project$Main$initialModel, $elm$core$Platform$Cmd$none);
 		},
 		subscriptions: $author$project$Main$subscriptions,
 		update: $author$project$Update$update(
