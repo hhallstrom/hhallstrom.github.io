@@ -6439,15 +6439,16 @@ var $elm$core$Task$perform = F2(
 	});
 var $elm$browser$Browser$document = _Browser_document;
 var $author$project$Map$Hex$CaveEntrance = {$: 'CaveEntrance'};
-var $author$project$Map$Content$createHex = F4(
-	function (stationary, loot, terrain, pos) {
+var $author$project$Map$Hex$NotSignificant = {$: 'NotSignificant'};
+var $author$project$Map$Content$createHex = F5(
+	function (stationary, significantLocation, loot, terrain, pos) {
 		return {
 			position: pos,
 			reference: $author$project$Map$Content$ActualHex(
-				{loot: loot, stationary: stationary, terrain: terrain})
+				{loot: loot, significantLocation: significantLocation, stationary: stationary, terrain: terrain})
 		};
 	});
-var $author$project$Map$Content$createHexWLoot = $author$project$Map$Content$createHex($elm$core$Maybe$Nothing);
+var $author$project$Map$Content$createHexWLoot = A2($author$project$Map$Content$createHex, $elm$core$Maybe$Nothing, $author$project$Map$Hex$NotSignificant);
 var $author$project$Map$Content$emptyLoot = _List_Nil;
 var $author$project$Map$Content$createEmptyHex = $author$project$Map$Content$createHexWLoot($author$project$Map$Content$emptyLoot);
 var $author$project$World$TombOfTheAncient$Map$tAc = $author$project$Map$Content$createEmptyHex($author$project$Map$Hex$CaveEntrance);
@@ -6485,9 +6486,10 @@ var $author$project$World$Common$Stationary$createContainerDescription = F4(
 			{dialogueDescription: description, dialogueOptions: _List_Nil, mapPicture: picture, name: name});
 	});
 var $author$project$Map$Content$createHexWStationary = function (stationary) {
-	return A2(
+	return A3(
 		$author$project$Map$Content$createHex,
 		$elm$core$Maybe$Just(stationary),
+		$author$project$Map$Hex$NotSignificant,
 		$author$project$Map$Content$emptyLoot);
 };
 var $author$project$Rule$Definition$GainExperience = F2(
@@ -7191,6 +7193,17 @@ var $author$project$World$PalackanFields$Map$tCp = A2(
 		_List_fromArray(
 			[$author$project$World$PalackanFields$Mob$diamond, $author$project$World$PalackanFields$Mob$magicMushroom, $author$project$World$PalackanFields$Mob$magicMushroom])),
 	$author$project$Map$Hex$Plains);
+var $author$project$Map$Hex$WidelyKnown = function (a) {
+	return {$: 'WidelyKnown', a: a};
+};
+var $author$project$Map$Content$createSignificantHexWLoot = $author$project$Map$Content$createHex($elm$core$Maybe$Nothing);
+var $author$project$Map$Content$createSignificantHex = function (significantLocation) {
+	return A2($author$project$Map$Content$createSignificantHexWLoot, significantLocation, $author$project$Map$Content$emptyLoot);
+};
+var $author$project$World$PalackanFields$Map$tLp = A2(
+	$author$project$Map$Content$createSignificantHex,
+	$author$project$Map$Hex$WidelyKnown('The lonely plains'),
+	$author$project$Map$Hex$Plains);
 var $author$project$World$PalackanFields$Map$tMm = $author$project$Map$Content$createEmptyHex($author$project$Map$Hex$Mountains);
 var $author$project$World$Stationary$NotYetTouched = {$: 'NotYetTouched'};
 var $author$project$World$PalackanFields$Stationary$initialWeepingStatueState = $author$project$World$PalackanFields$Stationary$weepingStatueDefinition($author$project$World$Stationary$NotYetTouched);
@@ -7213,7 +7226,7 @@ var $author$project$World$PalackanFields$Map$mapSetup = _List_fromArray(
 		_List_fromArray(
 		[$author$project$World$PalackanFields$Map$tCf, $author$project$World$PalackanFields$Map$tws, $author$project$World$PalackanFields$Map$t_p, $author$project$World$PalackanFields$Map$tWb, $author$project$World$PalackanFields$Map$tWb, $author$project$World$PalackanFields$Map$t_p, $author$project$World$PalackanFields$Map$tTf, $author$project$World$PalackanFields$Map$tCp, $author$project$World$PalackanFields$Map$tYf, $author$project$World$PalackanFields$Map$tYf, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tYf, $author$project$World$PalackanFields$Map$tYf, $author$project$World$PalackanFields$Map$t_p, $author$project$World$PalackanFields$Map$t_p, $author$project$World$PalackanFields$Map$tYf, $author$project$World$PalackanFields$Map$tYf]),
 		_List_fromArray(
-		[$author$project$World$PalackanFields$Map$tTf, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$t_p, $author$project$World$PalackanFields$Map$t_p, $author$project$World$PalackanFields$Map$t_p, $author$project$World$PalackanFields$Map$t_p, $author$project$World$PalackanFields$Map$tws, $author$project$World$PalackanFields$Map$tws, $author$project$World$PalackanFields$Map$tws, $author$project$World$PalackanFields$Map$tYf, $author$project$World$PalackanFields$Map$tYf, $author$project$World$PalackanFields$Map$tWb, $author$project$World$PalackanFields$Map$tYf, $author$project$World$PalackanFields$Map$t_p, $author$project$World$PalackanFields$Map$t_p, $author$project$World$PalackanFields$Map$t_p, $author$project$World$PalackanFields$Map$tYf]),
+		[$author$project$World$PalackanFields$Map$tTf, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$t_p, $author$project$World$PalackanFields$Map$t_p, $author$project$World$PalackanFields$Map$t_p, $author$project$World$PalackanFields$Map$t_p, $author$project$World$PalackanFields$Map$tws, $author$project$World$PalackanFields$Map$tws, $author$project$World$PalackanFields$Map$tws, $author$project$World$PalackanFields$Map$tYf, $author$project$World$PalackanFields$Map$tYf, $author$project$World$PalackanFields$Map$tWb, $author$project$World$PalackanFields$Map$tYf, $author$project$World$PalackanFields$Map$t_p, $author$project$World$PalackanFields$Map$tLp, $author$project$World$PalackanFields$Map$t_p, $author$project$World$PalackanFields$Map$tYf]),
 		_List_fromArray(
 		[$author$project$World$PalackanFields$Map$tYf, $author$project$World$PalackanFields$Map$tYf, $author$project$World$PalackanFields$Map$t_p, $author$project$World$PalackanFields$Map$t_p, $author$project$World$PalackanFields$Map$t_p, $author$project$World$PalackanFields$Map$tws, $author$project$World$PalackanFields$Map$tws, $author$project$World$PalackanFields$Map$tws, $author$project$World$PalackanFields$Map$tws, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tMm, $author$project$World$PalackanFields$Map$tWb, $author$project$World$PalackanFields$Map$t_p, $author$project$World$PalackanFields$Map$t_p, $author$project$World$PalackanFields$Map$t_p, $author$project$World$PalackanFields$Map$t_p, $author$project$World$PalackanFields$Map$tYf]),
 		_List_fromArray(
@@ -7392,6 +7405,556 @@ var $author$project$Main$eventSubscriber = F2(
 				{worldState: newWorldState}),
 			effects);
 	});
+var $author$project$Msg$AddMap = F2(
+	function (a, b) {
+		return {$: 'AddMap', a: a, b: b};
+	});
+var $elm$random$Random$Generate = function (a) {
+	return {$: 'Generate', a: a};
+};
+var $elm$random$Random$Seed = F2(
+	function (a, b) {
+		return {$: 'Seed', a: a, b: b};
+	});
+var $elm$random$Random$next = function (_v0) {
+	var state0 = _v0.a;
+	var incr = _v0.b;
+	return A2($elm$random$Random$Seed, ((state0 * 1664525) + incr) >>> 0, incr);
+};
+var $elm$random$Random$initialSeed = function (x) {
+	var _v0 = $elm$random$Random$next(
+		A2($elm$random$Random$Seed, 0, 1013904223));
+	var state1 = _v0.a;
+	var incr = _v0.b;
+	var state2 = (state1 + x) >>> 0;
+	return $elm$random$Random$next(
+		A2($elm$random$Random$Seed, state2, incr));
+};
+var $elm$time$Time$Name = function (a) {
+	return {$: 'Name', a: a};
+};
+var $elm$time$Time$Offset = function (a) {
+	return {$: 'Offset', a: a};
+};
+var $elm$time$Time$Zone = F2(
+	function (a, b) {
+		return {$: 'Zone', a: a, b: b};
+	});
+var $elm$time$Time$customZone = $elm$time$Time$Zone;
+var $elm$time$Time$Posix = function (a) {
+	return {$: 'Posix', a: a};
+};
+var $elm$time$Time$millisToPosix = $elm$time$Time$Posix;
+var $elm$time$Time$now = _Time_now($elm$time$Time$millisToPosix);
+var $elm$time$Time$posixToMillis = function (_v0) {
+	var millis = _v0.a;
+	return millis;
+};
+var $elm$random$Random$init = A2(
+	$elm$core$Task$andThen,
+	function (time) {
+		return $elm$core$Task$succeed(
+			$elm$random$Random$initialSeed(
+				$elm$time$Time$posixToMillis(time)));
+	},
+	$elm$time$Time$now);
+var $elm$random$Random$step = F2(
+	function (_v0, seed) {
+		var generator = _v0.a;
+		return generator(seed);
+	});
+var $elm$random$Random$onEffects = F3(
+	function (router, commands, seed) {
+		if (!commands.b) {
+			return $elm$core$Task$succeed(seed);
+		} else {
+			var generator = commands.a.a;
+			var rest = commands.b;
+			var _v1 = A2($elm$random$Random$step, generator, seed);
+			var value = _v1.a;
+			var newSeed = _v1.b;
+			return A2(
+				$elm$core$Task$andThen,
+				function (_v2) {
+					return A3($elm$random$Random$onEffects, router, rest, newSeed);
+				},
+				A2($elm$core$Platform$sendToApp, router, value));
+		}
+	});
+var $elm$random$Random$onSelfMsg = F3(
+	function (_v0, _v1, seed) {
+		return $elm$core$Task$succeed(seed);
+	});
+var $elm$random$Random$Generator = function (a) {
+	return {$: 'Generator', a: a};
+};
+var $elm$random$Random$map = F2(
+	function (func, _v0) {
+		var genA = _v0.a;
+		return $elm$random$Random$Generator(
+			function (seed0) {
+				var _v1 = genA(seed0);
+				var a = _v1.a;
+				var seed1 = _v1.b;
+				return _Utils_Tuple2(
+					func(a),
+					seed1);
+			});
+	});
+var $elm$random$Random$cmdMap = F2(
+	function (func, _v0) {
+		var generator = _v0.a;
+		return $elm$random$Random$Generate(
+			A2($elm$random$Random$map, func, generator));
+	});
+_Platform_effectManagers['Random'] = _Platform_createManager($elm$random$Random$init, $elm$random$Random$onEffects, $elm$random$Random$onSelfMsg, $elm$random$Random$cmdMap);
+var $elm$random$Random$command = _Platform_leaf('Random');
+var $elm$random$Random$generate = F2(
+	function (tagger, generator) {
+		return $elm$random$Random$command(
+			$elm$random$Random$Generate(
+				A2($elm$random$Random$map, tagger, generator)));
+	});
+var $elm$random$Random$andThen = F2(
+	function (callback, _v0) {
+		var genA = _v0.a;
+		return $elm$random$Random$Generator(
+			function (seed) {
+				var _v1 = genA(seed);
+				var result = _v1.a;
+				var newSeed = _v1.b;
+				var _v2 = callback(result);
+				var genB = _v2.a;
+				return genB(newSeed);
+			});
+	});
+var $elm$core$Bitwise$xor = _Bitwise_xor;
+var $elm$random$Random$peel = function (_v0) {
+	var state = _v0.a;
+	var word = (state ^ (state >>> ((state >>> 28) + 4))) * 277803737;
+	return ((word >>> 22) ^ word) >>> 0;
+};
+var $elm$random$Random$int = F2(
+	function (a, b) {
+		return $elm$random$Random$Generator(
+			function (seed0) {
+				var _v0 = (_Utils_cmp(a, b) < 0) ? _Utils_Tuple2(a, b) : _Utils_Tuple2(b, a);
+				var lo = _v0.a;
+				var hi = _v0.b;
+				var range = (hi - lo) + 1;
+				if (!((range - 1) & range)) {
+					return _Utils_Tuple2(
+						(((range - 1) & $elm$random$Random$peel(seed0)) >>> 0) + lo,
+						$elm$random$Random$next(seed0));
+				} else {
+					var threshhold = (((-range) >>> 0) % range) >>> 0;
+					var accountForBias = function (seed) {
+						accountForBias:
+						while (true) {
+							var x = $elm$random$Random$peel(seed);
+							var seedN = $elm$random$Random$next(seed);
+							if (_Utils_cmp(x, threshhold) < 0) {
+								var $temp$seed = seedN;
+								seed = $temp$seed;
+								continue accountForBias;
+							} else {
+								return _Utils_Tuple2((x % range) + lo, seedN);
+							}
+						}
+					};
+					return accountForBias(seed0);
+				}
+			});
+	});
+var $elm$random$Random$map2 = F3(
+	function (func, _v0, _v1) {
+		var genA = _v0.a;
+		var genB = _v1.a;
+		return $elm$random$Random$Generator(
+			function (seed0) {
+				var _v2 = genA(seed0);
+				var a = _v2.a;
+				var seed1 = _v2.b;
+				var _v3 = genB(seed1);
+				var b = _v3.a;
+				var seed2 = _v3.b;
+				return _Utils_Tuple2(
+					A2(func, a, b),
+					seed2);
+			});
+	});
+var $elm$random$Random$pair = F2(
+	function (genA, genB) {
+		return A3(
+			$elm$random$Random$map2,
+			F2(
+				function (a, b) {
+					return _Utils_Tuple2(a, b);
+				}),
+			genA,
+			genB);
+	});
+var $elm$random$Random$listHelp = F4(
+	function (revList, n, gen, seed) {
+		listHelp:
+		while (true) {
+			if (n < 1) {
+				return _Utils_Tuple2(revList, seed);
+			} else {
+				var _v0 = gen(seed);
+				var value = _v0.a;
+				var newSeed = _v0.b;
+				var $temp$revList = A2($elm$core$List$cons, value, revList),
+					$temp$n = n - 1,
+					$temp$gen = gen,
+					$temp$seed = newSeed;
+				revList = $temp$revList;
+				n = $temp$n;
+				gen = $temp$gen;
+				seed = $temp$seed;
+				continue listHelp;
+			}
+		}
+	});
+var $elm$random$Random$list = F2(
+	function (n, _v0) {
+		var gen = _v0.a;
+		return $elm$random$Random$Generator(
+			function (seed) {
+				return A4($elm$random$Random$listHelp, _List_Nil, n, gen, seed);
+			});
+	});
+var $elm$random$Random$map3 = F4(
+	function (func, _v0, _v1, _v2) {
+		var genA = _v0.a;
+		var genB = _v1.a;
+		var genC = _v2.a;
+		return $elm$random$Random$Generator(
+			function (seed0) {
+				var _v3 = genA(seed0);
+				var a = _v3.a;
+				var seed1 = _v3.b;
+				var _v4 = genB(seed1);
+				var b = _v4.a;
+				var seed2 = _v4.b;
+				var _v5 = genC(seed2);
+				var c = _v5.a;
+				var seed3 = _v5.b;
+				return _Utils_Tuple2(
+					A3(func, a, b, c),
+					seed3);
+			});
+	});
+var $author$project$Inventory$Item$Armour = {$: 'Armour'};
+var $author$project$World$Random$Map$Epic = {$: 'Epic'};
+var $author$project$World$Random$Map$LowQuality = {$: 'LowQuality'};
+var $author$project$Inventory$Item$Melee = {$: 'Melee'};
+var $author$project$World$Random$Map$Normal = {$: 'Normal'};
+var $author$project$World$Random$Map$Rare = {$: 'Rare'};
+var $author$project$Inventory$Item$Short = {$: 'Short'};
+var $author$project$World$Random$Map$createItem = F2(
+	function (baseItem, randomItemValue) {
+		return baseItem;
+	});
+var $elm$random$Random$addOne = function (value) {
+	return _Utils_Tuple2(1, value);
+};
+var $elm$core$Basics$abs = function (n) {
+	return (n < 0) ? (-n) : n;
+};
+var $elm$random$Random$float = F2(
+	function (a, b) {
+		return $elm$random$Random$Generator(
+			function (seed0) {
+				var seed1 = $elm$random$Random$next(seed0);
+				var range = $elm$core$Basics$abs(b - a);
+				var n1 = $elm$random$Random$peel(seed1);
+				var n0 = $elm$random$Random$peel(seed0);
+				var lo = (134217727 & n1) * 1.0;
+				var hi = (67108863 & n0) * 1.0;
+				var val = ((hi * 134217728.0) + lo) / 9007199254740992.0;
+				var scaled = (val * range) + a;
+				return _Utils_Tuple2(
+					scaled,
+					$elm$random$Random$next(seed1));
+			});
+	});
+var $elm$random$Random$getByWeight = F3(
+	function (_v0, others, countdown) {
+		getByWeight:
+		while (true) {
+			var weight = _v0.a;
+			var value = _v0.b;
+			if (!others.b) {
+				return value;
+			} else {
+				var second = others.a;
+				var otherOthers = others.b;
+				if (_Utils_cmp(
+					countdown,
+					$elm$core$Basics$abs(weight)) < 1) {
+					return value;
+				} else {
+					var $temp$_v0 = second,
+						$temp$others = otherOthers,
+						$temp$countdown = countdown - $elm$core$Basics$abs(weight);
+					_v0 = $temp$_v0;
+					others = $temp$others;
+					countdown = $temp$countdown;
+					continue getByWeight;
+				}
+			}
+		}
+	});
+var $elm$core$List$sum = function (numbers) {
+	return A3($elm$core$List$foldl, $elm$core$Basics$add, 0, numbers);
+};
+var $elm$random$Random$weighted = F2(
+	function (first, others) {
+		var normalize = function (_v0) {
+			var weight = _v0.a;
+			return $elm$core$Basics$abs(weight);
+		};
+		var total = normalize(first) + $elm$core$List$sum(
+			A2($elm$core$List$map, normalize, others));
+		return A2(
+			$elm$random$Random$map,
+			A2($elm$random$Random$getByWeight, first, others),
+			A2($elm$random$Random$float, 0, total));
+	});
+var $elm$random$Random$uniform = F2(
+	function (value, valueList) {
+		return A2(
+			$elm$random$Random$weighted,
+			$elm$random$Random$addOne(value),
+			A2($elm$core$List$map, $elm$random$Random$addOne, valueList));
+	});
+var $author$project$World$Random$Map$randomItem = A3(
+	$elm$random$Random$map2,
+	$author$project$World$Random$Map$createItem,
+	A2(
+		$elm$random$Random$uniform,
+		A6(
+			$author$project$Inventory$Item$Item,
+			'Sword',
+			_Utils_chr('🗡'),
+			10,
+			$author$project$Inventory$Item$Weapon($author$project$Inventory$Item$Melee),
+			$author$project$Inventory$Item$None,
+			40),
+		_List_fromArray(
+			[
+				A6(
+				$author$project$Inventory$Item$Item,
+				'Axe',
+				_Utils_chr('🪓'),
+				15,
+				$author$project$Inventory$Item$Weapon($author$project$Inventory$Item$Melee),
+				$author$project$Inventory$Item$None,
+				30),
+				A6(
+				$author$project$Inventory$Item$Item,
+				'Bow',
+				_Utils_chr('🏹'),
+				20,
+				$author$project$Inventory$Item$Weapon($author$project$Inventory$Item$Short),
+				$author$project$Inventory$Item$None,
+				50),
+				A6(
+				$author$project$Inventory$Item$Item,
+				'Breast plate',
+				_Utils_chr('𐂫'),
+				15,
+				$author$project$Inventory$Item$Armour,
+				$author$project$Inventory$Item$None,
+				50),
+				A6(
+				$author$project$Inventory$Item$Item,
+				'Food',
+				_Utils_chr('🥙'),
+				5,
+				$author$project$Inventory$Item$Misc,
+				$author$project$Inventory$Item$consumedEffects(
+					_List_fromArray(
+						[
+							A2($author$project$Rule$Definition$ModifyWellbeing, $author$project$Rule$Definition$Hunger, 10)
+						])),
+				5),
+				A6(
+				$author$project$Inventory$Item$Item,
+				'Water',
+				_Utils_chr('🍼'),
+				5,
+				$author$project$Inventory$Item$Misc,
+				$author$project$Inventory$Item$consumedEffects(
+					_List_fromArray(
+						[
+							A2($author$project$Rule$Definition$ModifyWellbeing, $author$project$Rule$Definition$Thirst, 10)
+						])),
+				5),
+				A6(
+				$author$project$Inventory$Item$Item,
+				'Bag of scrap',
+				_Utils_chr('💰'),
+				2,
+				$author$project$Inventory$Item$Misc,
+				$author$project$Inventory$Item$None,
+				20)
+			])),
+	A2(
+		$elm$random$Random$uniform,
+		$author$project$World$Random$Map$LowQuality,
+		_List_fromArray(
+			[$author$project$World$Random$Map$Normal, $author$project$World$Random$Map$Rare, $author$project$World$Random$Map$Normal, $author$project$World$Random$Map$Rare, $author$project$World$Random$Map$Epic])));
+var $author$project$World$Random$Map$randomItems = function (numItems) {
+	return A2($elm$random$Random$list, numItems, $author$project$World$Random$Map$randomItem);
+};
+var $author$project$World$Random$Map$randomLoot = A2(
+	$elm$random$Random$andThen,
+	$author$project$World$Random$Map$randomItems,
+	A2(
+		$elm$random$Random$weighted,
+		_Utils_Tuple2(15, 0),
+		_List_fromArray(
+			[
+				_Utils_Tuple2(4, 1),
+				_Utils_Tuple2(2, 2),
+				_Utils_Tuple2(1, 3)
+			])));
+var $elm$random$Random$constant = function (value) {
+	return $elm$random$Random$Generator(
+		function (seed) {
+			return _Utils_Tuple2(value, seed);
+		});
+};
+var $elm$core$String$toUpper = _String_toUpper;
+var $author$project$Extend$String$capitalize = function (string) {
+	var rest = A2($elm$core$String$dropLeft, 1, string);
+	var first = A2($elm$core$String$left, 1, string);
+	return _Utils_ap(
+		$elm$core$String$toUpper(first),
+		rest);
+};
+var $author$project$World$Random$Map$randomHexNamePostfix = A2(
+	$elm$random$Random$uniform,
+	'caves',
+	_List_fromArray(
+		['cavern', 'peaks', 'deeps', 'burrows', 'pit', 'hole', 'cave']));
+var $author$project$World$Random$Map$randomHexNamePrefix = A2(
+	$elm$random$Random$weighted,
+	_Utils_Tuple2(5, 'the'),
+	_List_fromArray(
+		[
+			_Utils_Tuple2(1, 'red'),
+			_Utils_Tuple2(1, 'blue'),
+			_Utils_Tuple2(1, 'green'),
+			_Utils_Tuple2(1, 'yellow'),
+			_Utils_Tuple2(1, 'dark'),
+			_Utils_Tuple2(1, 'wild'),
+			_Utils_Tuple2(1, 'heavenly'),
+			_Utils_Tuple2(1, 'hellish'),
+			_Utils_Tuple2(1, 'hell'),
+			_Utils_Tuple2(1, 'forgotten'),
+			_Utils_Tuple2(2, 'lonely'),
+			_Utils_Tuple2(1, 'ancient'),
+			_Utils_Tuple2(1, 'doomed'),
+			_Utils_Tuple2(1, 'hollow'),
+			_Utils_Tuple2(1, 'battle of the'),
+			_Utils_Tuple2(1, 'lost')
+		]));
+var $author$project$World$Random$Map$randomHexName = A2(
+	$elm$random$Random$map,
+	$author$project$Extend$String$capitalize,
+	A3(
+		$elm$random$Random$map2,
+		$elm$core$Basics$append,
+		$author$project$World$Random$Map$randomHexNamePrefix,
+		A2(
+			$elm$random$Random$map,
+			$elm$core$Basics$append(' '),
+			$author$project$World$Random$Map$randomHexNamePostfix)));
+var $author$project$World$Random$Map$randomSignificantName = A2(
+	$elm$random$Random$andThen,
+	$elm$core$Basics$identity,
+	A2(
+		$elm$random$Random$weighted,
+		_Utils_Tuple2(
+			20,
+			$elm$random$Random$constant($author$project$Map$Hex$NotSignificant)),
+		_List_fromArray(
+			[
+				_Utils_Tuple2(
+				1,
+				A2($elm$random$Random$map, $author$project$Map$Hex$WidelyKnown, $author$project$World$Random$Map$randomHexName))
+			])));
+var $author$project$World$Random$Map$randomCaveHex = A4(
+	$elm$random$Random$map3,
+	$author$project$Map$Content$createSignificantHexWLoot,
+	$author$project$World$Random$Map$randomSignificantName,
+	$author$project$World$Random$Map$randomLoot,
+	A2(
+		$elm$random$Random$weighted,
+		_Utils_Tuple2(10, $author$project$Map$Hex$Cave),
+		_List_fromArray(
+			[
+				_Utils_Tuple2(2, $author$project$Map$Hex$CaveEntrance),
+				_Utils_Tuple2(1, $author$project$Map$Hex$BlessedGrounds),
+				_Utils_Tuple2(6, $author$project$Map$Hex$Mountains),
+				_Utils_Tuple2(2, $author$project$Map$Hex$Sea)
+			])));
+var $author$project$World$Random$Map$randomMapSetup = function (_v0) {
+	var rows = _v0.a;
+	var cols = _v0.b;
+	return A2(
+		$elm$random$Random$list,
+		rows,
+		A2($elm$random$Random$list, cols, $author$project$World$Random$Map$randomCaveHex));
+};
+var $author$project$World$Random$Map$generateMapSetup = A2(
+	$elm$random$Random$andThen,
+	$author$project$World$Random$Map$randomMapSetup,
+	A2(
+		$elm$random$Random$pair,
+		A2($elm$random$Random$int, 5, 15),
+		A2($elm$random$Random$int, 5, 15)));
+var $author$project$Extend$List$getFirst = function (list) {
+	if (!list.b) {
+		return $elm$core$Maybe$Nothing;
+	} else {
+		var x = list.a;
+		return $elm$core$Maybe$Just(x);
+	}
+};
+var $elm$core$Maybe$withDefault = F2(
+	function (_default, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return value;
+		} else {
+			return _default;
+		}
+	});
+var $author$project$Map$Content$getCoordsFrom = function (posToHexLists) {
+	return {
+		totalCols: A2(
+			$elm$core$Basics$composeR,
+			$author$project$Extend$List$getFirst,
+			A2(
+				$elm$core$Basics$composeR,
+				$elm$core$Maybe$map($elm$core$List$length),
+				$elm$core$Maybe$withDefault(0)))(posToHexLists),
+		totalRows: $elm$core$List$length(posToHexLists)
+	};
+};
+var $author$project$Map$Content$getPosOf = function (mapDefinition) {
+	return $author$project$Map$Position$Position(
+		$author$project$Map$Content$getCoordsFrom(mapDefinition));
+};
+var $author$project$Main$generateRandomCave = A2(
+	$elm$random$Random$generate,
+	$author$project$Msg$AddMap(
+		A3($author$project$Map$Content$getPosOf, $author$project$World$TombOfTheAncient$Map$initialData.map, 3, 0)),
+	$author$project$World$Random$Map$generateMapSetup);
 var $author$project$Meta$Server$Calling = {$: 'Calling'};
 var $author$project$Meta$Log$minimumId = 0;
 var $author$project$Meta$Log$initial = {hasScrolledToBottom: true, latestId: $author$project$Meta$Log$minimumId, rows: _List_Nil};
@@ -7546,35 +8109,6 @@ var $author$project$Map$Mob$fromDefinitionListHelper = F3(
 		}
 	});
 var $author$project$Map$Mob$fromDefinitionList = A2($author$project$Map$Mob$fromDefinitionListHelper, 0, $author$project$Map$Mob$emptySet);
-var $author$project$Extend$List$getFirst = function (list) {
-	if (!list.b) {
-		return $elm$core$Maybe$Nothing;
-	} else {
-		var x = list.a;
-		return $elm$core$Maybe$Just(x);
-	}
-};
-var $elm$core$Maybe$withDefault = F2(
-	function (_default, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return value;
-		} else {
-			return _default;
-		}
-	});
-var $author$project$Map$Content$getCoordsFrom = function (posToHexLists) {
-	return {
-		totalCols: A2(
-			$elm$core$Basics$composeR,
-			$author$project$Extend$List$getFirst,
-			A2(
-				$elm$core$Basics$composeR,
-				$elm$core$Maybe$map($elm$core$List$length),
-				$elm$core$Maybe$withDefault(0)))(posToHexLists),
-		totalRows: $elm$core$List$length(posToHexLists)
-	};
-};
 var $author$project$World$Definition$initialMonsters = function () {
 	var getMonstersForMap = function (mapContent) {
 		return mapContent.getMonstersForMap(
@@ -7729,7 +8263,6 @@ var $author$project$Inventory$Slot$createNumBackpackSlotDefs = F2(
 var $author$project$Extend$List$indexed = function (list) {
 	return A2($author$project$Extend$List$indexedMapInvert, $elm$core$Basics$identity, list);
 };
-var $author$project$Inventory$Item$Melee = {$: 'Melee'};
 var $author$project$World$Definition$soulAxe = {
 	effect: $author$project$Inventory$Item$EquippedAttributes(
 		_List_fromArray(
@@ -7741,7 +8274,7 @@ var $author$project$World$Definition$soulAxe = {
 	value: 1000
 };
 var $author$project$World$Definition$initialPlayerInventory = function () {
-	var numBackpackSlots = 12;
+	var numBackpackSlots = 18;
 	return $author$project$Extend$List$indexed(
 		A2(
 			$elm$core$List$cons,
@@ -7889,10 +8422,6 @@ var $author$project$Map$Content$createMapFromLists = function (subMapsToPosToHex
 	return $author$project$Map$Content$Map(
 		A2($elm$core$List$map, $author$project$Map$Content$createSubMapFromList, subMapsToPosToHexLists));
 };
-var $author$project$Map$Content$getPosOf = function (mapDefinition) {
-	return $author$project$Map$Position$Position(
-		$author$project$Map$Content$getCoordsFrom(mapDefinition));
-};
 var $author$project$Map$Position$Above = {$: 'Above'};
 var $author$project$Map$Position$Below = {$: 'Below'};
 var $author$project$Map$Position$aboveOffset = _Utils_Tuple2(-1, 0);
@@ -7917,7 +8446,7 @@ var $author$project$Map$Content$LinkedHex = function (a) {
 };
 var $author$project$Map$Content$setLink = F2(
 	function (linkData, worldMap) {
-		return A2(
+		var isTargetLinkedHex = A2(
 			$elm$core$Maybe$withDefault,
 			true,
 			A2(
@@ -7925,7 +8454,8 @@ var $author$project$Map$Content$setLink = F2(
 				function ($) {
 					return $.isViaLink;
 				},
-				A2($author$project$Map$Content$get, linkData.linkToHexPos, worldMap))) ? worldMap : A2(
+				A2($author$project$Map$Content$get, linkData.linkToHexPos, worldMap)));
+		return isTargetLinkedHex ? worldMap : A2(
 			$author$project$Map$Content$setHexContent,
 			{
 				position: linkData.atPositition,
@@ -7972,8 +8502,6 @@ var $author$project$Main$initialModel = A2(
 	$author$project$Meta$Log$status,
 	'Game initiated',
 	{beingUsed: $elm$core$Maybe$Nothing, dragging: $author$project$Main$initialPointer, logs: $author$project$Meta$Log$initial, map: $author$project$World$Definition$initialWorldMap, monsters: $author$project$World$Definition$initialMonsters, orderEffects: _List_Nil, phase: $author$project$State$Phase$initial, player: $author$project$World$Definition$initialPlayer, serverStatus: $author$project$Meta$Server$Calling, worldState: $author$project$World$State$initialState});
-var $elm$core$Platform$Cmd$batch = _Platform_batch;
-var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $elm$core$Platform$Sub$batch = _Platform_batch;
 var $author$project$Msg$MoveItem = function (a) {
 	return {$: 'MoveItem', a: a};
@@ -8369,17 +8897,6 @@ var $elm$time$Time$addMySub = F2(
 				state);
 		}
 	});
-var $elm$time$Time$Name = function (a) {
-	return {$: 'Name', a: a};
-};
-var $elm$time$Time$Offset = function (a) {
-	return {$: 'Offset', a: a};
-};
-var $elm$time$Time$Zone = F2(
-	function (a, b) {
-		return {$: 'Zone', a: a, b: b};
-	});
-var $elm$time$Time$customZone = $elm$time$Time$Zone;
 var $elm$time$Time$setInterval = _Time_setInterval;
 var $elm$core$Process$spawn = _Scheduler_spawn;
 var $elm$time$Time$spawnHelp = F3(
@@ -8470,11 +8987,6 @@ var $elm$time$Time$onEffects = F3(
 				},
 				killTask));
 	});
-var $elm$time$Time$Posix = function (a) {
-	return {$: 'Posix', a: a};
-};
-var $elm$time$Time$millisToPosix = $elm$time$Time$Posix;
-var $elm$time$Time$now = _Time_now($elm$time$Time$millisToPosix);
 var $elm$time$Time$onSelfMsg = F3(
 	function (router, interval, state) {
 		var _v0 = A2($elm$core$Dict$get, interval, state.taggers);
@@ -8544,6 +9056,7 @@ var $author$project$Main$subscriptions = function (model) {
 				$author$project$Main$pointerSubscriptions(model.dragging)
 			]));
 };
+var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $author$project$Msg$NoOp = {$: 'NoOp'};
 var $author$project$State$Event$Died = function (a) {
 	return {$: 'Died', a: a};
@@ -8665,6 +9178,7 @@ var $author$project$State$Event$extract = function (changeData) {
 		oldMobs);
 	return _Utils_ap(mobEvents, phaseEvents);
 };
+var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $author$project$Meta$Log$NoOp = {$: 'NoOp'};
 var $elm$core$Task$onError = _Scheduler_onError;
 var $elm$core$Task$attempt = F2(
@@ -8814,6 +9328,22 @@ var $author$project$Msg$DetermineOrderEffects = function (a) {
 var $author$project$Msg$Drag = F2(
 	function (item, position) {
 		return {item: item, position: position};
+	});
+var $author$project$Map$Content$addMap = F2(
+	function (mapDefinition, worldMap) {
+		var newSubMap = $author$project$Map$Content$createSubMapFromList(mapDefinition);
+		var _v0 = worldMap;
+		var subMaps = _v0.a;
+		return A2(
+			$elm$core$List$any,
+			A2(
+				$elm$core$Basics$composeR,
+				function ($) {
+					return $.coords;
+				},
+				$elm$core$Basics$eq(newSubMap.coords)),
+			subMaps) ? worldMap : $author$project$Map$Content$Map(
+			A2($elm$core$List$cons, newSubMap, subMaps));
 	});
 var $author$project$Rule$Definition$ConditionAttributes = {$: 'ConditionAttributes'};
 var $author$project$Rule$Definition$EquippedItemAttributes = {$: 'EquippedItemAttributes'};
@@ -9844,96 +10374,6 @@ var $author$project$Update$cleanUpAllDead = function (latestModel) {
 			player: cleanedUp.player
 		});
 };
-var $elm$random$Random$Generate = function (a) {
-	return {$: 'Generate', a: a};
-};
-var $elm$random$Random$Seed = F2(
-	function (a, b) {
-		return {$: 'Seed', a: a, b: b};
-	});
-var $elm$random$Random$next = function (_v0) {
-	var state0 = _v0.a;
-	var incr = _v0.b;
-	return A2($elm$random$Random$Seed, ((state0 * 1664525) + incr) >>> 0, incr);
-};
-var $elm$random$Random$initialSeed = function (x) {
-	var _v0 = $elm$random$Random$next(
-		A2($elm$random$Random$Seed, 0, 1013904223));
-	var state1 = _v0.a;
-	var incr = _v0.b;
-	var state2 = (state1 + x) >>> 0;
-	return $elm$random$Random$next(
-		A2($elm$random$Random$Seed, state2, incr));
-};
-var $elm$time$Time$posixToMillis = function (_v0) {
-	var millis = _v0.a;
-	return millis;
-};
-var $elm$random$Random$init = A2(
-	$elm$core$Task$andThen,
-	function (time) {
-		return $elm$core$Task$succeed(
-			$elm$random$Random$initialSeed(
-				$elm$time$Time$posixToMillis(time)));
-	},
-	$elm$time$Time$now);
-var $elm$random$Random$step = F2(
-	function (_v0, seed) {
-		var generator = _v0.a;
-		return generator(seed);
-	});
-var $elm$random$Random$onEffects = F3(
-	function (router, commands, seed) {
-		if (!commands.b) {
-			return $elm$core$Task$succeed(seed);
-		} else {
-			var generator = commands.a.a;
-			var rest = commands.b;
-			var _v1 = A2($elm$random$Random$step, generator, seed);
-			var value = _v1.a;
-			var newSeed = _v1.b;
-			return A2(
-				$elm$core$Task$andThen,
-				function (_v2) {
-					return A3($elm$random$Random$onEffects, router, rest, newSeed);
-				},
-				A2($elm$core$Platform$sendToApp, router, value));
-		}
-	});
-var $elm$random$Random$onSelfMsg = F3(
-	function (_v0, _v1, seed) {
-		return $elm$core$Task$succeed(seed);
-	});
-var $elm$random$Random$Generator = function (a) {
-	return {$: 'Generator', a: a};
-};
-var $elm$random$Random$map = F2(
-	function (func, _v0) {
-		var genA = _v0.a;
-		return $elm$random$Random$Generator(
-			function (seed0) {
-				var _v1 = genA(seed0);
-				var a = _v1.a;
-				var seed1 = _v1.b;
-				return _Utils_Tuple2(
-					func(a),
-					seed1);
-			});
-	});
-var $elm$random$Random$cmdMap = F2(
-	function (func, _v0) {
-		var generator = _v0.a;
-		return $elm$random$Random$Generate(
-			A2($elm$random$Random$map, func, generator));
-	});
-_Platform_effectManagers['Random'] = _Platform_createManager($elm$random$Random$init, $elm$random$Random$onEffects, $elm$random$Random$onSelfMsg, $elm$random$Random$cmdMap);
-var $elm$random$Random$command = _Platform_leaf('Random');
-var $elm$random$Random$generate = F2(
-	function (tagger, generator) {
-		return $elm$random$Random$command(
-			$elm$random$Random$Generate(
-				A2($elm$random$Random$map, tagger, generator)));
-	});
 var $author$project$Rule$Combat$isRequirementFulfilledOnVsMob = F2(
 	function (versusMob, mapHolder) {
 		return A2(
@@ -9943,9 +10383,6 @@ var $author$project$Rule$Combat$isRequirementFulfilledOnVsMob = F2(
 			},
 			A2($author$project$Rule$Effect$isFulfilledFor, versusMob, mapHolder));
 	});
-var $elm$core$List$sum = function (numbers) {
-	return A3($elm$core$List$foldl, $elm$core$Basics$add, 0, numbers);
-};
 var $author$project$Rule$Combat$applyModifiers = F4(
 	function (aggregateCombatMods, mapHolder, agentMob, versusMob) {
 		return $elm$core$List$sum(
@@ -10210,95 +10647,6 @@ var $author$project$Rule$Order$getOrderEffectChances = F2(
 			A3($author$project$Rule$Order$computeOrderEffect, getHitChancePercent, allMobs, allTargetPosToCount),
 			mobsList);
 	});
-var $elm$random$Random$constant = function (value) {
-	return $elm$random$Random$Generator(
-		function (seed) {
-			return _Utils_Tuple2(value, seed);
-		});
-};
-var $elm$random$Random$map2 = F3(
-	function (func, _v0, _v1) {
-		var genA = _v0.a;
-		var genB = _v1.a;
-		return $elm$random$Random$Generator(
-			function (seed0) {
-				var _v2 = genA(seed0);
-				var a = _v2.a;
-				var seed1 = _v2.b;
-				var _v3 = genB(seed1);
-				var b = _v3.a;
-				var seed2 = _v3.b;
-				return _Utils_Tuple2(
-					A2(func, a, b),
-					seed2);
-			});
-	});
-var $elm$core$Basics$abs = function (n) {
-	return (n < 0) ? (-n) : n;
-};
-var $elm$core$Bitwise$xor = _Bitwise_xor;
-var $elm$random$Random$peel = function (_v0) {
-	var state = _v0.a;
-	var word = (state ^ (state >>> ((state >>> 28) + 4))) * 277803737;
-	return ((word >>> 22) ^ word) >>> 0;
-};
-var $elm$random$Random$float = F2(
-	function (a, b) {
-		return $elm$random$Random$Generator(
-			function (seed0) {
-				var seed1 = $elm$random$Random$next(seed0);
-				var range = $elm$core$Basics$abs(b - a);
-				var n1 = $elm$random$Random$peel(seed1);
-				var n0 = $elm$random$Random$peel(seed0);
-				var lo = (134217727 & n1) * 1.0;
-				var hi = (67108863 & n0) * 1.0;
-				var val = ((hi * 134217728.0) + lo) / 9007199254740992.0;
-				var scaled = (val * range) + a;
-				return _Utils_Tuple2(
-					scaled,
-					$elm$random$Random$next(seed1));
-			});
-	});
-var $elm$random$Random$getByWeight = F3(
-	function (_v0, others, countdown) {
-		getByWeight:
-		while (true) {
-			var weight = _v0.a;
-			var value = _v0.b;
-			if (!others.b) {
-				return value;
-			} else {
-				var second = others.a;
-				var otherOthers = others.b;
-				if (_Utils_cmp(
-					countdown,
-					$elm$core$Basics$abs(weight)) < 1) {
-					return value;
-				} else {
-					var $temp$_v0 = second,
-						$temp$others = otherOthers,
-						$temp$countdown = countdown - $elm$core$Basics$abs(weight);
-					_v0 = $temp$_v0;
-					others = $temp$others;
-					countdown = $temp$countdown;
-					continue getByWeight;
-				}
-			}
-		}
-	});
-var $elm$random$Random$weighted = F2(
-	function (first, others) {
-		var normalize = function (_v0) {
-			var weight = _v0.a;
-			return $elm$core$Basics$abs(weight);
-		};
-		var total = normalize(first) + $elm$core$List$sum(
-			A2($elm$core$List$map, normalize, others));
-		return A2(
-			$elm$random$Random$map,
-			A2($elm$random$Random$getByWeight, first, others),
-			A2($elm$random$Random$float, 0, total));
-	});
 var $author$project$Update$toRandom = function (stagedOrderEffects) {
 	var getOrderEffectChance = function (stagedOrderEffect) {
 		return A2($elm$random$Random$weighted, stagedOrderEffect.defaultEffect, stagedOrderEffect.remainingOrderEffectChances);
@@ -10358,47 +10706,89 @@ var $author$project$Update$applyConsumeEffectOfItemIn = F3(
 			return model;
 		}
 	});
+var $author$project$Inventory$Slot$isEmptyGroundSlot = function (changedSlot) {
+	return !changedSlot.id;
+};
+var $author$project$Inventory$Slot$isItemIxAtChangedSlot = F2(
+	function (itemIx, changedSlot) {
+		return _Utils_eq(itemIx + 1, changedSlot.id);
+	});
+var $author$project$Inventory$Slot$updateGroundInventory = F2(
+	function (changedSlot, groundLoot) {
+		var updateLoot = F2(
+			function (itemIx, item) {
+				return A2($author$project$Inventory$Slot$isItemIxAtChangedSlot, itemIx, changedSlot) ? changedSlot.contents : $elm$core$Maybe$Just(item);
+			});
+		if ($author$project$Inventory$Slot$isEmptyGroundSlot(changedSlot)) {
+			var _v0 = changedSlot.contents;
+			if (_v0.$ === 'Nothing') {
+				return groundLoot;
+			} else {
+				var item = _v0.a;
+				return A2($elm$core$List$cons, item, groundLoot);
+			}
+		} else {
+			return A2(
+				$elm$core$List$filterMap,
+				$elm$core$Basics$identity,
+				A2($elm$core$List$indexedMap, updateLoot, groundLoot));
+		}
+	});
 var $author$project$Update$updateSlot = F3(
 	function (inventoryPosition, changedSlot, model) {
 		var updateSlotContents = function (slot) {
 			return _Utils_eq(slot.id, changedSlot.id) ? changedSlot : slot;
 		};
 		var updateInventory = $elm$core$List$map(updateSlotContents);
-		if (inventoryPosition.$ === 'Stationary') {
-			var updateHexStationaryInventory = function (hex) {
-				var _v1 = hex.stationary;
-				if (_v1.$ === 'Nothing') {
-					return hex;
-				} else {
-					var stationary = _v1.a;
+		switch (inventoryPosition.$) {
+			case 'Stationary':
+				var updateHexStationaryInventory = function (hex) {
+					var _v1 = hex.stationary;
+					if (_v1.$ === 'Nothing') {
+						return hex;
+					} else {
+						var stationary = _v1.a;
+						return _Utils_update(
+							hex,
+							{
+								stationary: $elm$core$Maybe$Just(
+									_Utils_update(
+										stationary,
+										{
+											inventory: updateInventory(stationary.inventory)
+										}))
+							});
+					}
+				};
+				return _Utils_update(
+					model,
+					{
+						map: A3($author$project$Map$Content$update, model.player.position, updateHexStationaryInventory, model.map)
+					});
+			case 'Player':
+				var currentPlayer = model.player;
+				return _Utils_update(
+					model,
+					{
+						player: _Utils_update(
+							currentPlayer,
+							{
+								inventory: updateInventory(model.player.inventory)
+							})
+					});
+			default:
+				var updateHexGroundInventory = function (hex) {
 					return _Utils_update(
 						hex,
 						{
-							stationary: $elm$core$Maybe$Just(
-								_Utils_update(
-									stationary,
-									{
-										inventory: updateInventory(stationary.inventory)
-									}))
+							loot: A2($author$project$Inventory$Slot$updateGroundInventory, changedSlot, hex.loot)
 						});
-				}
-			};
-			return _Utils_update(
-				model,
-				{
-					map: A3($author$project$Map$Content$update, model.player.position, updateHexStationaryInventory, model.map)
-				});
-		} else {
-			var currentPlayer = model.player;
-			return _Utils_update(
-				model,
-				{
-					player: _Utils_update(
-						currentPlayer,
-						{
-							inventory: updateInventory(model.player.inventory)
-						})
-				});
+				};
+				return _Utils_update(
+					model,
+					{
+						map: A3($author$project$Map$Content$update, model.player.position, updateHexGroundInventory, model.map)
+					});
 		}
 	});
 var $author$project$Update$handleIntendedConsumption = function (model) {
@@ -10758,69 +11148,6 @@ var $author$project$Update$updateWithMsg = F3(
 						model,
 						{beingUsed: $elm$core$Maybe$Nothing}),
 					$elm$core$Platform$Cmd$none);
-			case 'ClickLoot':
-				var hexPos = msg.a;
-				var newPos = msg.b;
-				return _Utils_Tuple2(
-					function () {
-						var _v2 = model.dragging;
-						if (_v2.$ === 'Nothing') {
-							var _v3 = A2(
-								$elm$core$Maybe$withDefault,
-								_List_Nil,
-								A2(
-									$elm$core$Maybe$map,
-									A2(
-										$elm$core$Basics$composeR,
-										function ($) {
-											return $.data;
-										},
-										function ($) {
-											return $.loot;
-										}),
-									A2($author$project$Map$Content$get, hexPos, model.map)));
-							if (!_v3.b) {
-								return model;
-							} else {
-								var itemOnTop = _v3.a;
-								var pile = _v3.b;
-								return _Utils_update(
-									model,
-									{
-										dragging: $elm$core$Maybe$Just(
-											A2($author$project$Msg$Drag, itemOnTop, newPos)),
-										map: A3(
-											$author$project$Map$Content$update,
-											hexPos,
-											function (lootHex) {
-												return _Utils_update(
-													lootHex,
-													{loot: pile});
-											},
-											model.map)
-									});
-							}
-						} else {
-							var drag = _v2.a;
-							return _Utils_update(
-								model,
-								{
-									dragging: $elm$core$Maybe$Nothing,
-									map: A3(
-										$author$project$Map$Content$update,
-										hexPos,
-										function (lootHex) {
-											return _Utils_update(
-												lootHex,
-												{
-													loot: A2($elm$core$List$cons, drag.item, lootHex.loot)
-												});
-										},
-										model.map)
-								});
-						}
-					}(),
-					$elm$core$Platform$Cmd$none);
 			case 'MoveItem':
 				var drag = msg.a;
 				return _Utils_Tuple2(
@@ -10832,8 +11159,8 @@ var $author$project$Update$updateWithMsg = F3(
 					$elm$core$Platform$Cmd$none);
 			case 'ChangePhase':
 				var nextPhaseStep = $author$project$State$Phase$nextPhaseStep(model.phase);
-				var _v4 = $author$project$State$Phase$getType(nextPhaseStep);
-				if (_v4.$ === 'OrdersHidden') {
+				var _v2 = $author$project$State$Phase$getType(nextPhaseStep);
+				if (_v2.$ === 'OrdersHidden') {
 					return _Utils_Tuple2(
 						$author$project$Update$updateTemporaryEffectsAtEndOfPhase(
 							$author$project$Update$applyContinuousEffectsOfConditions(
@@ -10888,6 +11215,22 @@ var $author$project$Update$updateWithMsg = F3(
 				var option = msg.a;
 				return _Utils_Tuple2(
 					A2(injected.applyInteractiveChoice, option, model),
+					$elm$core$Platform$Cmd$none);
+			case 'AddMap':
+				var aboveLink = msg.a;
+				var mapDefinition = msg.b;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							map: A2(
+								$author$project$Map$Content$setVerticalPathBetween,
+								{
+									above: aboveLink,
+									below: A3($author$project$Map$Content$getPosOf, mapDefinition, 1, 0)
+								},
+								A2($author$project$Map$Content$addMap, mapDefinition, model.map))
+						}),
 					$elm$core$Platform$Cmd$none);
 			case 'NoOp':
 				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
@@ -10959,32 +11302,32 @@ var $author$project$Rule$Description$maybeApplyNotFirst = function (optionalText
 		return $elm$core$Maybe$Just('not ' + text);
 	}
 };
-var $author$project$Map$Hex$nameOfTerrain = function (terrain) {
-	switch (terrain.$) {
+var $author$project$Map$Hex$getTerrainData = function (terrainType) {
+	switch (terrainType.$) {
 		case 'Plains':
-			return 'Plains';
+			return {color: 'beige', name: 'Plains', symbol: '🍂'};
 		case 'Mountains':
-			return 'Mountains';
+			return {color: 'dimgrey', name: 'Mountains', symbol: '⛰'};
 		case 'Cave':
-			return 'Cave';
+			return {color: 'darkgrey', name: 'Cave', symbol: ''};
 		case 'CaveEntrance':
-			return 'Cave entrance';
+			return {color: 'lightgrey', name: 'Cave entrance', symbol: '🍙'};
 		case 'Forest':
-			return 'Forest';
+			return {color: 'green', name: 'Forest', symbol: '🌳'};
 		case 'Sea':
-			return 'Sea';
+			return {color: 'blue', name: 'Sea', symbol: '🌊'};
 		case 'Desert':
-			return 'Desert';
+			return {color: 'yellow', name: 'Desert', symbol: '🏜'};
 		case 'BlessedGrounds':
-			return 'Holy lands';
+			return {color: 'white', name: 'Holy lands', symbol: '✨'};
 		default:
-			return 'Elsewhere...';
+			return {color: 'darkgrey', name: 'Elsewhere...', symbol: '🌌'};
 	}
 };
 var $author$project$Rule$DefinitionMapping$toProperTerrainName = function (ruleTerrain) {
 	return $elm$core$String$toLower(
-		$author$project$Map$Hex$nameOfTerrain(
-			$author$project$Rule$DefinitionMapping$mapTerrain(ruleTerrain)));
+		$author$project$Map$Hex$getTerrainData(
+			$author$project$Rule$DefinitionMapping$mapTerrain(ruleTerrain)).name);
 };
 var $author$project$Rule$Description$getRequirementName = function (requirement) {
 	switch (requirement.$) {
@@ -11167,14 +11510,6 @@ var $author$project$Rule$Description$getContinuousEffectDescription = function (
 			return $elm$core$Maybe$Just(
 				'modify defense stat with ' + $author$project$Rule$Description$combatModToDescription(defMod));
 	}
-};
-var $elm$core$String$toUpper = _String_toUpper;
-var $author$project$Extend$String$capitalize = function (string) {
-	var rest = A2($elm$core$String$dropLeft, 1, string);
-	var first = A2($elm$core$String$left, 1, string);
-	return _Utils_ap(
-		$elm$core$String$toUpper(first),
-		rest);
 };
 var $author$project$Rule$Description$getRequirementDescriptionHelper = F2(
 	function (targetMob, requirement) {
@@ -11881,11 +12216,11 @@ var $author$project$Map$Hex$getDescription = F2(
 				$elm$core$Basics$identity,
 				_List_fromArray(
 					[maybeHexMobDescr, interactiveDescription])));
-		var basicDescr = $author$project$Map$Hex$nameOfTerrain(hex.terrain);
+		var basicDescr = $author$project$Map$Hex$getTerrainData(hex.terrain).name;
 		return $elm$core$String$isEmpty(contentDescription) ? basicDescr : (contentDescription + ($author$project$Text$rn + ($author$project$Text$rn + ('in ' + basicDescr))));
 	});
 var $author$project$Map$Hex$Elsewhere = {$: 'Elsewhere'};
-var $author$project$Map$Content$elsewhereData = {loot: $author$project$Map$Content$emptyLoot, stationary: $elm$core$Maybe$Nothing, terrain: $author$project$Map$Hex$Elsewhere};
+var $author$project$Map$Content$elsewhereData = {loot: $author$project$Map$Content$emptyLoot, significantLocation: $author$project$Map$Hex$NotSignificant, stationary: $elm$core$Maybe$Nothing, terrain: $author$project$Map$Hex$Elsewhere};
 var $author$project$Map$Content$withDefaultAggregatedHexData = function (hexPos) {
 	return $elm$core$Maybe$withDefault(
 		{actualPosition: hexPos, data: $author$project$Map$Content$elsewhereData, isViaLink: true, renderPosition: hexPos});
@@ -11940,7 +12275,6 @@ var $author$project$Areas$InteractArea$renderDialogueOptionTr = F2(
 				]));
 	});
 var $elm$html$Html$Attributes$align = $elm$html$Html$Attributes$stringProperty('align');
-var $elm$html$Html$p = _VirtualDom_node('p');
 var $author$project$Msg$ClickSlot = F2(
 	function (a, b) {
 		return {$: 'ClickSlot', a: a, b: b};
@@ -11980,6 +12314,8 @@ var $author$project$Inventory$Item$describe = function (item) {
 };
 var $author$project$Inventory$Slot$describe = function (slotType) {
 	switch (slotType.$) {
+		case 'Ground':
+			return 'Ground';
 		case 'Backpack':
 			return 'Backpack';
 		case 'Chest':
@@ -12085,10 +12421,11 @@ var $author$project$Render$Inventory$getEffectsDescriptions = F2(
 var $author$project$Inventory$Slot$BeingUsed = {$: 'BeingUsed'};
 var $author$project$Inventory$Slot$NotTarget = {$: 'NotTarget'};
 var $author$project$Inventory$Slot$PossibleDragTarget = {$: 'PossibleDragTarget'};
-var $author$project$Inventory$Item$Armour = {$: 'Armour'};
 var $author$project$Inventory$Slot$canContain = F2(
 	function (slotType, itemType) {
 		switch (slotType.$) {
+			case 'Ground':
+				return true;
 			case 'Backpack':
 				return true;
 			case 'Chest':
@@ -12225,7 +12562,7 @@ var $author$project$Render$Inventory$computeSlotAttributes = F5(
 var $author$project$Render$Inventory$renderItem = F2(
 	function (attributes, item) {
 		return A2(
-			$elm$html$Html$span,
+			$elm$html$Html$div,
 			attributes,
 			_List_fromArray(
 				[
@@ -12235,37 +12572,21 @@ var $author$project$Render$Inventory$renderItem = F2(
 	});
 var $author$project$Render$Inventory$renderSlot = F5(
 	function (targetMob, inventoryPosition, pointerModel, beingUsed, slot) {
-		var slotHtml = A2(
-			$elm$html$Html$span,
-			_List_Nil,
-			_List_fromArray(
-				[
-					$elm$html$Html$text(
-					$elm$core$String$fromChar(slot.picture))
-				]));
 		var slotAttributes = A5($author$project$Render$Inventory$computeSlotAttributes, targetMob, inventoryPosition, pointerModel, beingUsed, slot);
-		return A2(
-			$elm$html$Html$span,
-			slotAttributes,
-			function () {
-				var _v0 = slot.contents;
-				if (_v0.$ === 'Nothing') {
-					return _List_fromArray(
-						[slotHtml]);
-				} else {
-					var item = _v0.a;
-					var itemAttributes = _List_fromArray(
-						[
-							A2($elm$html$Html$Attributes$style, 'position', 'absolute'),
-							A2($elm$html$Html$Attributes$style, 'pointer-events', 'none')
-						]);
-					return _List_fromArray(
-						[
-							A2($author$project$Render$Inventory$renderItem, itemAttributes, item),
-							slotHtml
-						]);
-				}
-			}());
+		var _v0 = slot.contents;
+		if (_v0.$ === 'Nothing') {
+			return A2(
+				$elm$html$Html$div,
+				slotAttributes,
+				_List_fromArray(
+					[
+						$elm$html$Html$text(
+						$elm$core$String$fromChar(slot.picture))
+					]));
+		} else {
+			var item = _v0.a;
+			return A2($author$project$Render$Inventory$renderItem, slotAttributes, item);
+		}
 	});
 var $author$project$Render$Inventory$renderSlotGroup = F4(
 	function (targetMob, inventoryPosition, pointerModel, beingUsed) {
@@ -12273,34 +12594,15 @@ var $author$project$Render$Inventory$renderSlotGroup = F4(
 			$elm$core$Basics$composeR,
 			$elm$core$List$map(
 				A4($author$project$Render$Inventory$renderSlot, targetMob, inventoryPosition, pointerModel, beingUsed)),
-			$elm$html$Html$p(
+			$elm$html$Html$div(
 				_List_fromArray(
 					[
-						$elm$html$Html$Attributes$align('center')
+						$elm$html$Html$Attributes$align('center'),
+						A2($elm$html$Html$Attributes$style, 'justify-content', 'center'),
+						A2($elm$html$Html$Attributes$style, 'display', 'flex'),
+						A2($elm$html$Html$Attributes$style, 'flex-wrap', 'wrap')
 					])));
 	});
-var $author$project$Map$Hex$symbolOfTerrain = function (terrain) {
-	switch (terrain.$) {
-		case 'Plains':
-			return '🍂';
-		case 'Mountains':
-			return '⛰';
-		case 'Cave':
-			return '';
-		case 'CaveEntrance':
-			return '🍙';
-		case 'Forest':
-			return '🌳';
-		case 'Sea':
-			return '🌊';
-		case 'Desert':
-			return '🏜';
-		case 'BlessedGrounds':
-			return '✨';
-		default:
-			return '🌌';
-	}
-};
 var $author$project$Areas$InteractArea$render = function (interactHolder) {
 	var player = interactHolder.player;
 	var playerHex = A2($author$project$Map$Content$getWithDefault, player.position, interactHolder.map);
@@ -12321,7 +12623,7 @@ var $author$project$Areas$InteractArea$render = function (interactHolder) {
 				_List_fromArray(
 					[
 						$elm$html$Html$text(
-						$author$project$Map$Hex$symbolOfTerrain(playerHex.data.terrain))
+						$author$project$Map$Hex$getTerrainData(playerHex.data.terrain).symbol)
 					])),
 				function () {
 				if (itemInteractedWith.$ === 'Just') {
@@ -12472,6 +12774,43 @@ var $author$project$Areas$InventoryArea$renderEncumbranceDescription = function 
 				$author$project$Text$rn + ('Encumbrance: ' + ($elm$core$String$fromFloat(encumbrance) + ('/' + $elm$core$String$fromFloat(maxEncumbrance)))))
 			]));
 };
+var $author$project$Msg$Ground = {$: 'Ground'};
+var $author$project$Inventory$Slot$Ground = {$: 'Ground'};
+var $author$project$Inventory$Slot$groundSlotsFromHexItems = A2(
+	$elm$core$Basics$composeR,
+	$elm$core$List$map($elm$core$Maybe$Just),
+	A2(
+		$elm$core$Basics$composeR,
+		$elm$core$List$cons($elm$core$Maybe$Nothing),
+		$author$project$Extend$List$indexedMapInvert(
+			A2(
+				$author$project$Inventory$Slot$Slot,
+				$author$project$Inventory$Slot$Ground,
+				_Utils_chr('⬜')))));
+var $author$project$Areas$InventoryArea$renderGroundInventory = function (model) {
+	return A5(
+		$author$project$Render$Inventory$renderSlotGroup,
+		model.player,
+		$author$project$Msg$Ground,
+		model.dragging,
+		model.beingUsed,
+		$elm$core$List$reverse(
+			$author$project$Inventory$Slot$groundSlotsFromHexItems(
+				A2(
+					$elm$core$Maybe$withDefault,
+					_List_Nil,
+					A2(
+						$elm$core$Maybe$map,
+						A2(
+							$elm$core$Basics$composeR,
+							function ($) {
+								return $.data;
+							},
+							function ($) {
+								return $.loot;
+							}),
+						A2($author$project$Map$Content$get, model.player.position, model.map))))));
+};
 var $author$project$Msg$Player = {$: 'Player'};
 var $author$project$Extend$Dict$groupBy = F2(
 	function (keyExtractor, list) {
@@ -12490,21 +12829,42 @@ var $author$project$Extend$Dict$groupBy = F2(
 			});
 		return A3($elm$core$List$foldr, aggregate, $elm$core$Dict$empty, list);
 	});
+var $elm$core$List$intersperse = F2(
+	function (sep, xs) {
+		if (!xs.b) {
+			return _List_Nil;
+		} else {
+			var hd = xs.a;
+			var tl = xs.b;
+			var step = F2(
+				function (x, rest) {
+					return A2(
+						$elm$core$List$cons,
+						sep,
+						A2($elm$core$List$cons, x, rest));
+				});
+			var spersed = A3($elm$core$List$foldr, step, _List_Nil, tl);
+			return A2($elm$core$List$cons, hd, spersed);
+		}
+	});
 var $author$project$Areas$InventoryArea$renderInventory = function (model) {
 	return A2(
-		$elm$core$List$map,
-		A4($author$project$Render$Inventory$renderSlotGroup, model.player, $author$project$Msg$Player, model.dragging, model.beingUsed),
-		$elm$core$List$reverse(
-			$elm$core$Dict$values(
-				A2(
-					$author$project$Extend$Dict$groupBy,
+		$elm$core$List$intersperse,
+		A2($elm$html$Html$br, _List_Nil, _List_Nil),
+		A2(
+			$elm$core$List$map,
+			A4($author$project$Render$Inventory$renderSlotGroup, model.player, $author$project$Msg$Player, model.dragging, model.beingUsed),
+			$elm$core$List$reverse(
+				$elm$core$Dict$values(
 					A2(
-						$elm$core$Basics$composeR,
-						function ($) {
-							return $.slotType;
-						},
-						$author$project$Inventory$Slot$describe),
-					model.player.inventory))));
+						$author$project$Extend$Dict$groupBy,
+						A2(
+							$elm$core$Basics$composeR,
+							function ($) {
+								return $.slotType;
+							},
+							$author$project$Inventory$Slot$describe),
+						model.player.inventory)))));
 };
 var $author$project$Areas$InventoryArea$render = function (model) {
 	return A2(
@@ -12514,7 +12874,9 @@ var $author$project$Areas$InventoryArea$render = function (model) {
 			$author$project$Areas$InventoryArea$renderInventory(model),
 			_List_fromArray(
 				[
-					$author$project$Areas$InventoryArea$renderEncumbranceDescription(model)
+					$author$project$Areas$InventoryArea$renderEncumbranceDescription(model),
+					A2($elm$html$Html$hr, _List_Nil, _List_Nil),
+					$author$project$Areas$InventoryArea$renderGroundInventory(model)
 				])));
 };
 var $author$project$Areas$InventoryArea$areaDefinition = function (model) {
@@ -12623,6 +12985,30 @@ var $author$project$Areas$MapArea$getSizeOfMap = function (playerPosition) {
 	};
 };
 var $elm$svg$Svg$Attributes$height = _VirtualDom_attribute('height');
+var $author$project$Map$Content$toDefaultAggregatedHexData = F2(
+	function (worldMap, hex) {
+		return A2(
+			$author$project$Map$Content$withDefaultAggregatedHexData,
+			hex.position,
+			A2($author$project$Map$Content$getHelper, worldMap, hex));
+	});
+var $author$project$Map$Content$mapToList = F3(
+	function (coordsIdOfMap, mapFun, worldMap) {
+		var _v0 = A2($author$project$Map$Content$getSubMap, coordsIdOfMap, worldMap);
+		if (_v0.$ === 'Nothing') {
+			return _List_Nil;
+		} else {
+			var subMap = _v0.a;
+			return A3(
+				$elm$core$Array$foldr,
+				A2(
+					$elm$core$Basics$composeR,
+					$author$project$Map$Content$toDefaultAggregatedHexData(worldMap),
+					A2($elm$core$Basics$composeR, mapFun, $elm$core$List$cons)),
+				_List_Nil,
+				subMap.hexes);
+		}
+	});
 var $author$project$Areas$MapArea$FailureResult = {$: 'FailureResult'};
 var $author$project$Areas$MapArea$NeutralResult = {$: 'NeutralResult'};
 var $author$project$Areas$MapArea$SuccessResult = {$: 'SuccessResult'};
@@ -12736,10 +13122,7 @@ var $elm$svg$Svg$circle = $elm$svg$Svg$trustedNode('circle');
 var $elm$svg$Svg$Attributes$cx = _VirtualDom_attribute('cx');
 var $elm$svg$Svg$Attributes$cy = _VirtualDom_attribute('cy');
 var $elm$svg$Svg$Attributes$r = _VirtualDom_attribute('r');
-var $author$project$Areas$MapArea$svgNonInteractive = _List_fromArray(
-	[
-		$elm$svg$Svg$Attributes$pointerEvents('none')
-	]);
+var $author$project$Areas$MapArea$svgNonInteractive = $elm$svg$Svg$Attributes$pointerEvents('none');
 var $author$project$Areas$MapArea$drawCircle = F2(
 	function (color, pos) {
 		var _v0 = $author$project$Areas$MapArea$hexPositionToPixels(pos);
@@ -12747,23 +13130,22 @@ var $author$project$Areas$MapArea$drawCircle = F2(
 		var y = _v0.b;
 		return A2(
 			$elm$svg$Svg$circle,
-			_Utils_ap(
-				$author$project$Areas$MapArea$svgNonInteractive,
-				_List_fromArray(
-					[
-						$elm$svg$Svg$Attributes$cx(
-						$elm$core$String$fromInt(x + $author$project$Areas$MapArea$hexRadAsInt)),
-						$elm$svg$Svg$Attributes$cy(
-						$elm$core$String$fromInt(y + $author$project$Areas$MapArea$halfHexHeightAsInt)),
-						$elm$svg$Svg$Attributes$r(
-						$elm$core$String$fromFloat($author$project$Areas$MapArea$hexRadius / 2)),
-						$author$project$Areas$MapArea$toSvgAttribute(color),
-						$elm$svg$Svg$Attributes$strokeWidth(
-						$elm$core$String$fromFloat($author$project$Areas$MapArea$hexRadius / 6)),
-						$elm$svg$Svg$Attributes$strokeOpacity('0.5'),
-						$elm$svg$Svg$Attributes$z('1'),
-						$elm$svg$Svg$Attributes$fill('none')
-					])),
+			_List_fromArray(
+				[
+					$elm$svg$Svg$Attributes$cx(
+					$elm$core$String$fromInt(x + $author$project$Areas$MapArea$hexRadAsInt)),
+					$elm$svg$Svg$Attributes$cy(
+					$elm$core$String$fromInt(y + $author$project$Areas$MapArea$halfHexHeightAsInt)),
+					$elm$svg$Svg$Attributes$r(
+					$elm$core$String$fromFloat($author$project$Areas$MapArea$hexRadius / 2)),
+					$author$project$Areas$MapArea$toSvgAttribute(color),
+					$elm$svg$Svg$Attributes$strokeWidth(
+					$elm$core$String$fromFloat($author$project$Areas$MapArea$hexRadius / 6)),
+					$elm$svg$Svg$Attributes$strokeOpacity('0.5'),
+					$elm$svg$Svg$Attributes$z('1'),
+					$elm$svg$Svg$Attributes$fill('none'),
+					$author$project$Areas$MapArea$svgNonInteractive
+				]),
 			_List_Nil);
 	});
 var $author$project$Areas$MapArea$renderOrderEffect = F3(
@@ -12810,61 +13192,11 @@ var $elm$virtual_dom$VirtualDom$keyedNodeNS = F2(
 			_VirtualDom_noScript(tag));
 	});
 var $elm$svg$Svg$Keyed$node = $elm$virtual_dom$VirtualDom$keyedNodeNS('http://www.w3.org/2000/svg');
-var $author$project$Map$Content$toDefaultAggregatedHexData = F2(
-	function (worldMap, hex) {
-		return A2(
-			$author$project$Map$Content$withDefaultAggregatedHexData,
-			hex.position,
-			A2($author$project$Map$Content$getHelper, worldMap, hex));
-	});
-var $author$project$Map$Content$mapToList = F3(
-	function (coordsIdOfMap, mapFun, worldMap) {
-		var _v0 = A2($author$project$Map$Content$getSubMap, coordsIdOfMap, worldMap);
-		if (_v0.$ === 'Nothing') {
-			return _List_Nil;
-		} else {
-			var subMap = _v0.a;
-			return A3(
-				$elm$core$Array$foldr,
-				A2(
-					$elm$core$Basics$composeR,
-					$author$project$Map$Content$toDefaultAggregatedHexData(worldMap),
-					A2($elm$core$Basics$composeR, mapFun, $elm$core$List$cons)),
-				_List_Nil,
-				subMap.hexes);
-		}
-	});
 var $elm$virtual_dom$VirtualDom$lazy7 = _VirtualDom_lazy7;
 var $elm$svg$Svg$Lazy$lazy7 = $elm$virtual_dom$VirtualDom$lazy7;
 var $elm$virtual_dom$VirtualDom$lazy8 = _VirtualDom_lazy8;
 var $elm$svg$Svg$Lazy$lazy8 = $elm$virtual_dom$VirtualDom$lazy8;
-var $author$project$Msg$ClickLoot = F2(
-	function (a, b) {
-		return {$: 'ClickLoot', a: a, b: b};
-	});
 var $author$project$Areas$MapArea$LinkedPathHex = {$: 'LinkedPathHex'};
-var $author$project$Map$Hex$colorOf = function (terrain) {
-	switch (terrain.$) {
-		case 'Plains':
-			return 'beige';
-		case 'Mountains':
-			return 'dimgrey';
-		case 'Cave':
-			return 'darkgrey';
-		case 'CaveEntrance':
-			return 'lightgrey';
-		case 'Forest':
-			return 'green';
-		case 'Sea':
-			return 'blue';
-		case 'Desert':
-			return 'yellow';
-		case 'BlessedGrounds':
-			return 'white';
-		default:
-			return 'darkgrey';
-	}
-};
 var $elm$svg$Svg$Attributes$fontSize = _VirtualDom_attribute('font-size');
 var $author$project$Map$Mob$fromHealthToString = function (health) {
 	switch (health.$) {
@@ -13132,10 +13464,37 @@ var $author$project$Areas$MapArea$renderHexHelper = F8(
 				return _List_Nil;
 			}
 		}();
+		var renderedLootPile = $elm$core$List$isEmpty(hexData.loot) ? _List_Nil : _List_fromArray(
+			[
+				A2(
+				$elm$svg$Svg$text_,
+				_List_fromArray(
+					[
+						$elm$svg$Svg$Attributes$fontSize(
+						$elm$core$String$fromFloat($author$project$Areas$MapArea$hexRadius * 0.5)),
+						$elm$svg$Svg$Attributes$x(
+						$elm$core$String$fromFloat($author$project$Areas$MapArea$hexRadius * 0.25)),
+						$elm$svg$Svg$Attributes$y(
+						$elm$core$String$fromFloat($author$project$Areas$MapArea$hexRadius))
+					]),
+				_List_fromArray(
+					[
+						$elm$svg$Svg$text(
+						function () {
+							var _v4 = hexData.loot;
+							if (_v4.b && (!_v4.b.b)) {
+								var singleLoot = _v4.a;
+								return $elm$core$String$fromChar(singleLoot.picture);
+							} else {
+								return '🚮';
+							}
+						}())
+					]))
+			]);
 		var renderedInteractiveItem = function () {
-			var _v4 = hexData.stationary;
-			if (_v4.$ === 'Just') {
-				var interactive = _v4.a;
+			var _v3 = hexData.stationary;
+			if (_v3.$ === 'Just') {
+				var interactive = _v3.a;
 				return _List_fromArray(
 					[
 						A2(
@@ -13167,8 +13526,8 @@ var $author$project$Areas$MapArea$renderHexHelper = F8(
 		var isPlayerHex = function () {
 			if (mobInHex.$ === 'Just') {
 				var mob = mobInHex.a;
-				var _v3 = mob.id;
-				if (_v3.$ === 'Player') {
+				var _v2 = mob.id;
+				if (_v2.$ === 'Player') {
 					return true;
 				} else {
 					return false;
@@ -13177,43 +13536,6 @@ var $author$project$Areas$MapArea$renderHexHelper = F8(
 				return false;
 			}
 		}();
-		var lootPileClickableAttrs = isPlayerHex ? _List_fromArray(
-			[
-				$author$project$Areas$MapArea$svgClickable,
-				$author$project$Extend$Mouse$onClickExt(
-				$author$project$Msg$ClickLoot(actualPosition))
-			]) : $author$project$Areas$MapArea$svgNonInteractive;
-		var renderedLootPile = ((!isPlayerHex) && $elm$core$List$isEmpty(hexData.loot)) ? _List_Nil : _List_fromArray(
-			[
-				A2(
-				$elm$svg$Svg$text_,
-				_Utils_ap(
-					_List_fromArray(
-						[
-							$elm$svg$Svg$Attributes$fontSize(
-							$elm$core$String$fromFloat($author$project$Areas$MapArea$hexRadius * 0.5)),
-							$elm$svg$Svg$Attributes$opacity(
-							$elm$core$List$isEmpty(hexData.loot) ? '0.5' : '1'),
-							$elm$svg$Svg$Attributes$x(
-							$elm$core$String$fromFloat($author$project$Areas$MapArea$hexRadius * 0.25)),
-							$elm$svg$Svg$Attributes$y(
-							$elm$core$String$fromFloat($author$project$Areas$MapArea$hexRadius))
-						]),
-					lootPileClickableAttrs),
-				_List_fromArray(
-					[
-						$elm$svg$Svg$text(
-						function () {
-							var _v1 = hexData.loot;
-							if (_v1.b && (!_v1.b.b)) {
-								var singleLoot = _v1.a;
-								return $elm$core$String$fromChar(singleLoot.picture);
-							} else {
-								return '🚮';
-							}
-						}())
-					]))
-			]);
 		var hexTargetOrders = A3(
 			$author$project$Rule$Order$getPossibleForMob,
 			{health: playerHealth, order: playerOrder, position: playerPosition},
@@ -13227,7 +13549,7 @@ var $author$project$Areas$MapArea$renderHexHelper = F8(
 			[
 				$author$project$Areas$MapArea$hexPtsAsAttribute,
 				$elm$svg$Svg$Attributes$fill(
-				$author$project$Map$Hex$colorOf(hexData.terrain))
+				$author$project$Map$Hex$getTerrainData(hexData.terrain).color)
 			]);
 		var commonHexAttrs = _List_fromArray(
 			[
@@ -13256,7 +13578,7 @@ var $author$project$Areas$MapArea$renderHexHelper = F8(
 				_List_fromArray(
 					[
 						$elm$svg$Svg$text(
-						$author$project$Map$Hex$symbolOfTerrain(hexData.terrain))
+						$author$project$Map$Hex$getTerrainData(hexData.terrain).symbol)
 					]))
 			]);
 		var contents = _Utils_ap(
@@ -13428,8 +13750,7 @@ var $author$project$Areas$MapArea$svgDefs = A2(
 					_List_fromArray(
 						[
 							$elm$svg$Svg$Attributes$in_('SourceGraphic'),
-							$elm$svg$Svg$Attributes$stdDeviation('1'),
-							$elm$svg$Svg$Attributes$y('-')
+							$elm$svg$Svg$Attributes$stdDeviation('1')
 						]),
 					_List_Nil),
 					A2(
@@ -13464,6 +13785,37 @@ var $author$project$Areas$MapArea$svgDefs = A2(
 						]))
 				]))
 		]));
+var $elm$svg$Svg$Attributes$fillOpacity = _VirtualDom_attribute('fill-opacity');
+var $author$project$Areas$MapArea$toLocationTextOverlay = function (aggregatedHexData) {
+	var _v0 = aggregatedHexData.data.significantLocation;
+	if (_v0.$ === 'NotSignificant') {
+		return $elm$core$Maybe$Nothing;
+	} else {
+		var text = _v0.a;
+		var _v1 = $author$project$Areas$MapArea$hexPositionToPixels(aggregatedHexData.renderPosition);
+		var x = _v1.a;
+		var y = _v1.b;
+		return $elm$core$Maybe$Just(
+			A2(
+				$elm$svg$Svg$text_,
+				_List_fromArray(
+					[
+						$elm$svg$Svg$Attributes$x(
+						$elm$core$String$fromInt(
+							(x + $author$project$Areas$MapArea$hexRadAsInt) - ((($author$project$Areas$MapArea$hexRadAsInt * $elm$core$String$length(text)) / 10) | 0))),
+						$elm$svg$Svg$Attributes$y(
+						$elm$core$String$fromInt(y + $author$project$Areas$MapArea$halfHexHeightAsInt)),
+						$elm$svg$Svg$Attributes$fontSize(
+						$elm$core$String$fromFloat($author$project$Areas$MapArea$hexRadius * 0.5)),
+						$elm$svg$Svg$Attributes$fillOpacity('0.5'),
+						$author$project$Areas$MapArea$svgNonInteractive
+					]),
+				_List_fromArray(
+					[
+						$elm$svg$Svg$text(text)
+					])));
+	}
+};
 var $elm$svg$Svg$Attributes$width = _VirtualDom_attribute('width');
 var $author$project$Areas$MapArea$render = function (mapHolder) {
 	var renderedOrders = A2($author$project$Areas$MapArea$renderOrder, mapHolder, mapHolder.player);
@@ -13472,7 +13824,12 @@ var $author$project$Areas$MapArea$render = function (mapHolder) {
 		$author$project$Areas$MapArea$maybeRenderOrderEffect(mapHolder),
 		mapHolder.orderEffects);
 	var renderedMap = $author$project$Areas$MapArea$renderHexes(mapHolder);
-	var mapSize = $author$project$Areas$MapArea$getSizeOfMap(mapHolder.player.position);
+	var playerPos = mapHolder.player.position;
+	var renderedSignificantLocations = A2(
+		$elm$core$List$filterMap,
+		$elm$core$Basics$identity,
+		A3($author$project$Map$Content$mapToList, playerPos.coords, $author$project$Areas$MapArea$toLocationTextOverlay, mapHolder.map));
+	var mapSize = $author$project$Areas$MapArea$getSizeOfMap(playerPos);
 	return A2(
 		$elm$svg$Svg$svg,
 		_List_fromArray(
@@ -13488,7 +13845,9 @@ var $author$project$Areas$MapArea$render = function (mapHolder) {
 					$author$project$Areas$MapArea$svgDefs,
 					A3($elm$svg$Svg$Keyed$node, 'svg', _List_Nil, renderedMap)
 				]),
-			_Utils_ap(renderedOrders, renderedOrderEffects)));
+			_Utils_ap(
+				renderedOrders,
+				_Utils_ap(renderedOrderEffects, renderedSignificantLocations))));
 };
 var $author$project$Areas$MapArea$areaDefinition = function (mapHolder) {
 	return {
@@ -14301,7 +14660,7 @@ var $author$project$Main$view = function (model) {
 var $author$project$Main$main = $elm$browser$Browser$document(
 	{
 		init: function (_v0) {
-			return _Utils_Tuple2($author$project$Main$initialModel, $elm$core$Platform$Cmd$none);
+			return _Utils_Tuple2($author$project$Main$initialModel, $author$project$Main$generateRandomCave);
 		},
 		subscriptions: $author$project$Main$subscriptions,
 		update: $author$project$Update$update(
